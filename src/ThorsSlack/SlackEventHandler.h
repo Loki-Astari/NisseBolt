@@ -13,7 +13,6 @@
 #include "EventCallbackReaction.h"
 #include "EventURLVerification.h"
 
-#include "ThorsMug/MugPlugin.h"
 #include "NisseHTTP/Request.h"
 #include "NisseHTTP/Response.h"
 #include "ThorsCrypto/hmac.h"
