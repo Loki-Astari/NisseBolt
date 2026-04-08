@@ -1,0 +1,22 @@
+
+# In this file add the variables defined with AC_SUBST
+# They can then be included by surrounding with @
+# AC_SUBST([ExampleMakeFileVariable], [ValueOfVariable])
+ExampleMakeFileVariable=@ExampleMakeFileVariable@
+
+ThorSerialize_ROOT_LIB=@ThorSerialize_ROOT_LIB@
+ThorSerialize_ROOT_DIR=@ThorSerialize_ROOT_DIR@
+
+Nisse_ROOT_LIB=@Nisse_ROOT_LIB@
+Nisse_ROOT_DIR=@Nisse_ROOT_DIR@
+
+event_ROOT_LIB=@event_ROOT_LIB@
+event_ROOT_DIR=@event_ROOT_DIR@
+
+BoostCoRoutine_ROOT_DIR=@BoostCoRoutine_ROOT_DIR@
+BoostCoRoutine_ROOT_LIB=@BoostCoRoutine_ROOT_LIB@
+
+MagicEnumHeaderOnly_ROOT_DIR=@MagicEnumHeaderOnly_ROOT_DIR@
+ThorSerializeHeaderOnly_ROOT_DIR=@ThorSerializeHeaderOnly_ROOT_DIR@
+
+DISABLE_SLACKTEST=@DISABLE_SLACKTEST@
