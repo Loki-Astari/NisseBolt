@@ -1,4 +1,4 @@
-CONFIG_NAME					= ThorsSlack
+CONFIG_NAME					= NisseBolt
 THORSANVIL_ROOT				?= $(realpath ../../)
 COVERAGE_REQUIRED			= 60
 TARGET						= ThorsSlack.head
