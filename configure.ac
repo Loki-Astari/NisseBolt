@@ -36,6 +36,6 @@ AX_THOR_CHECK_USE_THORS_BOOSTCOROUTINE
 LT_INIT
 
 AX_THOR_FEATURE_HEADER_ONLY_VARIANT([THORSSLACK])
-AX_THOR_FUNC_TERM_BUILD([THORSSLACK], [src/ThorsSlack/ThorsSlackConfig.h:config.h.in])
+AX_THOR_FUNC_TERM_BUILD([THORSSLACK], [src/ThorsSlack/ThorsSlackConfig.h:config.h.in src/NisseBolt/NisseBoltConfig.h:config.h.in])
 
 AC_OUTPUT

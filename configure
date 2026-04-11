@@ -21988,7 +21988,7 @@ fi
 
 
 
-    ac_config_headers="$ac_config_headers config.h src/ThorsSlack/ThorsSlackConfig.h:config.h.in"
+    ac_config_headers="$ac_config_headers config.h src/ThorsSlack/ThorsSlackConfig.h:config.h.in src/NisseBolt/NisseBoltConfig.h:config.h.in"
 
     ac_config_files="$ac_config_files Makefile.extra Makefile.config:build/autotools/build/Makefile.config.in:Makefile.config.in"
 
@@ -23120,6 +23120,7 @@ do
     "depfiles") CONFIG_COMMANDS="$CONFIG_COMMANDS depfiles" ;;
     "config.h") CONFIG_HEADERS="$CONFIG_HEADERS config.h" ;;
     "src/ThorsSlack/ThorsSlackConfig.h") CONFIG_HEADERS="$CONFIG_HEADERS src/ThorsSlack/ThorsSlackConfig.h:config.h.in" ;;
+    "src/NisseBolt/NisseBoltConfig.h") CONFIG_HEADERS="$CONFIG_HEADERS src/NisseBolt/NisseBoltConfig.h:config.h.in" ;;
     "Makefile.extra") CONFIG_FILES="$CONFIG_FILES Makefile.extra" ;;
     "Makefile.config") CONFIG_FILES="$CONFIG_FILES Makefile.config:build/autotools/build/Makefile.config.in:Makefile.config.in" ;;
 
