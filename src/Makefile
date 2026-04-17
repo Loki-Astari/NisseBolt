@@ -1,5 +1,5 @@
-THORSANVIL_ROOT             = $(realpath ../)
+THORSANVIL_ROOT				?= $(realpath ../)
+SUBDIRS						= ThorsSlack NisseBolt
 
-TARGET                      = ThorsSlack NisseBolt
 
-include $(THORSANVIL_ROOT)/build/tools/Project.Makefile
+include $(THORSANVIL_ROOT)/build/tools/Makefile

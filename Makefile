@@ -1,5 +1,6 @@
-THORSANVIL_ROOT             = $(realpath ./)
+THORSANVIL_ROOT				?= $(realpath ./)
+SUBDIRS						= src
+CMKAE_CONFIG				= yes
 
-TARGET                      = src
 
-include $(THORSANVIL_ROOT)/build/tools/Project.Makefile
+include $(THORSANVIL_ROOT)/build/tools/Makefile

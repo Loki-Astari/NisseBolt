@@ -1,17 +1,23 @@
 #include "NBServer.h"
+#include "NBContext.h"
+#include "NBConfig.h"
 
 #include <iostream>
+#include <fstream>
+
+namespace TS = ThorsAnvil::Serialize;
+namespace NB = ThorsAnvil::NisseBolt;
 
 int main(int /*argc*/, char* /*argv*/[])
 {
+    std::ifstream   configFile("bot.config");
+    NB::NBConfig    config = TS::jsonBuilder<NB::NBConfig>(configFile);
 
     try
     {
         std::cout << "NB\n";
 
-        using ThorsAnvil::NisseBolt::NBServer;
-        using ThorsAnvil::NisseBolt::NBConfig;
-        NBServer    server(NBConfig{});
+        NB::NBServer    server(config);
         server.run();
     }
     catch (std::exception const& e)
