@@ -46,15 +46,15 @@ struct SlackRequest
     CmdEvent const&                           event;
 };
 
+using Cmd       = std::function<void(SlackRequest const&)>;
+using CmdMap    = std::map<std::string, Cmd>;
+
 class SlackEventHandler
 {
-        using Cmd       = std::function<void(SlackRequest const&)>;
-        using CmdMap    = std::map<std::string, Cmd>;
-
         std::string     slackSecret;
-        CmdMap          cmdMap;
+        CmdMap const&   cmdMap;
     public:
-        SlackEventHandler(std::string_view slackSecret, CmdMap&& cmdMap = {});
+        SlackEventHandler(std::string_view slackSecret, CmdMap const& cmdMap = {});
 
         // Method to validate Slack message comes from slack.
         bool validateRequest(Request const& request);
@@ -175,9 +175,9 @@ class SlackEventHandler
 };
 
 inline
-SlackEventHandler::SlackEventHandler(std::string_view slackSecret, CmdMap&& cmdMap)
+SlackEventHandler::SlackEventHandler(std::string_view slackSecret, CmdMap const& cmdMap)
     : slackSecret(slackSecret)
-    , cmdMap{std::move(cmdMap)}
+    , cmdMap{cmdMap}
 {}
 
 inline
@@ -225,8 +225,9 @@ bool SlackEventHandler::validateRequest(Request const& request)
         std::string_view    body = request.preloadStreamIntoBuffer();
         hmac.appendData(body);
     }
+    std::string exp{sig.c_str() + versionEnd + 1, sig.size() - versionEnd - 1};
     std::string dig = ThorsAnvil::Crypto::hexdigest<ThorsAnvil::Crypto::Sha256>(digest);
-    bool result = std::size(dig) == std::size(sig) && CRYPTO_memcmp(dig.c_str(), sig.c_str(), std::size(dig));
+    bool result = (std::size(dig) == std::size(exp)) && (CRYPTO_memcmp(dig.c_str(), exp.data(), std::size(dig)) == 0);
     ThorsLogDebug("ThorsAnvil::Slack::SlackEventHandler", "validateRequest", "Request Validation: ", (result ? "OK": "FAIL"));
     return result;
 }
