@@ -11,35 +11,35 @@ Say::Say(Slack::SlackClient& client, Where where)
 
 void Say::operator()(std::string const& message) const
 {
-    (*this)(where, message);
+    (*this)(message, where);
 }
 
-void Say::operator()(Where const& where, std::string const& message) const
+void Say::operator()(std::string const& message, Where const& where) const
 {
     sendMessage(Slack::API::Chat::POSTMessage{
-                                               .channel = where.channel.value_or("bad"),
-                                               .text = message,
+                                               .channel     = where.channel,
+                                               .text        = message,
                                                //.blocks
-                                               //.icon_emoji
-                                               //.username
-                                               .thread_ts = where.ts
+                                               .icon_emoji  = where.icon_emoji,
+                                               .username    = where.username,
+                                               .thread_ts   = where.ts
                                              });
 }
 
 void Say::operator()(Slack::BlockKit::Blocks const& blocks) const
 {
-    (*this)(where, blocks);
+    (*this)(blocks, where);
 }
 
-void Say::operator()(Where const& where, Slack::BlockKit::Blocks const& blocks) const
+void Say::operator()(Slack::BlockKit::Blocks const& blocks, Where const& where) const
 {
     sendMessage(Slack::API::Chat::POSTMessage{
-                                               .channel = where.channel.value_or("bad"),
+                                               .channel     = where.channel,
                                                //.text
-                                               .blocks = blocks,
-                                               //.icon_emoji
-                                               //.username
-                                               .thread_ts = where.ts
+                                               .blocks      = blocks,
+                                               .icon_emoji  = where.icon_emoji,
+                                               .username    = where.username,
+                                               .thread_ts   = where.ts
                                              });
 }
 

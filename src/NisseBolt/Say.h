@@ -16,8 +16,10 @@ using OptString = std::optional<std::string>;
 
 struct Where
 {
-    OptString               channel;
-    std::string             ts;
+    std::string             channel;
+    OptString               icon_emoji;
+    OptString               username;
+    OptString               ts;
 };
 
 class Say
@@ -27,9 +29,9 @@ class Say
     public:
         Say(Slack::SlackClient& client, Where where);
         void operator()(std::string const& message) const;
-        void operator()(Where const& where, std::string const& message) const;
+        void operator()(std::string const& message, Where const& where) const;
         void operator()(Slack::BlockKit::Blocks const&) const;
-        void operator()(Where const& where, Slack::BlockKit::Blocks const&) const;
+        void operator()(Slack::BlockKit::Blocks const&, Where const& where) const;
     private:
         void sendMessage(Slack::API::Chat::POSTMessage message) const;
 };

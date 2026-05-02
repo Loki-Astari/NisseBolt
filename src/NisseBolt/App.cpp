@@ -52,7 +52,7 @@ void App::handleEventMessage(ThorsAnvil::Slack::SlackRequest const& request)
 {
     ThorsAnvil::Slack::Event::EventCallback const&      cb      = *std::get<ThorsAnvil::Slack::Event::EventCallback const*>(request.event);
     ThorsAnvil::Slack::Event::Message const&            message = std::get<ThorsAnvil::Slack::Event::Message>(cb.event);
-    Say                                     say{client, Where{message.channel, message.ts}};
+    Say                                     say{client, Where{.channel = message.channel.value_or("bad"), .ts = message.ts}};
     for (auto const& messageHandler: messageHandlers) {
         if (messageHandler.first(message)) {
             messageHandler.second(message, say);
