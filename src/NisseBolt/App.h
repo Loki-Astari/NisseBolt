@@ -25,7 +25,7 @@ using MessageHandler = std::function<void(ThorsAnvil::Slack::Event::Message cons
 
 class App: ThorsAnvil::ThorsMug::MugPluginSimple
 {
-    std::string const&                      slot;
+    std::string                             slot;
     ThorsAnvil::Slack::CmdMap               cmdMap;
     ThorsAnvil::Slack::SlackClient          client;
     ThorsAnvil::Slack::SlackEventHandler    slackHandler;

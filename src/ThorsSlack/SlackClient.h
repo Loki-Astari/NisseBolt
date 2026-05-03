@@ -14,6 +14,7 @@
 #include "ThorSerialize/PrinterConfig.h"
 #include "ThorSerialize/Traits.h"
 #include "ThorSerialize/JsonThor.h"
+#include "ThorSerialize/Logging.h"
 
 #include <string>
 #include <string_view>
@@ -123,6 +124,7 @@ class SlackClient
         {
             using ResultType = typename T::Reply;
             using OutputType = std::variant<API::Error, ResultType>;
+            ThorsLogTrackWithData(message, "ThorsAnvil::Slack::SlackClient", "sendMessage", "Sending Request");
 
             SlackStream             stream;
             sendMessageData(message, stream);
@@ -132,6 +134,7 @@ class SlackClient
             OutputType              reply;
             bool hit = false;
             input >> Ser::jsonImporter(reply, Ser::ParserConfig{}.setIdentifyDynamicClass([&](Ser::DataInputStream&){return getEventType<ResultType>(input, hit);}));
+            ThorsLogTrackWithData(reply, "ThorsAnvil::Slack::SlackClient", "sendMessage", "Response:");
 
             std::visit(VisitResult<ResultType>{std::move(succ), std::move(fail)}, reply);
         }

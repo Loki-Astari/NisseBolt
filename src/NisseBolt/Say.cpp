@@ -1,5 +1,6 @@
 #include "Say.h"
 #include "ThorSerialize/JsonThor.h"
+#include "ThorSerialize/Logging.h"
 #include "ThorsSlack/APIChatMessage.h"
 
 using namespace ThorsAnvil::Nisse::Bolt;
@@ -45,8 +46,14 @@ void Say::operator()(Slack::BlockKit::Blocks const& blocks, Where const& where) 
 
 void Say::sendMessage(Slack::API::Chat::POSTMessage message) const
 {
-    Slack::API::Chat::POSTMessage::Reply   reply;
-    if (!client.sendMessage(std::move(message), reply)) {
-        std::cerr << "Failed: " << ThorsAnvil::Serialize::jsonExporter(reply) << "\n";
-    }
+    client.sendMessage(std::move(message),
+                        [](typename Slack::API::Chat::POSTMessage::Reply&& value)
+                        {
+                            ThorsLogInfoWithData(value, "ThorsAnvil::Nisse::Bolt::Say", "sendMessage", "Reply");
+                        },
+                        [&](Slack::API::Error&& error)
+                        {
+                            ThorsLogErrorWithData(error, "ThorsAnvil::Nisse::Bolt::Say", "sendMessage", "Failed");
+                        }
+                      );
 }

@@ -15,7 +15,6 @@ App::App(AppConfig const& config)
 
 std::vector<ThorsAnvil::ThorsMug::Action> App::getAction()
 {
-    std::cerr << "Path: " << slot << "/event\n";
     return std::vector<ThorsAnvil::ThorsMug::Action>
     {
         ThorsAnvil::ThorsMug::Action
@@ -30,7 +29,7 @@ std::vector<ThorsAnvil::ThorsMug::Action> App::getAction()
 
 void App::message(Filter&& filter, MessageHandler&& handler)
 {
-    messageHandlers.emplace_back(std::make_pair(std::move(filter), std::move(handler)));
+    messageHandlers.emplace_back(std::move(filter), std::move(handler));
 }
 
 void App::message(std::string filter, MessageHandler&& handler)
