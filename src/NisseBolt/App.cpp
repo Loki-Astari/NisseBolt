@@ -8,9 +8,9 @@ using namespace ThorsAnvil::Nisse::Bolt;
 App::App(AppConfig const& config)
     : slot{config.slot}
     , client(config.botToken, config.userToken)
-    , slackHandler(config.signingSecret, cmdMap)
+    , slackHandler(config.signingSecret, cmdMap, eventHandlerMap)
 {
-    cmdMap["Event/Message"] = [&](ThorsAnvil::Slack::SlackRequest const& event){handleEventMessage(event);};
+    eventHandlerMap["Event/Message"] = [&](ThorsAnvil::Slack::EventRequest<ThorsAnvil::Slack::Event::Message> const& request){handleEventMessage(request);};
 }
 
 std::vector<ThorsAnvil::ThorsMug::Action> App::getAction()
@@ -47,14 +47,12 @@ void App::message(MessageHandler&& handler)
     message([](ThorsAnvil::Slack::Event::Message const&){return true;}, std::move(handler));
 }
 
-void App::handleEventMessage(ThorsAnvil::Slack::SlackRequest const& request)
+void App::handleEventMessage(ThorsAnvil::Slack::EventRequest<ThorsAnvil::Slack::Event::Message> const& request)
 {
-    ThorsAnvil::Slack::Event::EventCallback const&      cb      = *std::get<ThorsAnvil::Slack::Event::EventCallback const*>(request.event);
-    ThorsAnvil::Slack::Event::Message const&            message = std::get<ThorsAnvil::Slack::Event::Message>(cb.event);
-    Say                                     say{client, Where{.channel = message.channel.value_or("bad"), .ts = message.ts}};
+    Say     say{client, Where{.channel = request.event.channel.value_or("bad"), .ts = request.event.ts}};
     for (auto const& messageHandler: messageHandlers) {
-        if (messageHandler.first(message)) {
-            messageHandler.second(message, say);
+        if (messageHandler.first(request.event)) {
+            messageHandler.second(request.event, say);
         }
     }
 }

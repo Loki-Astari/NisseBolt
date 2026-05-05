@@ -14,7 +14,7 @@
 #include "EventCallbackDnd.h"
 #include "EventCallbackEmail.h"
 #include "EventCallbackEmojiChanged.h"
-#include "EventCallbackEntityDetailsRequested.h"
+#include "EventCallbackEntityDetails.h"
 #include "EventCallbackFile.h"
 #include "EventCallbackFunctionExecuted.h"
 #include "EventCallbackGrid.h"
@@ -46,7 +46,33 @@ namespace ThorsAnvil::Slack::Event
 {
 
 // using CallbackMessage = std::variant<Message, ReactionAdded, ReactionRemoved, PinAdded, PinRemoved, StarAdded, StarRemoved, AppMentioned>;
-using CallbackMessage = std::variant<AppDeleted, AppHomeOpened, AppInstalled, AppRateLimited, AppRequested, AppUninstalledTeam, AppUninstalled, AppMentioned, AssistantThreadContextChanged, AssistantThreadStarted, CallRejected, ChannelArchive, ChannelCreated, ChannelDeleted, ChannelHistoryChanged, ChannelIdChanged, ChannelLeft, ChannelRename, ChannelShared, ChannelUnshared, DndUpdated, DndUpdatedUser, EmailDomainChanged, EmojiChanged, EntityDetailsRequested, FileChange, FileCommentDeleted, FileCreated, FileDeleted, FilePublic, FileShared, FileUnshared, FunctionExecuted, GridMigrationFinished, GridMigrationStarted, GroupClose, GroupDeleted, GroupHistoryChanged, GroupLeft, GroupOpen, GroupRename, ImClose, ImCreated, ImHistoryChanged, ImOpen, InviteRequested, LinkShared, MemberJoinedChannel, MemberLeftChannel, Message, MessageMetadataPosted, MessageMetadataUpdated, MessageMetadataDeleted, PinAdded, PinRemoved, ReactionAdded, ReactionRemoved, SharedChannelInviteAccepted, SharedChannelInviteApproved, SharedChannelInviteDeclined, SharedChannelInviteReceived, SharedChannelInviteRequested, StarAdded, StarRemoved, SubteamCreated, SubteamMembersChanged, SubteamSelfAdded, SubteamSelfRemoved, SubteamUpdated, TeamAccessRevoked, TeamDomainChange, TeamJoin, TeamRename, TokensRevoked, UserChange, UserConnection, UserHuddleChanged>;
+using CallbackMessage = std::variant<   AppDeleted, AppHomeOpened, AppInstalled, AppRateLimited, AppRequested, AppUninstalledTeam, AppUninstalled, AppMentioned,
+                                        AssistantThreadContextChanged, AssistantThreadStarted,
+                                        CallRejected,
+                                        ChannelArchive, ChannelCreated, ChannelDeleted, ChannelHistoryChanged, ChannelIdChanged, ChannelLeft, ChannelPostingPermissions, ChannelRename, ChannelShared, ChannelUnshared,
+                                        DndUpdated, DndUpdatedUser,
+                                        EmailDomainChanged,
+                                        EmojiChanged,
+                                        EntityDetailsRequested,
+                                        FileChange, FileCommentAdded, FileCommentDeleted, FileCommentEdited, FileCreated, FileDeleted, FilePublic, FileShared, FileUnshared,
+                                        FunctionExecuted,
+                                        GridMigrationFinished, GridMigrationStarted,
+                                        GroupClose, GroupDeleted, GroupHistoryChanged, GroupLeft, GroupOpen, GroupRename,
+                                        ImClose, ImCreated, ImHistoryChanged, ImOpen,
+                                        InviteRequested,
+                                        LinkShared,
+                                        MemberJoinedChannel, MemberLeftChannel,
+                                        Message,
+                                        MessageMetadataPosted, MessageMetadataUpdated, MessageMetadataDeleted,
+                                        PinAdded, PinRemoved,
+                                        ReactionAdded, ReactionRemoved,
+                                        SharedChannelInviteAccepted, SharedChannelInviteApproved, SharedChannelInviteDeclined, SharedChannelInviteReceived, SharedChannelInviteRequested,
+                                        StarAdded, StarRemoved,
+                                        SubteamCreated, SubteamMembersChanged, SubteamSelfAdded, SubteamSelfRemoved, SubteamUpdated,
+                                        TeamAccessGranted, TeamAccessRevoked, TeamDomainChange, TeamJoin, TeamRename,
+                                        TokensRevoked,
+                                        UserChange, UserConnection, UserHuddleChanged
+                                    >;
 
 struct Enterprise
 {};

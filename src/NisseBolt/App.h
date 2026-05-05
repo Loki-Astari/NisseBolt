@@ -27,6 +27,7 @@ class App: ThorsAnvil::ThorsMug::MugPluginSimple
 {
     std::string                             slot;
     ThorsAnvil::Slack::CmdMap               cmdMap;
+    ThorsAnvil::Slack::EventHandlerMap      eventHandlerMap;
     ThorsAnvil::Slack::SlackClient          client;
     ThorsAnvil::Slack::SlackEventHandler    slackHandler;
     std::vector<std::pair<Filter, MessageHandler>> messageHandlers;
@@ -43,7 +44,7 @@ class App: ThorsAnvil::ThorsMug::MugPluginSimple
 
     private:
         // Handle incoming events and send to the registered handlers.
-        void handleEventMessage(ThorsAnvil::Slack::SlackRequest const&);
+        void handleEventMessage(ThorsAnvil::Slack::EventRequest<ThorsAnvil::Slack::Event::Message> const& request);
 
 
         // Friend declaration so mugInterface can register robots.
