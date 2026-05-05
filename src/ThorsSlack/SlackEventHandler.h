@@ -37,24 +37,72 @@ using ThorsAnvil::Nisse::HTTP::Request;
 using ThorsAnvil::Nisse::HTTP::Response;
 
 using EventObject = std::variant<API::BlockActions, API::Views::ViewSubmission>;
-using CmdEvent  = std::variant<SlashCommand const*, Event::EventCallback const*, API::Views::ViewSubmission const*>;
+using CmdEvent  = std::variant<SlashCommand const*, API::Views::ViewSubmission const*>;
 
 struct SlackRequest
 {
-    ThorsAnvil::Nisse::HTTP::Request const&   request;
-    ThorsAnvil::Nisse::HTTP::Response&        response;
-    CmdEvent const&                           event;
+    ThorsAnvil::Nisse::HTTP::Request const&     request;
+    ThorsAnvil::Nisse::HTTP::Response&          response;
+    CmdEvent const&                             event;
 };
 
 using Cmd       = std::function<void(SlackRequest const&)>;
 using CmdMap    = std::map<std::string, Cmd>;
 
+
+template<typename T>
+struct EventRequest
+{
+    ThorsAnvil::Nisse::HTTP::Request const&     request;
+    ThorsAnvil::Nisse::HTTP::Response&          response;
+    Event::EventCallback const&                 cb;
+    T const&                                    event;
+};
+template<typename T>
+using EventHandler      = std::function<void(EventRequest<T> const&)>;
+using AnyEventHandler   = std::variant< EventHandler<Event::AppDeleted>, EventHandler<Event::AppHomeOpened>, EventHandler<Event::AppInstalled>, EventHandler<Event::AppRateLimited>, EventHandler<Event::AppRequested>, EventHandler<Event::AppUninstalledTeam>, EventHandler<Event::AppUninstalled>, EventHandler<Event::AppMentioned>,
+                                        EventHandler<Event::AssistantThreadContextChanged>, EventHandler<Event::AssistantThreadStarted>,
+                                        EventHandler<Event::CallRejected>,
+                                        EventHandler<Event::ChannelArchive>, EventHandler<Event::ChannelCreated>, EventHandler<Event::ChannelDeleted>, EventHandler<Event::ChannelHistoryChanged>, EventHandler<Event::ChannelIdChanged>, EventHandler<Event::ChannelLeft>, EventHandler<Event::ChannelPostingPermissions>, EventHandler<Event::ChannelRename>, EventHandler<Event::ChannelShared>, EventHandler<Event::ChannelUnshared>,
+                                        EventHandler<Event::DndUpdated>, EventHandler<Event::DndUpdatedUser>,
+                                        EventHandler<Event::EmailDomainChanged>,
+                                        EventHandler<Event::EmojiChanged>,
+                                        EventHandler<Event::EntityDetailsRequested>,
+                                        EventHandler<Event::FileChange>, EventHandler<Event::FileCommentAdded>, EventHandler<Event::FileCommentDeleted>, EventHandler<Event::FileCommentEdited>, EventHandler<Event::FileCreated>, EventHandler<Event::FileDeleted>, EventHandler<Event::FilePublic>, EventHandler<Event::FileShared>, EventHandler<Event::FileUnshared>,
+                                        EventHandler<Event::FunctionExecuted>,
+                                        EventHandler<Event::GridMigrationFinished>, EventHandler<Event::GridMigrationStarted>,
+                                        EventHandler<Event::GroupClose>, EventHandler<Event::GroupDeleted>, EventHandler<Event::GroupHistoryChanged>, EventHandler<Event::GroupLeft>, EventHandler<Event::GroupOpen>, EventHandler<Event::GroupRename>,
+                                        EventHandler<Event::ImClose>, EventHandler<Event::ImCreated>, EventHandler<Event::ImHistoryChanged>, EventHandler<Event::ImOpen>,
+                                        EventHandler<Event::InviteRequested>,
+                                        EventHandler<Event::LinkShared>,
+                                        EventHandler<Event::MemberJoinedChannel>, EventHandler<Event::MemberLeftChannel>,
+                                        EventHandler<Event::Message>,
+                                        EventHandler<Event::MessageMetadataPosted>, EventHandler<Event::MessageMetadataUpdated>, EventHandler<Event::MessageMetadataDeleted>,
+                                        EventHandler<Event::PinAdded>, EventHandler<Event::PinRemoved>,
+                                        EventHandler<Event::ReactionAdded>, EventHandler<Event::ReactionRemoved>,
+                                        EventHandler<Event::SharedChannelInviteAccepted>, EventHandler<Event::SharedChannelInviteApproved>, EventHandler<Event::SharedChannelInviteDeclined>, EventHandler<Event::SharedChannelInviteReceived>, EventHandler<Event::SharedChannelInviteRequested>,
+                                        EventHandler<Event::StarAdded>, EventHandler<Event::StarRemoved>,
+                                        EventHandler<Event::SubteamCreated>, EventHandler<Event::SubteamMembersChanged>, EventHandler<Event::SubteamSelfAdded>, EventHandler<Event::SubteamSelfRemoved>, EventHandler<Event::SubteamUpdated>,
+                                        EventHandler<Event::TeamAccessGranted>, EventHandler<Event::TeamAccessRevoked>, EventHandler<Event::TeamDomainChange>, EventHandler<Event::TeamJoin>, EventHandler<Event::TeamRename>,
+                                        EventHandler<Event::TokensRevoked>,
+                                        EventHandler<Event::UserChange>, EventHandler<Event::UserConnection>, EventHandler<Event::UserHuddleChanged>
+                                    >;
+using EventHandlerMap   = std::map<std::string, AnyEventHandler>;
+
 class SlackEventHandler
 {
         std::string     slackSecret;
-        CmdMap const&   cmdMap;
+
+        // This is the old way.
+        // Slowly being removed.
+        CmdMap const&           cmdMap;
+
+
+        // Replacement for handling Events;
+        EventHandlerMap const&  eventHandlerMap;
+
     public:
-        SlackEventHandler(std::string_view slackSecret, CmdMap const& cmdMap = {});
+        SlackEventHandler(std::string_view slackSecret, CmdMap const& cmdMap = {}, EventHandlerMap const& eventHandlerMap = {});
 
         // Method to validate Slack message comes from slack.
         bool validateRequest(Request const& request);
@@ -75,18 +123,6 @@ class SlackEventHandler
         void handleURLVerificationEvent(Request const& request, Response& response, Event::EventURLVerification const& event);
 
         void handleCallbackEvent(Request const& request, Response& response, Event::EventCallback const& event);
-
-        /*
-         * The following 7 methods are called from: handleCallbackEvent Which is called from handleEvent.
-         */
-        virtual void handleCallbackMessageEvent(Request const& request, Response& response, Event::EventCallback const& eventBase, Event::Message const&)                       { handleUsingCmdMap(request, response, &eventBase, "Event/Message", "handleCallbackMessageEvent");}
-        virtual void handleCallbackReactionAddedEvent(Request const& request, Response& response, Event::EventCallback const& eventBase, Event::ReactionAdded const& event)     { handleUsingCmdMap(request, response, &eventBase, "Event/ReactionAdded/" + event.reaction, "handleCallbackReactionAddedEvent");}
-        virtual void handleCallbackReactionRemovedEvent(Request const& request, Response& response, Event::EventCallback const& eventBase, Event::ReactionRemoved const& event) { handleUsingCmdMap(request, response, &eventBase, "Event/ReactionRemoved/" + event.reaction, "handleCallbackReactionRemovedEvent");}
-        virtual void handleCallbackPinAddedEvent(Request const& request, Response& response, Event::EventCallback const& eventBase, Event::PinAdded const&)                     { handleUsingCmdMap(request, response, &eventBase, "Event/PinAdded", "handleCallbackPinAddedEvent");}
-        virtual void handleCallbackPinRemovedEvent(Request const& request, Response& response, Event::EventCallback const& eventBase, Event::PinRemoved const&)                 { handleUsingCmdMap(request, response, &eventBase, "Event/PinRemoved", "handleCallbackPinRemovedEvent");}
-        virtual void handleCallbackStarAddedEvent(Request const& request, Response& response, Event::EventCallback const& eventBase, Event::StarAdded const&)                   { handleUsingCmdMap(request, response, &eventBase, "Event/StarAdded", "handleCallbackStarAddedEvent");}
-        virtual void handleCallbackStarRemovedEvent(Request const& request, Response& response, Event::EventCallback const& eventBase, Event::StarRemoved const&)               { handleUsingCmdMap(request, response, &eventBase, "Event/StarRemoved", "handleCallbackStarRemovedEvent");}
-        virtual void handleCallbackAppMentionedEvent(Request const& request, Response& response, Event::EventCallback const& eventBase, Event::AppMentioned const&)             { handleUsingCmdMap(request, response, &eventBase, "Event/AppMentioned", "handleCallbackAppMentionedEvent");}
         virtual void handleActionsViewSubmit(Request const& request, Response& response, API::Views::ViewSubmission const& event)                                               { handleUsingCmdMap(request, response, &event, "View/ViewSubmission/" + event.view.id, "handleActionsViewSubmit"); }
 
         /*
@@ -135,14 +171,103 @@ class SlackEventHandler
             Request const&              request;
             Response&                   response;
 
-            void operator()(Event::Message const& event)                 {plugin.handleCallbackMessageEvent(request, response, eventBase, event);}
-            void operator()(Event::ReactionAdded const& event)           {plugin.handleCallbackReactionAddedEvent(request, response, eventBase, event);}
-            void operator()(Event::ReactionRemoved const& event)         {plugin.handleCallbackReactionRemovedEvent(request, response, eventBase, event);}
-            void operator()(Event::PinAdded const& event)                {plugin.handleCallbackPinAddedEvent(request, response, eventBase, event);}
-            void operator()(Event::PinRemoved const& event)              {plugin.handleCallbackPinRemovedEvent(request, response, eventBase, event);}
-            void operator()(Event::StarAdded const& event)               {plugin.handleCallbackStarAddedEvent(request, response, eventBase, event);}
-            void operator()(Event::StarRemoved const& event)             {plugin.handleCallbackStarRemovedEvent(request, response, eventBase, event);}
-            void operator()(Event::AppMentioned const& event)            {plugin.handleCallbackAppMentionedEvent(request, response, eventBase, event);}
+            template<typename T>
+            void handleEvent(T const& event, std::string const& key)
+            {
+                auto find = plugin.eventHandlerMap.find(key);
+                if (find == plugin.eventHandlerMap.end()) {
+                    ThorsLogError("ThorsAnvil::Slack::SlackEventHandler::VisitorCallbackEvent::handleEvent", key, "Call to unimplemented method");
+                    response.setStatus(501);
+                    return;
+                }
+                ThorsLogDebug("ThorsAnvil::Slack::SlackEventHandler::VisitorCallbackEvent::handleEvent", key, "Calling client handler");
+                AnyEventHandler const&  anyHandler   = find->second;
+                EventHandler<T> const&  eventHandler = std::get<EventHandler<T>>(anyHandler);
+                eventHandler(EventRequest<T>{request, response, eventBase, event});
+            }
+
+            void operator()(Event::AppDeleted const& event)                     {handleEvent(event, "Event/AppDeleted");}
+            void operator()(Event::AppHomeOpened const& event)                  {handleEvent(event, "Event/AppHomeOpened");}
+            void operator()(Event::AppInstalled const& event)                   {handleEvent(event, "Event/AppInstalled ");}
+            void operator()(Event::AppRateLimited const& event)                 {handleEvent(event, "Event/AppRateLimited ");}
+            void operator()(Event::AppRequested const& event)                   {handleEvent(event, "Event/AppRequested ");}
+            void operator()(Event::AppUninstalledTeam const& event)             {handleEvent(event, "Event/AppUninstalledTeam ");}
+            void operator()(Event::AppUninstalled const& event)                 {handleEvent(event, "Event/AppUninstalled ");}
+            void operator()(Event::AppMentioned const& event)                   {handleEvent(event, "Event/AppMentioned");}
+            void operator()(Event::AssistantThreadContextChanged const& event)  {handleEvent(event, "Event/AssistantThreadContextChanged ");}
+            void operator()(Event::AssistantThreadStarted const& event)         {handleEvent(event, "Event/AssistantThreadStarted ");}
+            void operator()(Event::CallRejected const& event)                   {handleEvent(event, "Event/CallRejected ");}
+            void operator()(Event::ChannelArchive const& event)                 {handleEvent(event, "Event/ChannelArchive ");}
+            void operator()(Event::ChannelCreated const& event)                 {handleEvent(event, "Event/ChannelCreated ");}
+            void operator()(Event::ChannelDeleted const& event)                 {handleEvent(event, "Event/ChannelDeleted ");}
+            void operator()(Event::ChannelHistoryChanged const& event)          {handleEvent(event, "Event/ChannelHistoryChanged ");}
+            void operator()(Event::ChannelIdChanged const& event)               {handleEvent(event, "Event/ChannelIdChanged ");}
+            void operator()(Event::ChannelLeft const& event)                    {handleEvent(event, "Event/ChannelLeft ");}
+            void operator()(Event::ChannelPostingPermissions const& event)      {handleEvent(event, "Event/ChannelPostingPermissions ");}
+            void operator()(Event::ChannelRename const& event)                  {handleEvent(event, "Event/ChannelRename ");}
+            void operator()(Event::ChannelShared const& event)                  {handleEvent(event, "Event/ChannelShared ");}
+            void operator()(Event::ChannelUnshared const& event)                {handleEvent(event, "Event/ChannelUnshared ");}
+            void operator()(Event::DndUpdated const& event)                     {handleEvent(event, "Event/DndUpdated ");}
+            void operator()(Event::DndUpdatedUser const& event)                 {handleEvent(event, "Event/DndUpdatedUser ");}
+            void operator()(Event::EmailDomainChanged const& event)             {handleEvent(event, "Event/EmailDomainChanged ");}
+            void operator()(Event::EmojiChanged const& event)                   {handleEvent(event, "Event/EmojiChanged ");}
+            void operator()(Event::EntityDetailsRequested const& event)         {handleEvent(event, "Event/EntityDetailsRequested ");}
+            void operator()(Event::FileChange const& event)                     {handleEvent(event, "Event/FileChange ");}
+            void operator()(Event::FileCommentAdded const& event)               {handleEvent(event, "Event/FileCommentAdded ");}
+            void operator()(Event::FileCommentDeleted const& event)             {handleEvent(event, "Event/FileCommentDeleted ");}
+            void operator()(Event::FileCommentEdited const& event)              {handleEvent(event, "Event/FileCommentEdited ");}
+            void operator()(Event::FileCreated const& event)                    {handleEvent(event, "Event/FileCreated ");}
+            void operator()(Event::FileDeleted const& event)                    {handleEvent(event, "Event/FileDeleted ");}
+            void operator()(Event::FilePublic const& event)                     {handleEvent(event, "Event/FilePublic ");}
+            void operator()(Event::FileShared const& event)                     {handleEvent(event, "Event/FileShared ");}
+            void operator()(Event::FileUnshared const& event)                   {handleEvent(event, "Event/FileUnshared ");}
+            void operator()(Event::FunctionExecuted const& event)               {handleEvent(event, "Event/FunctionExecuted ");}
+            void operator()(Event::GridMigrationFinished const& event)          {handleEvent(event, "Event/GridMigrationFinished ");}
+            void operator()(Event::GridMigrationStarted const& event)           {handleEvent(event, "Event/GridMigrationStarted ");}
+            void operator()(Event::GroupClose const& event)                     {handleEvent(event, "Event/GroupClose ");}
+            void operator()(Event::GroupDeleted const& event)                   {handleEvent(event, "Event/GroupDeleted ");}
+            void operator()(Event::GroupHistoryChanged const& event)            {handleEvent(event, "Event/GroupHistoryChanged ");}
+            void operator()(Event::GroupLeft const& event)                      {handleEvent(event, "Event/GroupLeft ");}
+            void operator()(Event::GroupOpen const& event)                      {handleEvent(event, "Event/GroupOpen ");}
+            void operator()(Event::GroupRename const& event)                    {handleEvent(event, "Event/GroupRename ");}
+            void operator()(Event::ImClose const& event)                        {handleEvent(event, "Event/ImClose ");}
+            void operator()(Event::ImCreated const& event)                      {handleEvent(event, "Event/ImCreated ");}
+            void operator()(Event::ImHistoryChanged const& event)               {handleEvent(event, "Event/ImHistoryChanged ");}
+            void operator()(Event::ImOpen const& event)                         {handleEvent(event, "Event/ImOpen ");}
+            void operator()(Event::InviteRequested const& event)                {handleEvent(event, "Event/InviteRequested ");}
+            void operator()(Event::LinkShared const& event)                     {handleEvent(event, "Event/LinkShared ");}
+            void operator()(Event::MemberJoinedChannel const& event)            {handleEvent(event, "Event/MemberJoinedChannel ");}
+            void operator()(Event::MemberLeftChannel const& event)              {handleEvent(event, "Event/MemberLeftChannel ");}
+            void operator()(Event::Message const& event)                        {handleEvent(event, "Event/Message");}
+            void operator()(Event::MessageMetadataPosted const& event)          {handleEvent(event, "Event/MessageMetadataPosted ");}
+            void operator()(Event::MessageMetadataUpdated const& event)         {handleEvent(event, "Event/MessageMetadataUpdated ");}
+            void operator()(Event::MessageMetadataDeleted const& event)         {handleEvent(event, "Event/MessageMetadataDeleted ");}
+            void operator()(Event::PinAdded const& event)                       {handleEvent(event, "Event/PinAdded");}
+            void operator()(Event::PinRemoved const& event)                     {handleEvent(event, "Event/PinRemoved");}
+            void operator()(Event::ReactionAdded const& event)                  {handleEvent(event, "Event/ReactionAdded");}
+            void operator()(Event::ReactionRemoved const& event)                {handleEvent(event, "Event/ReactionRemoved");}
+            void operator()(Event::SharedChannelInviteAccepted const& event)    {handleEvent(event, "Event/SharedChannelInviteAccepted ");}
+            void operator()(Event::SharedChannelInviteApproved const& event)    {handleEvent(event, "Event/SharedChannelInviteApproved ");}
+            void operator()(Event::SharedChannelInviteDeclined const& event)    {handleEvent(event, "Event/SharedChannelInviteDeclined ");}
+            void operator()(Event::SharedChannelInviteReceived const& event)    {handleEvent(event, "Event/SharedChannelInviteReceived ");}
+            void operator()(Event::SharedChannelInviteRequested const& event)   {handleEvent(event, "Event/SharedChannelInviteRequested ");}
+            void operator()(Event::StarAdded const& event)                      {handleEvent(event, "Event/StarAdded");}
+            void operator()(Event::StarRemoved const& event)                    {handleEvent(event, "Event/StarRemoved");}
+            void operator()(Event::SubteamCreated const& event)                 {handleEvent(event, "Event/SubteamCreated ");}
+            void operator()(Event::SubteamMembersChanged const& event)          {handleEvent(event, "Event/SubteamMembersChanged ");}
+            void operator()(Event::SubteamSelfAdded const& event)               {handleEvent(event, "Event/SubteamSelfAdded ");}
+            void operator()(Event::SubteamSelfRemoved const& event)             {handleEvent(event, "Event/SubteamSelfRemoved ");}
+            void operator()(Event::SubteamUpdated const& event)                 {handleEvent(event, "Event/SubteamUpdated ");}
+            void operator()(Event::TeamAccessGranted const& event)              {handleEvent(event, "Event/TeamAccessGranted ");}
+            void operator()(Event::TeamAccessRevoked const& event)              {handleEvent(event, "Event/TeamAccessRevoked ");}
+            void operator()(Event::TeamDomainChange const& event)               {handleEvent(event, "Event/TeamDomainChange ");}
+            void operator()(Event::TeamJoin const& event)                       {handleEvent(event, "Event/TeamJoin ");}
+            void operator()(Event::TeamRename const& event)                     {handleEvent(event, "Event/TeamRename ");}
+            void operator()(Event::TokensRevoked const& event)                  {handleEvent(event, "Event/TokensRevoked ");}
+            void operator()(Event::UserChange const& event)                     {handleEvent(event, "Event/UserChange ");}
+            void operator()(Event::UserConnection const& event)                 {handleEvent(event, "Event/UserConnection ");}
+            void operator()(Event::UserHuddleChanged const& event)              {handleEvent(event, "Event/UserHuddleChanged ");}
+
         };
         struct BlockIdGetter // Extract block_id from Block type
         {
@@ -175,9 +300,10 @@ class SlackEventHandler
 };
 
 inline
-SlackEventHandler::SlackEventHandler(std::string_view slackSecret, CmdMap const& cmdMap)
+SlackEventHandler::SlackEventHandler(std::string_view slackSecret, CmdMap const& cmdMap, EventHandlerMap const& eventHandlerMap)
     : slackSecret(slackSecret)
     , cmdMap{cmdMap}
+    , eventHandlerMap{eventHandlerMap}
 {}
 
 inline
