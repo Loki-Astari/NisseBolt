@@ -318,7 +318,8 @@ TEST(SlackBlockKitTest, Block_Section_All_Standard_Elements)
                                 BK::Header{.text = BK::ElTextPlain{.text = "Header Text"}},
                                 BK::Divider{},
                                 BK::Section{.text = BK::ElText{.text="Image"}},
-                                BK::Image{.alt_text="An image", .image_url="https://marvelofficial.com/wp-content/uploads/2020/10/1030357-247x296.jpg", .title=BK::ElText{.text="Thors Hammer"}},
+                                //BK::Image{.alt_text="An image", .image_url="https://marvelofficial.com/wp-content/uploads/2020/10/1030357-247x296.jpg", .title=BK::ElText{.text="Thors Hammer"}},
+                                BK::Image{.alt_text="An image", .image_url="https://t3.ftcdn.net/jpg/05/45/12/44/240_F_545124419_HmeRrewyuFXnnoE6LdI9zrSnQ2CqcOTp.jpg", .title=BK::ElText{.text="Thors Hammer"}},
                                 BK::Divider{},
                                 BK::Section{.text = BK::ElText{.text="Input"}},
                                 BK::Input{
