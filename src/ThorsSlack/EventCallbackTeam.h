@@ -57,6 +57,7 @@ struct TeamAccessGranted
 {
     // std::string                 type;
     VecString                   team_ids;
+    static std::string const& typeName() {static std::string const name{"Event/TeamAccessGranted"}; return name;}
     ThorsAnvil_VariantSerializerWithName(ThorsAnvil::Slack::Event::TeamAccessGranted, team_access_granted);
     ThorsAnvil_TypeFieldName(type);
 };
@@ -65,6 +66,7 @@ struct TeamAccessRevoked
 {
     // std::string                 type;
     VecString                   team_ids;
+    static std::string const& typeName() {static std::string const name{"Event/TeamAccessRevoked"}; return name;}
     ThorsAnvil_VariantSerializerWithName(ThorsAnvil::Slack::Event::TeamAccessRevoked, team_access_revoked);
     ThorsAnvil_TypeFieldName(type);
 };
@@ -75,6 +77,7 @@ struct TeamDomainChange
     std::string                 url;
     std::string                 domain;
     std::string                 team_id;
+    static std::string const& typeName() {static std::string const name{"Event/TeamDomainChange"}; return name;}
     ThorsAnvil_VariantSerializerWithName(ThorsAnvil::Slack::Event::TeamDomainChange, team_domain_change);
     ThorsAnvil_TypeFieldName(type);
 };
@@ -83,6 +86,7 @@ struct TeamJoin
 {
     // std::string                 type;
     TeamJoinUser                user;
+    static std::string const& typeName() {static std::string const name{"Event/TeamJoin"}; return name;}
     ThorsAnvil_VariantSerializerWithName(ThorsAnvil::Slack::Event::TeamJoin, team_join);
     ThorsAnvil_TypeFieldName(type);
 };
@@ -92,6 +96,7 @@ struct TeamRename
     // std::string                 type;
     std::string                 name;
     std::string                 team_id;
+    static std::string const& typeName() {static std::string const name{"Event/TeamRename"}; return name;}
     ThorsAnvil_VariantSerializerWithName(ThorsAnvil::Slack::Event::TeamRename, team_rename);
     ThorsAnvil_TypeFieldName(type);
 };

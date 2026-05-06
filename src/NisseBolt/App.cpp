@@ -1,16 +1,131 @@
 #include "App.h"
+#include <type_traits>
 #include "Say.h"
 #include "ThorsSlack/SlackEventHandler.h"
 
 
 using namespace ThorsAnvil::Nisse::Bolt;
 
+template<typename T>
+concept HasStringChannel = requires(T t) {{ t.channel } -> std::convertible_to<std::string const&>;};
+template<typename T>
+concept HasOptStringTS   = requires(T t) {{ t.ts } -> std::convertible_to<std::optional<std::string> const&>;};
+
+static const std::string emptyString;
+
+template<typename T>
+std::string const& getChannel(T const&)                                 {return emptyString;}
+std::string const& getChannel(HasStringChannel auto const& event)       {return event.channel;}
+
+template<typename T>
+std::optional<std::string> getTS(T const&)                              {return {};}
+std::optional<std::string> getTS(HasOptStringTS auto const& event)      {return event.ts;}
+
+template<typename T>
+void App::handleEvent(ThorsAnvil::Slack::EventRequest<T> const& request)
+{
+    Say     say{client, Where{.channel = getChannel(request.event), .ts = getTS(request.event)}};
+    for (AnyEventHandler const& anyHandler: eventHandlers) {
+        EventHandler<T> const& eventHandler = std::get<EventHandler<T>>(anyHandler);
+        eventHandler(request.event, say);
+    }
+}
+
 App::App(AppConfig const& config)
     : slot{config.slot}
     , client(config.botToken, config.userToken)
     , slackHandler(config.signingSecret, cmdMap, eventHandlerMap)
 {
-    eventHandlerMap["Event/Message"] = [&](ThorsAnvil::Slack::EventRequest<ThorsAnvil::Slack::Event::Message> const& request){handleEventMessage(request);};
+    eventHandlerMap[Event::Message::typeName()]                     = [&](ThorsAnvil::Slack::EventRequest<Event::Message> const& request)                      {handleEventMessage(request);};
+
+    eventHandlerMap[Event::AppDeleted::typeName()]                  = [&](ThorsAnvil::Slack::EventRequest<Event::AppDeleted> const& request)                   {handleEvent(request);};
+    eventHandlerMap[Event::AppHomeOpened::typeName()]               = [&](ThorsAnvil::Slack::EventRequest<Event::AppHomeOpened> const& request)                {handleEvent(request);};
+    eventHandlerMap[Event::AppInstalled::typeName()]                = [&](ThorsAnvil::Slack::EventRequest<Event::AppInstalled> const& request)                 {handleEvent(request);};
+    eventHandlerMap[Event::AppRateLimited::typeName()]              = [&](ThorsAnvil::Slack::EventRequest<Event::AppRateLimited> const& request)               {handleEvent(request);};
+    eventHandlerMap[Event::AppRequested::typeName()]                = [&](ThorsAnvil::Slack::EventRequest<Event::AppRequested> const& request)                 {handleEvent(request);};
+    eventHandlerMap[Event::AppUninstalledTeam::typeName()]          = [&](ThorsAnvil::Slack::EventRequest<Event::AppUninstalledTeam> const& request)           {handleEvent(request);};
+    eventHandlerMap[Event::AppUninstalled::typeName()]              = [&](ThorsAnvil::Slack::EventRequest<Event::AppUninstalled> const& request)               {handleEvent(request);};
+    eventHandlerMap[Event::AppMentioned::typeName()]                = [&](ThorsAnvil::Slack::EventRequest<Event::AppMentioned> const& request)                 {handleEvent(request);};
+    eventHandlerMap[Event::AppDeleted::typeName()]                  = [&](ThorsAnvil::Slack::EventRequest<Event::AppDeleted> const& request)                   {handleEvent(request);};
+    eventHandlerMap[Event::AppHomeOpened::typeName()]               = [&](ThorsAnvil::Slack::EventRequest<Event::AppHomeOpened> const& request)                {handleEvent(request);};
+    eventHandlerMap[Event::AppInstalled::typeName()]                = [&](ThorsAnvil::Slack::EventRequest<Event::AppInstalled> const& request)                 {handleEvent(request);};
+    eventHandlerMap[Event::AppRateLimited::typeName()]              = [&](ThorsAnvil::Slack::EventRequest<Event::AppRateLimited> const& request)               {handleEvent(request);};
+    eventHandlerMap[Event::AppRequested::typeName()]                = [&](ThorsAnvil::Slack::EventRequest<Event::AppRequested> const& request)                 {handleEvent(request);};
+    eventHandlerMap[Event::AppUninstalledTeam::typeName()]          = [&](ThorsAnvil::Slack::EventRequest<Event::AppUninstalledTeam> const& request)           {handleEvent(request);};
+    eventHandlerMap[Event::AppUninstalled::typeName()]              = [&](ThorsAnvil::Slack::EventRequest<Event::AppUninstalled> const& request)               {handleEvent(request);};
+    eventHandlerMap[Event::AppMentioned::typeName()]                = [&](ThorsAnvil::Slack::EventRequest<Event::AppMentioned> const& request)                 {handleEvent(request);};
+    eventHandlerMap[Event::AssistantThreadContextChanged::typeName()]=[&](ThorsAnvil::Slack::EventRequest<Event::AssistantThreadContextChanged> const& request){handleEvent(request);};
+    eventHandlerMap[Event::AssistantThreadStarted::typeName()]      = [&](ThorsAnvil::Slack::EventRequest<Event::AssistantThreadStarted> const& request)       {handleEvent(request);};
+    eventHandlerMap[Event::CallRejected::typeName()]                = [&](ThorsAnvil::Slack::EventRequest<Event::CallRejected> const& request)                 {handleEvent(request);};
+    eventHandlerMap[Event::ChannelArchive::typeName()]              = [&](ThorsAnvil::Slack::EventRequest<Event::ChannelArchive> const& request)               {handleEvent(request);};
+    eventHandlerMap[Event::ChannelCreated::typeName()]              = [&](ThorsAnvil::Slack::EventRequest<Event::ChannelCreated> const& request)               {handleEvent(request);};
+    eventHandlerMap[Event::ChannelDeleted::typeName()]              = [&](ThorsAnvil::Slack::EventRequest<Event::ChannelDeleted> const& request)               {handleEvent(request);};
+    eventHandlerMap[Event::ChannelHistoryChanged::typeName()]       = [&](ThorsAnvil::Slack::EventRequest<Event::ChannelHistoryChanged> const& request)        {handleEvent(request);};
+    eventHandlerMap[Event::ChannelIdChanged::typeName()]            = [&](ThorsAnvil::Slack::EventRequest<Event::ChannelIdChanged> const& request)             {handleEvent(request);};
+    eventHandlerMap[Event::ChannelLeft::typeName()]                 = [&](ThorsAnvil::Slack::EventRequest<Event::ChannelLeft> const& request)                  {handleEvent(request);};
+    eventHandlerMap[Event::ChannelPostingPermissions::typeName()]   = [&](ThorsAnvil::Slack::EventRequest<Event::ChannelPostingPermissions> const& request)    {handleEvent(request);};
+    eventHandlerMap[Event::ChannelRename::typeName()]               = [&](ThorsAnvil::Slack::EventRequest<Event::ChannelRename> const& request)                {handleEvent(request);};
+    eventHandlerMap[Event::ChannelShared::typeName()]               = [&](ThorsAnvil::Slack::EventRequest<Event::ChannelShared> const& request)                {handleEvent(request);};
+    eventHandlerMap[Event::ChannelUnshared::typeName()]             = [&](ThorsAnvil::Slack::EventRequest<Event::ChannelUnshared> const& request)              {handleEvent(request);};
+    eventHandlerMap[Event::DndUpdated::typeName()]                  = [&](ThorsAnvil::Slack::EventRequest<Event::DndUpdated> const& request)                   {handleEvent(request);};
+    eventHandlerMap[Event::DndUpdatedUser::typeName()]              = [&](ThorsAnvil::Slack::EventRequest<Event::DndUpdatedUser> const& request)               {handleEvent(request);};
+    eventHandlerMap[Event::EmailDomainChanged::typeName()]          = [&](ThorsAnvil::Slack::EventRequest<Event::EmailDomainChanged> const& request)           {handleEvent(request);};
+    eventHandlerMap[Event::EmojiChanged::typeName()]                = [&](ThorsAnvil::Slack::EventRequest<Event::EmojiChanged> const& request)                 {handleEvent(request);};
+    eventHandlerMap[Event::EntityDetailsRequested::typeName()]      = [&](ThorsAnvil::Slack::EventRequest<Event::EntityDetailsRequested> const& request)       {handleEvent(request);};
+    eventHandlerMap[Event::FileChange::typeName()]                  = [&](ThorsAnvil::Slack::EventRequest<Event::FileChange> const& request)                   {handleEvent(request);};
+    eventHandlerMap[Event::FileCommentAdded::typeName()]            = [&](ThorsAnvil::Slack::EventRequest<Event::FileCommentAdded> const& request)             {handleEvent(request);};
+    eventHandlerMap[Event::FileCommentDeleted::typeName()]          = [&](ThorsAnvil::Slack::EventRequest<Event::FileCommentDeleted> const& request)           {handleEvent(request);};
+    eventHandlerMap[Event::FileCommentEdited::typeName()]           = [&](ThorsAnvil::Slack::EventRequest<Event::FileCommentEdited> const& request)            {handleEvent(request);};
+    eventHandlerMap[Event::FileCreated::typeName()]                 = [&](ThorsAnvil::Slack::EventRequest<Event::FileCreated> const& request)                  {handleEvent(request);};
+    eventHandlerMap[Event::FileDeleted::typeName()]                 = [&](ThorsAnvil::Slack::EventRequest<Event::FileDeleted> const& request)                  {handleEvent(request);};
+    eventHandlerMap[Event::FilePublic::typeName()]                  = [&](ThorsAnvil::Slack::EventRequest<Event::FilePublic> const& request)                   {handleEvent(request);};
+    eventHandlerMap[Event::FileShared::typeName()]                  = [&](ThorsAnvil::Slack::EventRequest<Event::FileShared> const& request)                   {handleEvent(request);};
+    eventHandlerMap[Event::FileUnshared::typeName()]                = [&](ThorsAnvil::Slack::EventRequest<Event::FileUnshared> const& request)                 {handleEvent(request);};
+    eventHandlerMap[Event::FunctionExecuted::typeName()]            = [&](ThorsAnvil::Slack::EventRequest<Event::FunctionExecuted> const& request)             {handleEvent(request);};
+    eventHandlerMap[Event::GridMigrationFinished::typeName()]       = [&](ThorsAnvil::Slack::EventRequest<Event::GridMigrationFinished> const& request)        {handleEvent(request);};
+    eventHandlerMap[Event::GridMigrationStarted::typeName()]        = [&](ThorsAnvil::Slack::EventRequest<Event::GridMigrationStarted> const& request)         {handleEvent(request);};
+    eventHandlerMap[Event::GroupClose::typeName()]                  = [&](ThorsAnvil::Slack::EventRequest<Event::GroupClose> const& request)                   {handleEvent(request);};
+    eventHandlerMap[Event::GroupDeleted::typeName()]                = [&](ThorsAnvil::Slack::EventRequest<Event::GroupDeleted> const& request)                 {handleEvent(request);};
+    eventHandlerMap[Event::GroupHistoryChanged::typeName()]         = [&](ThorsAnvil::Slack::EventRequest<Event::GroupHistoryChanged> const& request)          {handleEvent(request);};
+    eventHandlerMap[Event::GroupLeft::typeName()]                   = [&](ThorsAnvil::Slack::EventRequest<Event::GroupLeft> const& request)                    {handleEvent(request);};
+    eventHandlerMap[Event::GroupOpen::typeName()]                   = [&](ThorsAnvil::Slack::EventRequest<Event::GroupOpen> const& request)                    {handleEvent(request);};
+    eventHandlerMap[Event::GroupRename::typeName()]                 = [&](ThorsAnvil::Slack::EventRequest<Event::GroupRename> const& request)                  {handleEvent(request);};
+    eventHandlerMap[Event::ImClose::typeName()]                     = [&](ThorsAnvil::Slack::EventRequest<Event::ImClose> const& request)                      {handleEvent(request);};
+    eventHandlerMap[Event::ImCreated::typeName()]                   = [&](ThorsAnvil::Slack::EventRequest<Event::ImCreated> const& request)                    {handleEvent(request);};
+    eventHandlerMap[Event::ImHistoryChanged::typeName()]            = [&](ThorsAnvil::Slack::EventRequest<Event::ImHistoryChanged> const& request)             {handleEvent(request);};
+    eventHandlerMap[Event::ImOpen::typeName()]                      = [&](ThorsAnvil::Slack::EventRequest<Event::ImOpen> const& request)                       {handleEvent(request);};
+    eventHandlerMap[Event::InviteRequested::typeName()]             = [&](ThorsAnvil::Slack::EventRequest<Event::InviteRequested> const& request)              {handleEvent(request);};
+    eventHandlerMap[Event::LinkShared::typeName()]                  = [&](ThorsAnvil::Slack::EventRequest<Event::LinkShared> const& request)                   {handleEvent(request);};
+    eventHandlerMap[Event::MemberJoinedChannel::typeName()]         = [&](ThorsAnvil::Slack::EventRequest<Event::MemberJoinedChannel> const& request)          {handleEvent(request);};
+    eventHandlerMap[Event::MemberLeftChannel::typeName()]           = [&](ThorsAnvil::Slack::EventRequest<Event::MemberLeftChannel> const& request)            {handleEvent(request);};
+    eventHandlerMap[Event::MessageMetadataPosted::typeName()]       = [&](ThorsAnvil::Slack::EventRequest<Event::MessageMetadataPosted> const& request)        {handleEvent(request);};
+    eventHandlerMap[Event::MessageMetadataUpdated::typeName()]      = [&](ThorsAnvil::Slack::EventRequest<Event::MessageMetadataUpdated> const& request)       {handleEvent(request);};
+    eventHandlerMap[Event::MessageMetadataDeleted::typeName()]      = [&](ThorsAnvil::Slack::EventRequest<Event::MessageMetadataDeleted> const& request)       {handleEvent(request);};
+    eventHandlerMap[Event::PinAdded::typeName()]                    = [&](ThorsAnvil::Slack::EventRequest<Event::PinAdded> const& request)                     {handleEvent(request);};
+    eventHandlerMap[Event::PinRemoved::typeName()]                  = [&](ThorsAnvil::Slack::EventRequest<Event::PinRemoved> const& request)                   {handleEvent(request);};
+    eventHandlerMap[Event::ReactionAdded::typeName()]               = [&](ThorsAnvil::Slack::EventRequest<Event::ReactionAdded> const& request)                {handleEvent(request);};
+    eventHandlerMap[Event::ReactionRemoved::typeName()]             = [&](ThorsAnvil::Slack::EventRequest<Event::ReactionRemoved> const& request)              {handleEvent(request);};
+    eventHandlerMap[Event::SharedChannelInviteAccepted::typeName()] = [&](ThorsAnvil::Slack::EventRequest<Event::SharedChannelInviteAccepted> const& request)  {handleEvent(request);};
+    eventHandlerMap[Event::SharedChannelInviteApproved::typeName()] = [&](ThorsAnvil::Slack::EventRequest<Event::SharedChannelInviteApproved> const& request)  {handleEvent(request);};
+    eventHandlerMap[Event::SharedChannelInviteDeclined::typeName()] = [&](ThorsAnvil::Slack::EventRequest<Event::SharedChannelInviteDeclined> const& request)  {handleEvent(request);};
+    eventHandlerMap[Event::SharedChannelInviteReceived::typeName()] = [&](ThorsAnvil::Slack::EventRequest<Event::SharedChannelInviteReceived> const& request)  {handleEvent(request);};
+    eventHandlerMap[Event::SharedChannelInviteRequested::typeName()]= [&](ThorsAnvil::Slack::EventRequest<Event::SharedChannelInviteRequested> const& request) {handleEvent(request);};
+    eventHandlerMap[Event::StarAdded::typeName()]                   = [&](ThorsAnvil::Slack::EventRequest<Event::StarAdded> const& request)                    {handleEvent(request);};
+    eventHandlerMap[Event::StarRemoved::typeName()]                 = [&](ThorsAnvil::Slack::EventRequest<Event::StarRemoved> const& request)                  {handleEvent(request);};
+    eventHandlerMap[Event::SubteamCreated::typeName()]              = [&](ThorsAnvil::Slack::EventRequest<Event::SubteamCreated> const& request)               {handleEvent(request);};
+    eventHandlerMap[Event::SubteamMembersChanged::typeName()]       = [&](ThorsAnvil::Slack::EventRequest<Event::SubteamMembersChanged> const& request)        {handleEvent(request);};
+    eventHandlerMap[Event::SubteamSelfAdded::typeName()]            = [&](ThorsAnvil::Slack::EventRequest<Event::SubteamSelfAdded> const& request)             {handleEvent(request);};
+    eventHandlerMap[Event::SubteamSelfRemoved::typeName()]          = [&](ThorsAnvil::Slack::EventRequest<Event::SubteamSelfRemoved> const& request)           {handleEvent(request);};
+    eventHandlerMap[Event::SubteamUpdated::typeName()]              = [&](ThorsAnvil::Slack::EventRequest<Event::SubteamUpdated> const& request)               {handleEvent(request);};
+    eventHandlerMap[Event::TeamAccessGranted::typeName()]           = [&](ThorsAnvil::Slack::EventRequest<Event::TeamAccessGranted> const& request)            {handleEvent(request);};
+    eventHandlerMap[Event::TeamAccessRevoked::typeName()]           = [&](ThorsAnvil::Slack::EventRequest<Event::TeamAccessRevoked> const& request)            {handleEvent(request);};
+    eventHandlerMap[Event::TeamDomainChange::typeName()]            = [&](ThorsAnvil::Slack::EventRequest<Event::TeamDomainChange> const& request)             {handleEvent(request);};
+    eventHandlerMap[Event::TeamJoin::typeName()]                    = [&](ThorsAnvil::Slack::EventRequest<Event::TeamJoin> const& request)                     {handleEvent(request);};
+    eventHandlerMap[Event::TeamRename::typeName()]                  = [&](ThorsAnvil::Slack::EventRequest<Event::TeamRename> const& request)                   {handleEvent(request);};
+    eventHandlerMap[Event::TokensRevoked::typeName()]               = [&](ThorsAnvil::Slack::EventRequest<Event::TokensRevoked> const& request)                {handleEvent(request);};
+    eventHandlerMap[Event::UserChange::typeName()]                  = [&](ThorsAnvil::Slack::EventRequest<Event::UserChange> const& request)                   {handleEvent(request);};
+    eventHandlerMap[Event::UserConnection::typeName()]              = [&](ThorsAnvil::Slack::EventRequest<Event::UserConnection> const& request)               {handleEvent(request);};
+    eventHandlerMap[Event::UserHuddleChanged::typeName()]           = [&](ThorsAnvil::Slack::EventRequest<Event::UserHuddleChanged> const& request)            {handleEvent(request);};
 }
 
 std::vector<ThorsAnvil::ThorsMug::Action> App::getAction()

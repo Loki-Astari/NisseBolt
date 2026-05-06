@@ -20,6 +20,7 @@ struct GridMigrationFinished
 {
     // std::string                 type;
     std::string                 enterprise_id;
+    static std::string const& typeName() {static std::string const name{"Event/GridMigrationFinished"}; return name;}
     ThorsAnvil_VariantSerializerWithName(ThorsAnvil::Slack::Event::GridMigrationFinished, grid_migration_finished);
     ThorsAnvil_TypeFieldName(type);
 };
@@ -28,6 +29,7 @@ struct GridMigrationStarted
 {
     // std::string                 type;
     std::string                 enterprise_id;
+    static std::string const& typeName() {static std::string const name{"Event/GridMigrationStarted"}; return name;}
     ThorsAnvil_VariantSerializerWithName(ThorsAnvil::Slack::Event::GridMigrationStarted, grid_migration_started);
     ThorsAnvil_TypeFieldName(type);
 };

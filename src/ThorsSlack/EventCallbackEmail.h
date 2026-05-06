@@ -24,6 +24,7 @@ struct EmailDomainChanged
     // std::string                 type;
     std::string                 email_domain;
     std::string                 event_ts;
+    static std::string const& typeName() {static std::string const name{"Event/EmailDomainChanged"}; return name;}
     ThorsAnvil_VariantSerializerWithName(ThorsAnvil::Slack::Event::EmailDomainChanged, email_domain_changed);
     ThorsAnvil_TypeFieldName(type);
 };

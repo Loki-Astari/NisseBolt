@@ -35,6 +35,7 @@ struct TokensRevoked
 {
     // std::string                 type;
     RevokedTokens               tokens;
+    static std::string const& typeName() {static std::string const name{"Event/TokensRevoked"}; return name;}
     ThorsAnvil_VariantSerializerWithName(ThorsAnvil::Slack::Event::TokensRevoked, tokens_revoked);
     ThorsAnvil_TypeFieldName(type);
 };

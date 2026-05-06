@@ -28,6 +28,7 @@ struct CallRejected
     std::string                 user_id;
     std::string                 channel_id;
     std::string                 external_unique_id;
+    static std::string const& typeName() {static std::string const name{"Event/CallRejected"}; return name;}
     ThorsAnvil_VariantSerializerWithName(ThorsAnvil::Slack::Event::CallRejected, call_rejected);
     ThorsAnvil_TypeFieldName(type);
 };
