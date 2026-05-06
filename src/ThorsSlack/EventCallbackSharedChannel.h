@@ -152,6 +152,7 @@ struct SharedChannelInviteAccepted
     VecSharedChannelTeam        teams_in_channel;
     SharedChannelUser           accepting_user;
     std::string                 event_ts;
+    static std::string const& typeName() {static std::string const name{"Event/SharedChannelInviteAccepted"}; return name;}
     ThorsAnvil_VariantSerializerWithName(ThorsAnvil::Slack::Event::SharedChannelInviteAccepted, shared_channel_invite_accepted);
     ThorsAnvil_TypeFieldName(type);
 };
@@ -165,6 +166,7 @@ struct SharedChannelInviteApproved
     VecSharedChannelTeam        teams_in_channel;
     SharedChannelUser           approving_user;
     std::string                 event_ts;
+    static std::string const& typeName() {static std::string const name{"Event/SharedChannelInviteApproved"}; return name;}
     ThorsAnvil_VariantSerializerWithName(ThorsAnvil::Slack::Event::SharedChannelInviteApproved, shared_channel_invite_approved);
     ThorsAnvil_TypeFieldName(type);
 };
@@ -178,6 +180,7 @@ struct SharedChannelInviteDeclined
     VecSharedChannelTeam        teams_in_channel;
     SharedChannelUser           declining_user;
     std::string                 event_ts;
+    static std::string const& typeName() {static std::string const name{"Event/SharedChannelInviteDeclined"}; return name;}
     ThorsAnvil_VariantSerializerWithName(ThorsAnvil::Slack::Event::SharedChannelInviteDeclined, shared_channel_invite_declined);
     ThorsAnvil_TypeFieldName(type);
 };
@@ -188,6 +191,7 @@ struct SharedChannelInviteReceived
     SharedChannelInvite         invite;
     SharedChannelInfo           channel;
     std::string                 event_ts;
+    static std::string const& typeName() {static std::string const name{"Event/SharedChannelInviteReceived"}; return name;}
     ThorsAnvil_VariantSerializerWithName(ThorsAnvil::Slack::Event::SharedChannelInviteReceived, shared_channel_invite_received);
     ThorsAnvil_TypeFieldName(type);
 };
@@ -200,6 +204,7 @@ struct SharedChannelInviteRequested
     bool                        is_external_limited;
     VecSharedChannelTargetUser  target_users;
     VecSharedChannelTeam        teams_in_channel;
+    static std::string const& typeName() {static std::string const name{"Event/SharedChannelInviteRequested"}; return name;}
     ThorsAnvil_VariantSerializerWithName(ThorsAnvil::Slack::Event::SharedChannelInviteRequested, shared_channel_invite_requested);
     ThorsAnvil_TypeFieldName(type);
 };

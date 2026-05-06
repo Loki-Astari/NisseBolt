@@ -71,6 +71,7 @@ struct AssistantThreadContextChanged
     // std::string                 type;
     AssistantThread              assistant_thread;
     std::string                 event_ts;
+    static std::string const& typeName() {static std::string const name{"Event/AssistantThreadContextChanged"}; return name;}
     ThorsAnvil_VariantSerializerWithName(ThorsAnvil::Slack::Event::AssistantThreadContextChanged, assistant_thread_context_changed);
     ThorsAnvil_TypeFieldName(type);
 };
@@ -80,6 +81,7 @@ struct AssistantThreadStarted
     // std::string                 type;
     AssistantThread              assistant_thread;
     std::string                 event_ts;
+    static std::string const& typeName() {static std::string const name{"Event/AssistantThreadStarted"}; return name;}
     ThorsAnvil_VariantSerializerWithName(ThorsAnvil::Slack::Event::AssistantThreadStarted, assistant_thread_started);
     ThorsAnvil_TypeFieldName(type);
 };

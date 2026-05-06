@@ -53,6 +53,7 @@ struct FileChange
     // std::string                 type;
     std::string                 file_id;
     FileRef                     file;
+    static std::string const& typeName() {static std::string const name{"Event/FileChange"}; return name;}
     ThorsAnvil_VariantSerializerWithName(ThorsAnvil::Slack::Event::FileChange, file_change);
     ThorsAnvil_TypeFieldName(type);
 };
@@ -63,6 +64,7 @@ struct FileCommentAdded
     FileComment                 comment;
     std::string                 file_id;
     FileRef                     file;
+    static std::string const& typeName() {static std::string const name{"Event/FileCommentAdded"}; return name;}
     ThorsAnvil_VariantSerializerWithName(ThorsAnvil::Slack::Event::FileCommentAdded, file_comment_added);
     ThorsAnvil_TypeFieldName(type);
 };
@@ -73,6 +75,7 @@ struct FileCommentEdited
     FileComment                 comment;
     std::string                 file_id;
     FileRef                     file;
+    static std::string const& typeName() {static std::string const name{"Event/FileCommentEdited"}; return name;}
     ThorsAnvil_VariantSerializerWithName(ThorsAnvil::Slack::Event::FileCommentEdited, file_comment_edited);
     ThorsAnvil_TypeFieldName(type);
 };
@@ -83,6 +86,7 @@ struct FileCommentDeleted
     std::string                 comment;
     std::string                 file_id;
     FileRef                     file;
+    static std::string const& typeName() {static std::string const name{"Event/FileCommentDeleted"}; return name;}
     ThorsAnvil_VariantSerializerWithName(ThorsAnvil::Slack::Event::FileCommentDeleted, file_comment_deleted);
     ThorsAnvil_TypeFieldName(type);
 };
@@ -92,6 +96,7 @@ struct FileCreated
     // std::string                 type;
     std::string                 file_id;
     FileRef                     file;
+    static std::string const& typeName() {static std::string const name{"Event/FileCreated"}; return name;}
     ThorsAnvil_VariantSerializerWithName(ThorsAnvil::Slack::Event::FileCreated, file_created);
     ThorsAnvil_TypeFieldName(type);
 };
@@ -101,6 +106,7 @@ struct FileDeleted
     // std::string                 type;
     std::string                 file_id;
     std::string                 event_ts;
+    static std::string const& typeName() {static std::string const name{"Event/FileDeleted"}; return name;}
     ThorsAnvil_VariantSerializerWithName(ThorsAnvil::Slack::Event::FileDeleted, file_deleted);
     ThorsAnvil_TypeFieldName(type);
 };
@@ -110,6 +116,7 @@ struct FilePublic
     // std::string                 type;
     std::string                 file_id;
     FileRef                     file;
+    static std::string const& typeName() {static std::string const name{"Event/FilePublic"}; return name;}
     ThorsAnvil_VariantSerializerWithName(ThorsAnvil::Slack::Event::FilePublic, file_public);
     ThorsAnvil_TypeFieldName(type);
 };
@@ -122,6 +129,7 @@ struct FileShared
     std::string                 user_id;
     FileRef                     file;
     std::string                 event_ts;
+    static std::string const& typeName() {static std::string const name{"Event/FileShared"}; return name;}
     ThorsAnvil_VariantSerializerWithName(ThorsAnvil::Slack::Event::FileShared, file_shared);
     ThorsAnvil_TypeFieldName(type);
 };
@@ -131,6 +139,7 @@ struct FileUnshared
     // std::string                 type;
     std::string                 file_id;
     FileRef                     file;
+    static std::string const& typeName() {static std::string const name{"Event/FileUnshared"}; return name;}
     ThorsAnvil_VariantSerializerWithName(ThorsAnvil::Slack::Event::FileUnshared, file_unshared);
     ThorsAnvil_TypeFieldName(type);
 };

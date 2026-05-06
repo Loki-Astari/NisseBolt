@@ -75,6 +75,7 @@ struct FunctionExecuted
     std::string                 workflow_execution_id;
     std::string                 event_ts;
     std::string                 bot_access_token;
+    static std::string const& typeName() {static std::string const name{"Event/FunctionExecuted"}; return name;}
     ThorsAnvil_VariantSerializerWithName(ThorsAnvil::Slack::Event::FunctionExecuted, function_executed);
     ThorsAnvil_TypeFieldName(type);
 };

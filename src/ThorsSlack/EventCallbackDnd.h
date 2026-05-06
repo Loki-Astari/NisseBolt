@@ -57,6 +57,7 @@ struct DndUpdated
     // std::string                 type;
     std::string                 user;
     DndStatus                   dnd_status;
+    static std::string const& typeName() {static std::string const name{"Event/DndUpdated"}; return name;}
     ThorsAnvil_VariantSerializerWithName(ThorsAnvil::Slack::Event::DndUpdated, dnd_updated);
     ThorsAnvil_TypeFieldName(type);
 };
@@ -66,6 +67,7 @@ struct DndUpdatedUser
     // std::string                 type;
     std::string                 user;
     DndStatus                   dnd_status;
+    static std::string const& typeName() {static std::string const name{"Event/DndUpdatedUser"}; return name;}
     ThorsAnvil_VariantSerializerWithName(ThorsAnvil::Slack::Event::DndUpdatedUser, dnd_updated_user);
     ThorsAnvil_TypeFieldName(type);
 };

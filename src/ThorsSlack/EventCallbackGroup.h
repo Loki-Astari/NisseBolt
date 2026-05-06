@@ -64,6 +64,7 @@ struct GroupClose
     // std::string                 type;
     std::string                 user;
     std::string                 channel;
+    static std::string const& typeName() {static std::string const name{"Event/GroupClose"}; return name;}
     ThorsAnvil_VariantSerializerWithName(ThorsAnvil::Slack::Event::GroupClose, group_close);
     ThorsAnvil_TypeFieldName(type);
 };
@@ -72,6 +73,7 @@ struct GroupDeleted
 {
     // std::string                 type;
     std::string                 channel;
+    static std::string const& typeName() {static std::string const name{"Event/GroupDeleted"}; return name;}
     ThorsAnvil_VariantSerializerWithName(ThorsAnvil::Slack::Event::GroupDeleted, group_deleted);
     ThorsAnvil_TypeFieldName(type);
 };
@@ -82,6 +84,7 @@ struct GroupHistoryChanged
     std::string                 latest;
     std::string                 ts;
     std::string                 event_ts;
+    static std::string const& typeName() {static std::string const name{"Event/GroupHistoryChanged"}; return name;}
     ThorsAnvil_VariantSerializerWithName(ThorsAnvil::Slack::Event::GroupHistoryChanged, group_history_changed);
     ThorsAnvil_TypeFieldName(type);
 };
@@ -90,6 +93,7 @@ struct GroupLeft
 {
     // std::string                 type;
     std::string                 channel;
+    static std::string const& typeName() {static std::string const name{"Event/GroupLeft"}; return name;}
     ThorsAnvil_VariantSerializerWithName(ThorsAnvil::Slack::Event::GroupLeft, group_left);
     ThorsAnvil_TypeFieldName(type);
 };
@@ -99,6 +103,7 @@ struct GroupOpen
     // std::string                 type;
     std::string                 user;
     std::string                 channel;
+    static std::string const& typeName() {static std::string const name{"Event/GroupOpen"}; return name;}
     ThorsAnvil_VariantSerializerWithName(ThorsAnvil::Slack::Event::GroupOpen, group_open);
     ThorsAnvil_TypeFieldName(type);
 };
@@ -107,6 +112,7 @@ struct GroupRename
 {
     // std::string                 type;
     GroupRenameInfo              channel;
+    static std::string const& typeName() {static std::string const name{"Event/GroupRename"}; return name;}
     ThorsAnvil_VariantSerializerWithName(ThorsAnvil::Slack::Event::GroupRename, group_rename);
     ThorsAnvil_TypeFieldName(type);
 };

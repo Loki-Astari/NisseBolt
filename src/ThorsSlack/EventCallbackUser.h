@@ -105,6 +105,7 @@ struct UserChange
     UserInfo                    user;
     std::time_t                 cache_ts;
     std::string                 event_ts;
+    static std::string const& typeName() {static std::string const name{"Event/UserChange"}; return name;}
     ThorsAnvil_VariantSerializerWithName(ThorsAnvil::Slack::Event::UserChange, user_change);
     ThorsAnvil_TypeFieldName(type);
 };
@@ -117,6 +118,7 @@ struct UserConnection
     std::string                 event_ts;
     OptString                   trigger_id;
     OptString                   enterprise_id;
+    static std::string const& typeName() {static std::string const name{"Event/UserConnection"}; return name;}
     ThorsAnvil_VariantSerializerWithName(ThorsAnvil::Slack::Event::UserConnection, user_connection);
     ThorsAnvil_TypeFieldName(type);
 };
@@ -127,6 +129,7 @@ struct UserHuddleChanged
     UserInfo                    user;
     std::time_t                 cache_ts;
     std::string                 event_ts;
+    static std::string const& typeName() {static std::string const name{"Event/UserHuddleChanged"}; return name;}
     ThorsAnvil_VariantSerializerWithName(ThorsAnvil::Slack::Event::UserHuddleChanged, user_huddle_changed);
     ThorsAnvil_TypeFieldName(type);
 };

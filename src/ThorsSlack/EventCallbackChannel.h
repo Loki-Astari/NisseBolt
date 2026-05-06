@@ -49,6 +49,7 @@ struct ChannelArchive
     // std::string                 type;
     std::string                 channel;
     std::string                 user;
+    static std::string const& typeName() {static std::string const name{"Event/ChannelArchive"}; return name;}
     ThorsAnvil_VariantSerializerWithName(ThorsAnvil::Slack::Event::ChannelArchive, channel_archive);
     ThorsAnvil_TypeFieldName(type);
 };
@@ -57,6 +58,7 @@ struct ChannelCreated
 {
     // std::string                 type;
     ChannelInfo                 channel;
+    static std::string const& typeName() {static std::string const name{"Event/ChannelCreated"}; return name;}
     ThorsAnvil_VariantSerializerWithName(ThorsAnvil::Slack::Event::ChannelCreated, channel_created);
     ThorsAnvil_TypeFieldName(type);
 };
@@ -65,6 +67,7 @@ struct ChannelDeleted
 {
     // std::string                 type;
     std::string                 channel;
+    static std::string const& typeName() {static std::string const name{"Event/ChannelDeleted"}; return name;}
     ThorsAnvil_VariantSerializerWithName(ThorsAnvil::Slack::Event::ChannelDeleted, channel_deleted);
     ThorsAnvil_TypeFieldName(type);
 };
@@ -75,6 +78,7 @@ struct ChannelHistoryChanged
     std::string                 latest;
     std::string                 ts;
     std::string                 event_ts;
+    static std::string const& typeName() {static std::string const name{"Event/ChannelHistoryChanged"}; return name;}
     ThorsAnvil_VariantSerializerWithName(ThorsAnvil::Slack::Event::ChannelHistoryChanged, channel_history_changed);
     ThorsAnvil_TypeFieldName(type);
 };
@@ -85,6 +89,7 @@ struct ChannelIdChanged
     std::string                 old_channel_id;
     std::string                 new_channel_id;
     std::string                 event_ts;
+    static std::string const& typeName() {static std::string const name{"Event/ChannelIdChanged"}; return name;}
     ThorsAnvil_VariantSerializerWithName(ThorsAnvil::Slack::Event::ChannelIdChanged, channel_id_changed);
     ThorsAnvil_TypeFieldName(type);
 };
@@ -93,6 +98,7 @@ struct ChannelLeft
 {
     // std::string                 type;
     std::string                 channel;
+    static std::string const& typeName() {static std::string const name{"Event/ChannelLeft"}; return name;}
     ThorsAnvil_VariantSerializerWithName(ThorsAnvil::Slack::Event::ChannelLeft, channel_left);
     ThorsAnvil_TypeFieldName(type);
 };
@@ -101,6 +107,7 @@ struct ChannelRename
 {
     // std::string                 type;
     ChannelInfo                 channel;
+    static std::string const& typeName() {static std::string const name{"Event/ChannelRename"}; return name;}
     ThorsAnvil_VariantSerializerWithName(ThorsAnvil::Slack::Event::ChannelRename, channel_rename);
     ThorsAnvil_TypeFieldName(type);
 };
@@ -111,6 +118,7 @@ struct ChannelShared
     std::string                 connected_team_id;
     std::string                 channel;
     std::string                 event_ts;
+    static std::string const& typeName() {static std::string const name{"Event/ChannelShared"}; return name;}
     ThorsAnvil_VariantSerializerWithName(ThorsAnvil::Slack::Event::ChannelShared, channel_shared);
     ThorsAnvil_TypeFieldName(type);
 };
@@ -122,6 +130,7 @@ struct ChannelUnshared
     std::string                 channel;
     bool                        is_ext_shared;
     std::string                 event_ts;
+    static std::string const& typeName() {static std::string const name{"Event/ChannelUnshared"}; return name;}
     ThorsAnvil_VariantSerializerWithName(ThorsAnvil::Slack::Event::ChannelUnshared, channel_unshared);
     ThorsAnvil_TypeFieldName(type);
 };
@@ -132,6 +141,7 @@ struct ChannelPostingPermissions
     std::string                 user_id;
     std::string                 channel_id;
     std::string                 event_ts;
+    static std::string const& typeName() {static std::string const name{"Event/ChannelPostingPermissions"}; return name;}
     ThorsAnvil_VariantSerializerWithName(ThorsAnvil::Slack::Event::ChannelPostingPermissions, channel_posting_permissions);
     ThorsAnvil_TypeFieldName(type);
 };
