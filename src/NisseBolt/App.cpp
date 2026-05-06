@@ -1,15 +1,30 @@
 #include "App.h"
+#include <type_traits>
 #include "Say.h"
 #include "ThorsSlack/SlackEventHandler.h"
 
 
 using namespace ThorsAnvil::Nisse::Bolt;
 
+template<typename T>
+concept HasStringChannel = requires(T t) {{ t.channel } -> std::convertible_to<std::string const&>;};
+template<typename T>
+concept HasOptStringTS   = requires(T t) {{ t.ts } -> std::convertible_to<std::optional<std::string> const&>;};
+
+static const std::string emptyString;
+
+template<typename T>
+std::string const& getChannel(T const&)                                 {return emptyString;}
+std::string const& getChannel(HasStringChannel auto const& event)       {return event.channel;}
+
+template<typename T>
+std::optional<std::string> getTS(T const&)                              {return {};}
+std::optional<std::string> getTS(HasOptStringTS auto const& event)      {return event.ts;}
 
 template<typename T>
 void App::handleEvent(ThorsAnvil::Slack::EventRequest<T> const& request)
 {
-    Say     say{client, Where{}};
+    Say     say{client, Where{.channel = getChannel(request.event), .ts = getTS(request.event)}};
     for (AnyEventHandler const& anyHandler: eventHandlers) {
         EventHandler<T> const& eventHandler = std::get<EventHandler<T>>(anyHandler);
         eventHandler(request.event, say);
