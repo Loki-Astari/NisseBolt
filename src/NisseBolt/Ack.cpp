@@ -2,9 +2,8 @@
 
 using namespace ThorsAnvil::Nisse::Bolt;
 
-Ack::Ack(Slack::SlackClient& client, ThorsAnvil::Nisse::HTTP::Response& response)
-    : client(client)
-    , response(response)
+Ack::Ack(ThorsAnvil::Nisse::HTTP::Response& response)
+    : response(response)
 {}
 
 void Ack::operator()() const

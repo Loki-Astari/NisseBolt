@@ -182,9 +182,9 @@ void App::handleEventMessage(ThorsAnvil::Slack::EventRequest<ThorsAnvil::Slack::
 void App::command(std::string const& command, SlashCommandHandler&& handler)
 {
     slashCommandHandlerMap.insert_or_assign(command,
-                                            [&client = client, h = std::move(handler)](ThorsAnvil::Slack::SlashCommandRequest const& request)
+                                            [h = std::move(handler)](ThorsAnvil::Slack::SlashCommandRequest const& request)
                                             {
-                                                Ack         ack{client, request.response};
+                                                Ack         ack{request.response};
                                                 Response    response;
                                                 h(ack, response, request.command);
                                             }

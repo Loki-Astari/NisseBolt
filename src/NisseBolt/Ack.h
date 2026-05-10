@@ -11,10 +11,9 @@ namespace ThorsAnvil::Nisse::Bolt
 
 class Ack
 {
-    ThorsAnvil::Slack::SlackClient&         client;
     ThorsAnvil::Nisse::HTTP::Response&      response;
     public:
-        Ack(Slack::SlackClient& client, ThorsAnvil::Nisse::HTTP::Response& response);
+        Ack(ThorsAnvil::Nisse::HTTP::Response& response);
         void operator()() const;
         void operator()(int responseCode) const;
 };
