@@ -142,7 +142,7 @@ std::vector<ThorsAnvil::ThorsMug::Action> App::getAction()
         ThorsAnvil::ThorsMug::Action
         {
                 ThorsAnvil::Nisse::HTTP::Method::POST,
-                slot + "/slash/{command}",
+                slot + "/slash/{CommandString}",
                 [&](ThorsAnvil::Nisse::HTTP::Request const& request, ThorsAnvil::Nisse::HTTP::Response& response){slackHandler.handleSlashCommand(request, response);return true;},
                 [&](ThorsAnvil::Nisse::HTTP::Request const& request){return slackHandler.validateRequest(request);}
         }
@@ -181,7 +181,9 @@ void App::handleEventMessage(ThorsAnvil::Slack::EventRequest<ThorsAnvil::Slack::
 
 void App::command(std::string const& command, SlashCommandHandler&& handler)
 {
-    slashCommandHandlerMap.insert_or_assign(command,
+    std::string index = (command.size() != 0 && command[0] == '/') ? command : (std::string("/") + command);
+
+    slashCommandHandlerMap.insert_or_assign(index,
                                             [h = std::move(handler)](ThorsAnvil::Slack::SlashCommandRequest const& request)
                                             {
                                                 Ack         ack{request.response};
