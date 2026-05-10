@@ -4,6 +4,7 @@
 #include "NisseBoltConfig.h"
 #include "AppConfig.h"
 #include "Say.h"
+#include "Ack.h"
 
 #include "ThorsMug/MugPlugin.h"
 #include "ThorsSlack/SlackClient.h"
@@ -22,8 +23,9 @@ namespace ThorsAnvil::Nisse::Bolt
 namespace Event = ThorsAnvil::Slack::Event;
 
 template<typename T>
-using EventHandler   = std::function<void(T const& event, Say const& say)>;
-using AnyEventHandler   = std::variant< EventHandler<Event::AppDeleted>, EventHandler<Event::AppHomeOpened>, EventHandler<Event::AppInstalled>, EventHandler<Event::AppRateLimited>, EventHandler<Event::AppRequested>, EventHandler<Event::AppUninstalledTeam>, EventHandler<Event::AppUninstalled>, EventHandler<Event::AppMentioned>,
+using EventHandler          = std::function<void(T const& event, Say const& say)>;
+using AnyEventHandler       = std::variant<
+                                        EventHandler<Event::AppDeleted>, EventHandler<Event::AppHomeOpened>, EventHandler<Event::AppInstalled>, EventHandler<Event::AppRateLimited>, EventHandler<Event::AppRequested>, EventHandler<Event::AppUninstalledTeam>, EventHandler<Event::AppUninstalled>, EventHandler<Event::AppMentioned>,
                                         EventHandler<Event::AssistantThreadContextChanged>, EventHandler<Event::AssistantThreadStarted>,
                                         EventHandler<Event::CallRejected>,
                                         EventHandler<Event::ChannelArchive>, EventHandler<Event::ChannelCreated>, EventHandler<Event::ChannelDeleted>, EventHandler<Event::ChannelHistoryChanged>, EventHandler<Event::ChannelIdChanged>, EventHandler<Event::ChannelLeft>, EventHandler<Event::ChannelPostingPermissions>, EventHandler<Event::ChannelRename>, EventHandler<Event::ChannelShared>, EventHandler<Event::ChannelUnshared>,
@@ -49,18 +51,23 @@ using AnyEventHandler   = std::variant< EventHandler<Event::AppDeleted>, EventHa
                                         EventHandler<Event::TeamAccessGranted>, EventHandler<Event::TeamAccessRevoked>, EventHandler<Event::TeamDomainChange>, EventHandler<Event::TeamJoin>, EventHandler<Event::TeamRename>,
                                         EventHandler<Event::TokensRevoked>,
                                         EventHandler<Event::UserChange>, EventHandler<Event::UserConnection>, EventHandler<Event::UserHuddleChanged>
-                                    >;
+                              >;
 
-using Filter         = std::function<bool(ThorsAnvil::Slack::Event::Message const&)>;
-using MessageHandler = EventHandler<ThorsAnvil::Slack::Event::Message>;
+using Filter                = std::function<bool(ThorsAnvil::Slack::Event::Message const&)>;
+using MessageHandler        = EventHandler<ThorsAnvil::Slack::Event::Message>;
+
+struct Response {};
+
+using SlashCommandHandler   = std::function<void(Ack const&, Response const&, ThorsAnvil::Slack::SlashCommand const&)>;
 
 class App: ThorsAnvil::ThorsMug::MugPluginSimple
 {
-    std::string                             slot;
-    ThorsAnvil::Slack::CmdMap               cmdMap;
-    ThorsAnvil::Slack::EventHandlerMap      eventHandlerMap;
-    ThorsAnvil::Slack::SlackClient          client;
-    ThorsAnvil::Slack::SlackEventHandler    slackHandler;
+    std::string                                     slot;
+    ThorsAnvil::Slack::CmdMap                       cmdMap;
+    ThorsAnvil::Slack::EventHandlerMap              eventHandlerMap;
+    ThorsAnvil::Slack::SlackClient                  client;
+    ThorsAnvil::Slack::SlackEventHandler            slackHandler;
+    ThorsAnvil::Slack::SlashCommandHandlerMap       slashCommandHandlerMap;
     std::vector<std::pair<Filter, MessageHandler>>  messageHandlers;
     std::vector<AnyEventHandler>                    eventHandlers;
 
@@ -74,9 +81,13 @@ class App: ThorsAnvil::ThorsMug::MugPluginSimple
         void message(std::regex filter, MessageHandler&& handler);          // Simplish to use regular expression filter
         void message(MessageHandler&& handler);                             // No filter handle all events.
 
+        // register handlers for other Events (other than Message) that come from the slack server.
         void event(EventHandler<Event::Message>&& handler)                  {message(std::move(handler));}
         template<typename E>
         void event(EventHandler<E>&& handler)                               {eventHandlers.emplace_back(std::move(handler));}
+
+        // Handle slash commands:
+        void command(std::string const& command, SlashCommandHandler&& handler);
 
     private:
         // Handle incoming events and send to the registered handlers.

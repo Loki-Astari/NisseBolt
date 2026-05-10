@@ -37,7 +37,7 @@ using ThorsAnvil::Nisse::HTTP::Request;
 using ThorsAnvil::Nisse::HTTP::Response;
 
 using EventObject = std::variant<API::BlockActions, API::Views::ViewSubmission>;
-using CmdEvent  = std::variant<SlashCommand const*, API::Views::ViewSubmission const*>;
+using CmdEvent  = std::variant<API::Views::ViewSubmission const*>;
 
 struct SlackRequest
 {
@@ -89,6 +89,15 @@ using AnyEventHandler   = std::variant< EventHandler<Event::AppDeleted>, EventHa
                                     >;
 using EventHandlerMap   = std::map<std::string, AnyEventHandler>;
 
+struct SlashCommandRequest
+{
+    ThorsAnvil::Nisse::HTTP::Request const&     request;
+    ThorsAnvil::Nisse::HTTP::Response&          response;
+    SlashCommand const&                         command;
+};
+using SlashCommandHandler    = std::function<void(SlashCommandRequest const&)>;
+using SlashCommandHandlerMap = std::map<std::string, SlashCommandHandler>;
+
 class SlackEventHandler
 {
         std::string     slackSecret;
@@ -98,11 +107,16 @@ class SlackEventHandler
         CmdMap const&           cmdMap;
 
 
-        // Replacement for handling Events;
-        EventHandlerMap const&  eventHandlerMap;
+        // The following are here to replace the "cmdMap"
+
+        // For handling Events (all of them)
+        EventHandlerMap const&          eventHandlerMap;
+
+        // For handling Slash Commands
+        SlashCommandHandlerMap const&   slashCommandHandlerMap;
 
     public:
-        SlackEventHandler(std::string_view slackSecret, CmdMap const& cmdMap = {}, EventHandlerMap const& eventHandlerMap = {});
+        SlackEventHandler(std::string_view slackSecret, CmdMap const& cmdMap = {}, EventHandlerMap const& eventHandlerMap = {}, SlashCommandHandlerMap const& slashCommandHandlerMap = {});
 
         // Method to validate Slack message comes from slack.
         bool validateRequest(Request const& request);
@@ -138,11 +152,6 @@ class SlackEventHandler
         virtual void handleActionsPlainTextInput(Request const&, Response& response, API::BlockActions const&, std::string const& /*action_id*/, std::string const& /*value*/)        { ThorsLogError("ThorsAnvil::Slack::SlackEventHandler", "handleActionsPlainTextInput", "Call to unimplemented method"); response.setStatus(501); }
         virtual void handleActionsCheckBox(Request const& /*request*/, Response& response, API::BlockActions const& event, std::string const& action_id, BlockKit::VecElOption const& value);
 
-
-        /*
-         * The following methods is called from: handleSlashCommand
-         */
-        virtual void handleSlashWithCommand(Request const& request, Response& response, SlashCommand const& command)      {handleUsingCmdMap(request, response, &command, command.command + "/" + command.text, "handleSlashWithCommand");}
 
         /*
          * Checkboxes are complicated.
@@ -218,10 +227,11 @@ class SlackEventHandler
 };
 
 inline
-SlackEventHandler::SlackEventHandler(std::string_view slackSecret, CmdMap const& cmdMap, EventHandlerMap const& eventHandlerMap)
+SlackEventHandler::SlackEventHandler(std::string_view slackSecret, CmdMap const& cmdMap, EventHandlerMap const& eventHandlerMap, SlashCommandHandlerMap const& slashCommandHandlerMap)
     : slackSecret(slackSecret)
     , cmdMap{cmdMap}
     , eventHandlerMap{eventHandlerMap}
+    , slashCommandHandlerMap{slashCommandHandlerMap}
 {}
 
 inline
@@ -471,7 +481,13 @@ inline
 void SlackEventHandler::handleSlashCommand(Request const& request, Response& response)
 {
     SlashCommand        command(request);
-    handleSlashWithCommand(request, response, command);
+    auto find = slashCommandHandlerMap.find(command.command);
+    if (find == slashCommandHandlerMap.end()) {
+        ThorsLogError("ThorsAnvil::Slack::SlackEventHandler", "handleSlashCommand", "Call to unimplemented command");
+        response.setStatus(501);
+        return;
+    }
+    find->second({request, response, command});
 }
 
 inline

@@ -34,7 +34,7 @@ void App::handleEvent(ThorsAnvil::Slack::EventRequest<T> const& request)
 App::App(AppConfig const& config)
     : slot{config.slot}
     , client(config.botToken, config.userToken)
-    , slackHandler(config.signingSecret, cmdMap, eventHandlerMap)
+    , slackHandler(config.signingSecret, cmdMap, eventHandlerMap, slashCommandHandlerMap)
 {
     eventHandlerMap[Event::Message::typeName()]                     = [&](ThorsAnvil::Slack::EventRequest<Event::Message> const& request)                      {handleEventMessage(request);};
 
@@ -138,6 +138,13 @@ std::vector<ThorsAnvil::ThorsMug::Action> App::getAction()
                 slot + "/event",
                 [&](ThorsAnvil::Nisse::HTTP::Request const& request, ThorsAnvil::Nisse::HTTP::Response& response){slackHandler.handleEvent(request, response);return true;},
                 [&](ThorsAnvil::Nisse::HTTP::Request const& request){return slackHandler.validateRequest(request);}
+        },
+        ThorsAnvil::ThorsMug::Action
+        {
+                ThorsAnvil::Nisse::HTTP::Method::POST,
+                slot + "/slash/{CommandString}",
+                [&](ThorsAnvil::Nisse::HTTP::Request const& request, ThorsAnvil::Nisse::HTTP::Response& response){slackHandler.handleSlashCommand(request, response);return true;},
+                [&](ThorsAnvil::Nisse::HTTP::Request const& request){return slackHandler.validateRequest(request);}
         }
     };
 }
@@ -170,6 +177,20 @@ void App::handleEventMessage(ThorsAnvil::Slack::EventRequest<ThorsAnvil::Slack::
             messageHandler.second(request.event, say);
         }
     }
+}
+
+void App::command(std::string const& command, SlashCommandHandler&& handler)
+{
+    std::string index = (command.size() != 0 && command[0] == '/') ? command : (std::string("/") + command);
+
+    slashCommandHandlerMap.insert_or_assign(index,
+                                            [h = std::move(handler)](ThorsAnvil::Slack::SlashCommandRequest const& request)
+                                            {
+                                                Ack         ack{request.response};
+                                                Response    response;
+                                                h(ack, response, request.command);
+                                            }
+    );
 }
 
 std::map<std::string, std::unique_ptr<App>>& App::getServerInfo()
