@@ -67,12 +67,14 @@ class App: ThorsAnvil::ThorsMug::MugPluginSimple
     ThorsAnvil::Slack::SlackClient                  client;
     ThorsAnvil::Slack::SlackEventHandler            slackHandler;
     ThorsAnvil::Slack::SlashCommandHandlerMap       slashCommandHandlerMap;
+    ThorsAnvil::Slack::ActionHandlerMap             actionHandlerMap;
+
     std::vector<std::pair<Filter, MessageHandler>>  messageHandlers;
     std::vector<AnyEventHandler>                    eventHandlers;
 
-        void addSlashCommandHandler();
-        void addUserActionHandler();
-        void addEventHandler();
+        void addSlashCommandHandlers();
+        void addUserActionHandlers();
+        void addEventHandlers();
     public:
         App(AppConfig const& config);
         virtual std::vector<ThorsAnvil::ThorsMug::Action> getAction() override;

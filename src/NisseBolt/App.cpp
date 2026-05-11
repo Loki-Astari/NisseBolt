@@ -34,16 +34,16 @@ void App::handleEvent(ThorsAnvil::Slack::EventRequest<T> const& request)
 App::App(AppConfig const& config)
     : slot{config.slot}
     , client(config.botToken, config.userToken)
-    , slackHandler(config.signingSecret, eventHandlerMap, slashCommandHandlerMap)
+    , slackHandler(config.signingSecret, eventHandlerMap, slashCommandHandlerMap, actionHandlerMap)
 {
     addEventHandlers();
     addSlashCommandHandlers();
     addUserActionHandlers();
 }
 
-void App::addSlashCommandHandler()  {}
-void App::addUserActionHandler()    {}
-void App::addEventHandler()
+void App::addSlashCommandHandlers()  {}
+void App::addUserActionHandlers()    {}
+void App::addEventHandlers()
 {
     eventHandlerMap[Event::Message::typeName()]                     = [&](ThorsAnvil::Slack::EventRequest<Event::Message> const& request)                      {handleEventMessage(request);};
 
