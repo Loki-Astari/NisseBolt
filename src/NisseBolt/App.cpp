@@ -1,5 +1,6 @@
 #include "App.h"
 #include <type_traits>
+#include "NisseBolt/Ack.h"
 #include "Say.h"
 #include "ThorsSlack/SlackEventHandler.h"
 
@@ -205,6 +206,17 @@ void App::command(std::string const& command, SlashCommandHandler&& handler)
                                                 Ack         ack{request.response};
                                                 Response    response;
                                                 h(ack, response, request.command);
+                                            }
+    );
+}
+
+void App::action(std::string const& actionId, ActionHandler&& handler)
+{
+    actionHandlerMap.insert_or_assign(actionId, [h = std::move(handler)](ThorsAnvil::Slack::ActionHandlerRequest const& request)
+                                            {
+                                                Ack         ack{request.response};
+                                                Response    response;
+                                                h(ack, response, request.command, request.value);
                                             }
     );
 }

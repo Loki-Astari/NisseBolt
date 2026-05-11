@@ -60,6 +60,8 @@ struct Response {};
 
 using SlashCommandHandler   = std::function<void(Ack const&, Response const&, ThorsAnvil::Slack::SlashCommand const&)>;
 
+using ActionHandler         = std::function<void(Ack const&, Response const&, ThorsAnvil::Slack::API::BlockActions const&, std::string const& value)>;
+
 class App: ThorsAnvil::ThorsMug::MugPluginSimple
 {
     std::string                                     slot;
@@ -93,6 +95,11 @@ class App: ThorsAnvil::ThorsMug::MugPluginSimple
         // Handle slash commands:
         void command(std::string const& command, SlashCommandHandler&& handler);
 
+        // Handle User Actions.
+        void action(std::string const& actionId, ActionHandler&& handler);
+
+        // Temp
+        ThorsAnvil::Slack::SlackClient const& getClient() const {return client;}
     private:
         // Handle incoming events and send to the registered handlers.
         template<typename T>
