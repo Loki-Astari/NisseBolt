@@ -201,6 +201,19 @@ struct ViewSubmission
     ThorsAnvil_VariantSerializerWithName(ThorsAnvil::Slack::BlockKit::ViewSubmission, view_submission);
     ThorsAnvil_TypeFieldName(type);
 };
+
+struct ViewClose
+{
+    // std::string                         type;               // view_close
+    SlackTeam                           team;
+    SlackUser                           user;
+    ViewReply                           view;
+    bool                                is_cleared;
+
+    ThorsAnvil_VariantSerializerWithName(ThorsAnvil::Slack::BlockKit::ViewSubmission, view_close);
+    ThorsAnvil_TypeFieldName(type);
+};
+
 }
 
 // Response objects
@@ -216,5 +229,6 @@ ThorsAnvil_MakeTrait(ThorsAnvil::Slack::API::Views::Push, view, trigger_id, inte
 ThorsAnvil_MakeTrait(ThorsAnvil::Slack::API::Views::Update, view, view_id, external_id, hash);
 
 ThorsAnvil_MakeTrait(ThorsAnvil::Slack::API::Views::ViewSubmission, team, user, api_app_id, token, trigger_id, view, response_urls, is_enterprise_install, enterprise);
+ThorsAnvil_MakeTrait(ThorsAnvil::Slack::API::Views::ViewClose, team, user, view, is_cleared);
 
 #endif

@@ -34,7 +34,16 @@ void App::handleEvent(ThorsAnvil::Slack::EventRequest<T> const& request)
 App::App(AppConfig const& config)
     : slot{config.slot}
     , client(config.botToken, config.userToken)
-    , slackHandler(config.signingSecret, cmdMap, eventHandlerMap, slashCommandHandlerMap)
+    , slackHandler(config.signingSecret, eventHandlerMap, slashCommandHandlerMap)
+{
+    addEventHandlers();
+    addSlashCommandHandlers();
+    addUserActionHandlers();
+}
+
+void App::addSlashCommandHandler()  {}
+void App::addUserActionHandler()    {}
+void App::addEventHandler()
 {
     eventHandlerMap[Event::Message::typeName()]                     = [&](ThorsAnvil::Slack::EventRequest<Event::Message> const& request)                      {handleEventMessage(request);};
 
@@ -144,6 +153,13 @@ std::vector<ThorsAnvil::ThorsMug::Action> App::getAction()
                 ThorsAnvil::Nisse::HTTP::Method::POST,
                 slot + "/slash/{CommandString}",
                 [&](ThorsAnvil::Nisse::HTTP::Request const& request, ThorsAnvil::Nisse::HTTP::Response& response){slackHandler.handleSlashCommand(request, response);return true;},
+                [&](ThorsAnvil::Nisse::HTTP::Request const& request){return slackHandler.validateRequest(request);}
+        },
+        ThorsAnvil::ThorsMug::Action
+        {
+                ThorsAnvil::Nisse::HTTP::Method::POST,
+                slot + "/useraction",
+                [&](ThorsAnvil::Nisse::HTTP::Request const& request, ThorsAnvil::Nisse::HTTP::Response& response){slackHandler.handleUserActions(request, response);return true;},
                 [&](ThorsAnvil::Nisse::HTTP::Request const& request){return slackHandler.validateRequest(request);}
         }
     };

@@ -63,7 +63,6 @@ using SlashCommandHandler   = std::function<void(Ack const&, Response const&, Th
 class App: ThorsAnvil::ThorsMug::MugPluginSimple
 {
     std::string                                     slot;
-    ThorsAnvil::Slack::CmdMap                       cmdMap;
     ThorsAnvil::Slack::EventHandlerMap              eventHandlerMap;
     ThorsAnvil::Slack::SlackClient                  client;
     ThorsAnvil::Slack::SlackEventHandler            slackHandler;
@@ -71,6 +70,9 @@ class App: ThorsAnvil::ThorsMug::MugPluginSimple
     std::vector<std::pair<Filter, MessageHandler>>  messageHandlers;
     std::vector<AnyEventHandler>                    eventHandlers;
 
+        void addSlashCommandHandler();
+        void addUserActionHandler();
+        void addEventHandler();
     public:
         App(AppConfig const& config);
         virtual std::vector<ThorsAnvil::ThorsMug::Action> getAction() override;
