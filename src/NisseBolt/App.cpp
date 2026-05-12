@@ -3,6 +3,7 @@
 #include "NisseBolt/Ack.h"
 #include "Say.h"
 #include "ThorsSlack/SlackEventHandler.h"
+#include "ThorsSlack/SlackClient.h"
 
 
 using namespace ThorsAnvil::Nisse::Bolt;
@@ -35,7 +36,7 @@ void App::handleEvent(ThorsAnvil::Slack::EventRequest<T> const& request)
 App::App(AppConfig const& config)
     : slot{config.slot}
     , client(config.botToken, config.userToken)
-    , slackHandler(config.signingSecret, eventHandlerMap, slashCommandHandlerMap, actionHandlerMap)
+    , slackHandler(config.signingSecret, eventHandlerMap, slashCommandHandlerMap, actionHandlerMap, viewHandlerMap)
 {
     addEventHandlers();
     addSlashCommandHandlers();
@@ -219,6 +220,48 @@ void App::action(std::string const& actionId, ActionHandler&& handler)
                                                 h(ack, response, request.command, request.value);
                                             }
     );
+}
+
+void App::viewOpen(std::string const& viewId, ThorsAnvil::Slack::API::Views::View&& view, ViewSubmitHandler&& submitHandler)
+{
+    viewHandlerMap.insert_or_assign(viewId,
+                                    ThorsAnvil::Slack::View
+                                        {
+                                            [submit = std::move(submitHandler)](ThorsAnvil::Nisse::HTTP::Request const& /*request*/, ThorsAnvil::Nisse::HTTP::Response& response, ThorsAnvil::Slack::API::Views::ViewSubmission const& view)
+                                            {
+                                                Ack         ack{response};
+                                                Response    response1;
+                                                submit(ack, response1, view);
+                                            },
+                                            [](ThorsAnvil::Nisse::HTTP::Request const& /*request*/, ThorsAnvil::Nisse::HTTP::Response& /*response*/, ThorsAnvil::Slack::API::Views::ViewClose const& /*view*/)  {},
+                                            {}
+                                        }
+                                   );
+    getClient().sendMessage(ThorsAnvil::Slack::API::Views::Open{std::move(view), viewId, {}});
+}
+
+void App::viewOpen(std::string const& viewId, ThorsAnvil::Slack::API::Views::View&& view, ViewSubmitHandler&& submitHandler, ViewCloseHandler&& closeHandler)
+{
+    viewHandlerMap.insert_or_assign(viewId,
+                                    ThorsAnvil::Slack::View
+                                        {
+                                            [submit = std::move(submitHandler)](ThorsAnvil::Nisse::HTTP::Request const& /*request*/, ThorsAnvil::Nisse::HTTP::Response& response, ThorsAnvil::Slack::API::Views::ViewSubmission const& view)
+                                            {
+                                                Ack         ack{response};
+                                                Response    response1;
+                                                submit(ack, response1, view);
+                                            },
+                                            [close = std::move(closeHandler)](ThorsAnvil::Nisse::HTTP::Request const& /*request*/, ThorsAnvil::Nisse::HTTP::Response& response, ThorsAnvil::Slack::API::Views::ViewClose const& view)
+                                            {
+                                                Ack         ack{response};
+                                                Response    response1;
+                                                close(ack, response1, view);
+                                            },
+                                            {}
+                                        }
+                                   );
+    view.notify_on_close = true;
+    getClient().sendMessage(ThorsAnvil::Slack::API::Views::Open{std::move(view), viewId, {}});
 }
 
 std::map<std::string, std::unique_ptr<App>>& App::getServerInfo()

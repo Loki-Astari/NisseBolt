@@ -62,6 +62,9 @@ using SlashCommandHandler   = std::function<void(Ack const&, Response const&, Th
 
 using ActionHandler         = std::function<void(Ack const&, Response const&, ThorsAnvil::Slack::API::BlockActions const&, std::string const& value)>;
 
+using ViewSubmitHandler     = std::function<void(Ack const&, Response const&, ThorsAnvil::Slack::API::Views::ViewSubmission const&)>;
+using ViewCloseHandler      = std::function<void(Ack const&, Response const&, ThorsAnvil::Slack::API::Views::ViewClose const&)>;
+
 class App: ThorsAnvil::ThorsMug::MugPluginSimple
 {
     std::string                                     slot;
@@ -70,6 +73,7 @@ class App: ThorsAnvil::ThorsMug::MugPluginSimple
     ThorsAnvil::Slack::SlackEventHandler            slackHandler;
     ThorsAnvil::Slack::SlashCommandHandlerMap       slashCommandHandlerMap;
     ThorsAnvil::Slack::ActionHandlerMap             actionHandlerMap;
+    ThorsAnvil::Slack::ViewHandlerMap               viewHandlerMap;
 
     std::vector<std::pair<Filter, MessageHandler>>  messageHandlers;
     std::vector<AnyEventHandler>                    eventHandlers;
@@ -97,6 +101,10 @@ class App: ThorsAnvil::ThorsMug::MugPluginSimple
 
         // Handle User Actions.
         void action(std::string const& actionId, ActionHandler&& handler);
+
+        // Handle Views
+        void viewOpen(std::string const& viewId, ThorsAnvil::Slack::API::Views::View&& view, ViewSubmitHandler&& submitHandler);
+        void viewOpen(std::string const& viewId, ThorsAnvil::Slack::API::Views::View&& view, ViewSubmitHandler&& submitHandler, ViewCloseHandler&& closeHandler);
 
         // Temp
         ThorsAnvil::Slack::SlackClient const& getClient() const {return client;}

@@ -129,6 +129,7 @@ struct OpenReply
 {
     bool                                ok;
     ViewReply                           view;
+    ThorsAnvil_VariantSerializer(ThorsAnvil::Slack::API::Views::OpenReply);
 };
 
 struct Open

@@ -110,10 +110,25 @@ struct ActionHandlerRequest
 using ActionHandler         = std::function<void(ActionHandlerRequest const&)>;
 using ActionHandlerMap      = std::map<std::string, ActionHandler>;
 
+struct ViewHandlerRequest
+{
+    ThorsAnvil::Nisse::HTTP::Request const&     request;
+    ThorsAnvil::Nisse::HTTP::Response&          response;
+    EventObject const&                          command;
+};
+using ViewSubmitHandler     = std::function<void(ThorsAnvil::Nisse::HTTP::Request const&, ThorsAnvil::Nisse::HTTP::Response&, API::Views::ViewSubmission const&)>;
+using ViewCloseHandler      = std::function<void(ThorsAnvil::Nisse::HTTP::Request const&, ThorsAnvil::Nisse::HTTP::Response&, API::Views::ViewClose const&)>;
+using ViewActionHandler     = std::function<void(ThorsAnvil::Nisse::HTTP::Request const&, ThorsAnvil::Nisse::HTTP::Response&, API::BlockActions const&, std::string const& value)>;
+
+
 struct View
 {
-    void operator()(ThorsAnvil::Nisse::HTTP::Request const& /*request*/, ThorsAnvil::Nisse::HTTP::Response& /*response*/, API::Views::ViewSubmission const& /*action*/)   const {}
-    void operator()(ThorsAnvil::Nisse::HTTP::Request const& /*request*/, ThorsAnvil::Nisse::HTTP::Response& /*response*/, API::Views::ViewClose const& /*close*/)         const {}
+    ViewSubmitHandler   submitHandler;
+    ViewCloseHandler    closeHanlder;
+    ActionHandlerMap    actionHandlerMap;
+
+    void operator()(ThorsAnvil::Nisse::HTTP::Request const& request, ThorsAnvil::Nisse::HTTP::Response& response, API::Views::ViewSubmission const& submit)                     const {submitHandler(request, response, submit);}
+    void operator()(ThorsAnvil::Nisse::HTTP::Request const& request, ThorsAnvil::Nisse::HTTP::Response& response, API::Views::ViewClose const& close)                           const {closeHanlder(request, response, close);}
 };
 
 using ViewHandlerMap        = std::map<std::string, View>;
@@ -240,11 +255,15 @@ class SlackEventHandler
             // Handles the interaction of individual components.
             void operator()(API::BlockActions const& userAction)
             {
+                std::string const&          triggerId   = userAction.trigger_id;
+                auto view = plugin.viewHandlerMap.find(triggerId);
+                ActionHandlerMap const& actionHandlerMap = view == plugin.viewHandlerMap.end() ? plugin.actionHandlerMap : view->second.actionHandlerMap;
+
                 API::SlackAction const&     action      = userAction.actions.value()[0];
                 std::string const&          actionId    = action.action_id;
 
-                auto find = plugin.actionHandlerMap.find(actionId);
-                if (find == plugin.actionHandlerMap.end()) {
+                auto find = actionHandlerMap.find(actionId);
+                if (find == actionHandlerMap.end()) {
                     // No installed handler for this action.
                     return;
                 }

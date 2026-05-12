@@ -55,7 +55,7 @@ class SlackClient
     std::string             botId;
     private:
         template<typename T>
-        void sendMessageData(T const& message, SlackStream& stream)
+        void sendMessageData(T const& message, SlackStream& stream) const
         {
             if constexpr (T::method == API::Method::GET) {
                 std::string api = std::string{} + T::api + "?" + ThorsAnvil::Slack::API::buildQueryA(message);
@@ -82,7 +82,7 @@ class SlackClient
             }
         }
         template<typename T>
-        std::string getEventType(Nisse::StreamInput& input, bool& hit)
+        std::string getEventType(Nisse::StreamInput& input, bool& hit) const
         {
             if (hit) {
                 return "";
@@ -120,7 +120,7 @@ class SlackClient
         std::string const& getBotId()   {return botId;}
 
         template<typename T>
-        void  sendMessage(T const& message, SuccFunc<typename T::Reply>&& succ = [](typename T::Reply&&){}, FailFunc&& fail = [](API::Error&&){})
+        void  sendMessage(T const& message, SuccFunc<typename T::Reply>&& succ = [](typename T::Reply&&){}, FailFunc&& fail = [](API::Error&&){}) const
         {
             using ResultType = typename T::Reply;
             using OutputType = std::variant<API::Error, ResultType>;
