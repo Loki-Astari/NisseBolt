@@ -3,14 +3,19 @@
 
 #include "API.h"
 #include "SlackBlockKit.h"
-#include "APIBlockActionsState.h"
 #include <string>
 #include <map>
 #include <vector>
+#include <optional>
 
 namespace BK = ThorsAnvil::Slack::BlockKit;
 
 // https://docs.slack.dev/reference/interaction-payloads/block_actions-payload
+namespace ThorsAnvil::Slack::API::Views
+{
+    struct ViewReply;
+    using OptViewReply = std::optional<ViewReply>;
+};
 namespace ThorsAnvil::Slack::API
 {
 
@@ -48,11 +53,140 @@ struct SlackChannel
 };
 using OptSlackChannel = std::optional<SlackChannel>;
 
-using OptNullString = std::optional<NullString>;
-using OptNullTime   = std::optional<NullTime>;
-using OptNullElText = std::optional<NullElText>;
-using OptNullVecElOption = std::optional<NullVecElOption>;
-using OptNullElOption   = std::optional<NullElOption>;
+
+using NullVecElOption   = std::unique_ptr<BK::VecElOption>;
+using NullElOption      = std::unique_ptr<BK::ElOption>;
+using NullString        = std::unique_ptr<std::string>;
+using NullTime          = std::unique_ptr<std::time_t>;
+
+// The value for a CheckBox
+struct ElActCheckboxValue
+{
+    // std::string                         type;               // checkboxes Have Example
+    NullVecElOption                     selected_options;
+    NullVecElOption const&  getValue() const {return selected_options;}
+    ThorsAnvil_VariantSerializerWithName(ThorsAnvil::Slack::BlockKit::ElActCheckboxValue, checkboxes);
+    ThorsAnvil_TypeFieldName(type);
+};
+
+struct ElActDatePickerValue
+{
+    // std::string                         type;               // datepicker Have Example
+    NullString                          selected_date;
+    NullString const&  getValue() const {return selected_date;}
+    ThorsAnvil_VariantSerializerWithName(ThorsAnvil::Slack::BlockKit::ElActDatePickerValue, datepicker);
+    ThorsAnvil_TypeFieldName(type);
+};
+
+struct ElActDatetimePickerValue
+{
+    // std::string                         type;               // datetimepicker Have Example
+    NullTime                            selected_date_time;
+    NullTime const&  getValue() const {return selected_date_time;}
+    ThorsAnvil_VariantSerializerWithName(ThorsAnvil::Slack::BlockKit::ElActDatetimePickerValue, datetimepicker);
+    ThorsAnvil_TypeFieldName(type);
+};
+
+
+struct ElActEMailValue
+{
+    // std::string                         type;               // email_text_input => NEED EXAMPLE <=
+    NullString                          initial_value;
+    NullString const&  getValue() const {return initial_value;}
+    ThorsAnvil_VariantSerializerWithName(ThorsAnvil::Slack::BlockKit::ElActEMailValue, email_text_input);
+    ThorsAnvil_TypeFieldName(type);
+};
+
+struct ElActNumberInputValue
+{
+    // std::string                         type;               // number_input => NEED EXAMPLE <=
+    NullString                          initial_value;
+    NullString const&  getValue() const {return initial_value;}
+    ThorsAnvil_VariantSerializerWithName(ThorsAnvil::Slack::BlockKit::ElActNumberInputValue, number_input);
+    ThorsAnvil_TypeFieldName(type);
+};
+
+// The value for a text input field.
+struct ElActPlainTextInputValue
+{
+    //std::string                         type;               // plain_text_input
+    std::string                         value;
+
+    std::string const&  getValue() const {return value;}
+    ThorsAnvil_VariantSerializerWithName(ThorsAnvil::Slack::BlockKit::ElActPlainTextInputValue, plain_text_input);
+    ThorsAnvil_TypeFieldName(type);
+};
+
+// The value for a RadioButton
+struct ElActRadioButtonValue
+{
+    // std::string                         type;               // radio_buttons: Have Example
+    BK::ElOption                        selected_option;
+    BK::ElOption const&  getValue() const {return selected_option;}
+    ThorsAnvil_VariantSerializerWithName(ThorsAnvil::Slack::BlockKit::ElActRadioButtonValue, radio_buttons);
+    ThorsAnvil_TypeFieldName(type);
+};
+
+struct ElActSelectMenuValue
+{
+    // std::string                         type;               // static_select: Have Example
+    NullElOption                        selected_option;
+    NullElOption const&  getValue() const {return selected_option;}
+    ThorsAnvil_VariantSerializerWithName(ThorsAnvil::Slack::BlockKit::ElActSelectMenuValue, static_select);
+    ThorsAnvil_TypeFieldName(type);
+};
+
+struct ElActTimePickerValue
+{
+    // std::string                         type;               // timepicker: Have Example
+    NullString                          selected_time;
+    NullString const&  getValue() const {return selected_time;}
+    ThorsAnvil_VariantSerializerWithName(ThorsAnvil::Slack::BlockKit::ElActTimePickerValue, timepicker);
+    ThorsAnvil_TypeFieldName(type);
+};
+
+// InputElement = std::variant<ElActURLInput>;
+struct ElActURLInputValue
+{
+    // std::string                         type;               // url_text_input: => NEED EXAMPLE <=
+    NullString                          initial_value;
+    NullString const&  getValue() const {return initial_value;}
+    ThorsAnvil_VariantSerializerWithName(ThorsAnvil::Slack::BlockKit::ElActURLInputValue, url_text_input);
+    ThorsAnvil_TypeFieldName(type);
+};
+
+
+// See Also InputElement.
+// This set of variants should be kept in sync with the type InputElement.
+using InputValue = std::variant<ElActCheckboxValue, ElActDatePickerValue, ElActDatetimePickerValue, ElActEMailValue, ElActNumberInputValue, ElActPlainTextInputValue, ElActRadioButtonValue, /*ElActRichTextInputValue,*/ ElActSelectMenuValue, ElActTimePickerValue, ElActURLInputValue>;
+
+
+// action_id of the "InputElement" object
+// Note The "InputElement" is part of the "Input" object.
+using SlackValue  = std::map<std::string, InputValue>;
+
+// block_id of the "Input" object
+using SlackValues = std::map<std::string, SlackValue>;
+
+struct SlackState
+{
+    SlackValues                         values;
+    template<typename T>
+    typename T::ValueReturnType const& getValue(std::string const& block_id, std::string const& action_id) const
+    {
+        auto findBlock = values.find(block_id);
+        if (findBlock != std::end(values)) {
+            auto const& actionMap = findBlock->second;
+            auto findAction = actionMap.find(action_id);
+            if (findAction != std::end(actionMap)) {
+                return std::get<typename T::ValueStorageType>(findAction->second).getValue();
+            }
+        }
+        static typename T::ValueReturnType nullOption;
+        return nullOption;
+    }
+};
+using NullSlackState = std::unique_ptr<SlackState>;
 
 struct SlackAction
 {
@@ -62,13 +196,13 @@ struct SlackAction
     std::string                         block_id;
     std::string                         action_ts;
     // Value Part
-    OptNullString                       selected_date;      // ElActDatePicker      Example: "2025-12-25"
-    OptNullTime                         selected_date_time; // ElActDatetimePicker  Example: 1766732220
-    OptNullString                       selected_time;      // ElActTimePicker      Example: "04:00"
-    OptNullElText                       text;               // ElActButton
-    OptNullString                       value;              // ElActButton
-    OptNullVecElOption                  selected_options;   // ElActCheckbox
-    OptNullElOption                     selected_option;    // ElActRadioButton / ElActSelectMenu / ElActOverflowMenu
+    BK::OptString                       selected_date;      // ElActDatePicker      Example: "2025-12-25"
+    BK::OptTime                         selected_date_time; // ElActDatetimePicker  Example: 1766732220
+    BK::OptString                       selected_time;      // ElActTimePicker      Example: "04:00"
+    BK::OptElText                       text;               // ElActButton
+    BK::OptString                       value;              // ElActButton
+    BK::OptVecElOption                  selected_options;   // ElActCheckbox
+    BK::OptElOption                     selected_option;    // ElActRadioButton / ElActSelectMenu / ElActOverflowMenu
     // No Event Generated for:                              // ElActEMail / ElActNumberInput / ElActPlainTextInput / ElActURLInput
 };
 using VecSlackActions = std::vector<SlackAction>;
@@ -113,6 +247,18 @@ ThorsAnvil_MakeTrait(ThorsAnvil::Slack::API::SlackTeam, id, domain);
 ThorsAnvil_MakeTrait(ThorsAnvil::Slack::API::SlackEnterprise);
 ThorsAnvil_MakeTrait(ThorsAnvil::Slack::API::SlackChannel, id, name);
 
+ThorsAnvil_MakeTrait(ThorsAnvil::Slack::API::ElActCheckboxValue, selected_options);         //
+ThorsAnvil_MakeTrait(ThorsAnvil::Slack::API::ElActDatePickerValue, selected_date);
+ThorsAnvil_MakeTrait(ThorsAnvil::Slack::API::ElActDatetimePickerValue, selected_date_time);
+ThorsAnvil_MakeTrait(ThorsAnvil::Slack::API::ElActEMailValue, initial_value);
+ThorsAnvil_MakeTrait(ThorsAnvil::Slack::API::ElActNumberInputValue, initial_value);
+ThorsAnvil_MakeTrait(ThorsAnvil::Slack::API::ElActPlainTextInputValue, value);
+ThorsAnvil_MakeTrait(ThorsAnvil::Slack::API::ElActRadioButtonValue, selected_option);
+ThorsAnvil_MakeTrait(ThorsAnvil::Slack::API::ElActSelectMenuValue, selected_option);
+ThorsAnvil_MakeTrait(ThorsAnvil::Slack::API::ElActTimePickerValue, selected_time);
+ThorsAnvil_MakeTrait(ThorsAnvil::Slack::API::ElActURLInputValue, initial_value);
+
+ThorsAnvil_MakeTrait(ThorsAnvil::Slack::API::SlackState, values);
 ThorsAnvil_MakeTrait(ThorsAnvil::Slack::API::SlackAction, type, action_id, block_id, action_ts, selected_date, selected_date_time, selected_time, text, value, selected_options, selected_option);
 ThorsAnvil_MakeTrait(ThorsAnvil::Slack::API::BlockActions, trigger_id, user, team, container, api_app_id, enterprise, is_enterprise_install, channel, message, view, actions, state, token, response_url, hash, function_data, interactivity, bot_access_token);
 

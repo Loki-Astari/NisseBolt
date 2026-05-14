@@ -2,11 +2,12 @@
 #define THORSANVIL_SLACK_API_VIEWS_H
 
 
-#include <string>
-#include "API.h"
 #include "ThorsSlackConfig.h"
+#include "API.h"
+#include "APIViewsReply.h"
 #include "APIBlockActions.h"
 #include "EventCallback.h"
+#include <string>
 
 namespace ThorsAnvil::Slack::API::Views
 {
@@ -96,34 +97,6 @@ struct View
     ThorsAnvil_VariantSerializerWithName(ThorsAnvil::Slack::BlockKit::View, modal);
     ThorsAnvil_TypeFieldName(type);
 };
-
-using UPtrElTextPlain = std::unique_ptr<BlockKit::ElTextPlain>;
-using UPtrString      = std::unique_ptr<std::string>;
-
-struct ViewReply
-{
-    std::string                         id;
-    std::string                         team_id;
-    std::string                         type;
-    BlockKit::ElTextPlain               title;
-    BlockKit::Blocks                    blocks;
-    UPtrElTextPlain                     close;
-    UPtrElTextPlain                     submit;
-    std::string                         private_metadata;
-    std::string                         callback_id;
-    bool                                clear_on_close;
-    bool                                notify_on_close;
-    std::string                         external_id;
-    OptBool                             submit_disabled;
-    UPtrString                          previous_view_id;
-    SlackState                          state;
-    std::string                         hash;
-    std::string                         root_view_id;
-    std::string                         app_id;
-    std::string                         app_installed_team_id;
-    std::string                         bot_id;
-};
-
 
 struct OpenReply
 {
@@ -218,7 +191,6 @@ struct ViewClose
 }
 
 // Response objects
-ThorsAnvil_MakeTrait(ThorsAnvil::Slack::API::Views::ViewReply, id, team_id, type, title, blocks, close, submit, private_metadata, callback_id, clear_on_close, notify_on_close, external_id, submit_disabled, previous_view_id, state, hash, root_view_id, app_id, app_installed_team_id, bot_id);
 ThorsAnvil_MakeTrait(ThorsAnvil::Slack::API::Views::OpenReply, ok, view);
 
 

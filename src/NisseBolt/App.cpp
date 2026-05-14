@@ -224,8 +224,12 @@ void App::action(std::string const& actionId, ActionHandler&& handler)
 
 void App::viewOpen(std::string const& viewId, View view)
 {
-    viewHandlerMap.insert_or_assign(viewId, view.viewHandlers);
-    getClient().sendMessage(ThorsAnvil::Slack::API::Views::Open{std::move(view.view), viewId, {}});
+    getClient().sendMessage(ThorsAnvil::Slack::API::Views::Open{std::move(view.view), viewId, {}},
+                            [&](ThorsAnvil::Slack::API::Views::OpenReply&& reply)
+                            {
+                                viewHandlerMap.insert_or_assign(reply.view.id, view.viewHandlers);
+                            }
+                           );
 }
 
 std::map<std::string, std::unique_ptr<App>>& App::getServerInfo()

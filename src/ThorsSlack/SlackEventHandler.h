@@ -4,7 +4,6 @@
 #include "EventCallbackAppMentioned.h"
 #include "ThorSerialize/JsonThor.h"
 #include "ThorsSlackConfig.h"
-#include "APIBlockActions.h"
 #include "APIViews.h"
 #include "Event.h"
 #include "EventCallback.h"
@@ -253,10 +252,41 @@ class SlackEventHandler
                 view(request, response, viewAction);
             }
             // Handles the interaction of individual components.
+            std::string const& UPtrToString(std::unique_ptr<std::string> const& ptr)
+            {
+                static std::string const emptyString;
+
+                if (ptr.get() == nullptr) {
+                    return emptyString;
+                }
+                return *ptr;
+            }
+            std::string const& UPtrToString(std::unique_ptr<BK::ElOption> const& ptr)
+            {
+                static std::string const emptyString;
+
+                if (ptr.get() == nullptr) {
+                    return emptyString;
+                }
+                return ptr->value;
+            }
+            std::string UPtrToString(std::unique_ptr<long> const& ptr)
+            {
+                if (ptr.get() == nullptr) {
+                    return "";
+                }
+                return std::to_string(*ptr);
+            }
             void operator()(API::BlockActions const& userAction)
             {
-                std::string const&          triggerId   = userAction.trigger_id;
-                auto view = plugin.viewHandlerMap.find(triggerId);
+                auto view = plugin.viewHandlerMap.end();
+                if (userAction.view.has_value()) {
+                    std::string const&          triggerId   = userAction.view.value().id;
+                    view = plugin.viewHandlerMap.find(triggerId);
+                    if (view == plugin.viewHandlerMap.end()) {
+                        std::cerr << "No Associated View: Using Standard block actions\n";
+                    }
+                }
                 ActionHandlerMap const& actionHandlerMap = view == plugin.viewHandlerMap.end() ? plugin.actionHandlerMap : view->second.actionHandlerMap;
 
                 API::SlackAction const&     action      = userAction.actions.value()[0];
@@ -273,38 +303,38 @@ class SlackEventHandler
 
                 if (type == "datepicker") {
                     // handleActionsDatePicker(request, response, event, action.action_id, action.selected_date.value());
-                    handler({request, response, userAction, action.selected_date.value()});
+                    handler({request, response, userAction, UPtrToString(action.selected_date.value())});
                 }
                 else if (type == "datetimepicker") {
                     // handleActionsDateTimePicker(request, response, event, action.action_id, action.selected_date_time.value());
-                    handler({request, response, userAction, std::to_string(action.selected_date_time.value())});
+                    handler({request, response, userAction, UPtrToString(action.selected_date_time.value())});
                 }
                 else if (type == "timepicker") {
                     // handleActionsTimePicker(request, response, event, action.action_id, action.selected_time.value());
-                    handler({request, response, userAction, action.selected_time.value()});
+                    handler({request, response, userAction, UPtrToString(action.selected_time.value())});
                 }
                 else if (type == "checkboxes") {
                     handleActionsCheckBox(request, response, userAction, action.action_id, action.selected_options.value(), handler);
                 }
                 else if (type == "radio_buttons") {
                     // handleActionsRadioButton(request, response, event, action.action_id, action.selected_option->value);
-                    handler({request, response, userAction, action.selected_option->value});
+                    handler({request, response, userAction, UPtrToString(action.selected_option.value())});
                 }
                 else if (type == "static_select") {
                     // handleActionsStaticMenu(request, response, event, action.action_id, action.selected_option->value);
-                    handler({request, response, userAction, action.selected_option->value});
+                    handler({request, response, userAction, UPtrToString(action.selected_option.value())});
                 }
                 else if (type == "overflow") {
                     // handleActionsOverflowMenu(request, response, event, action.action_id, action.selected_option->value);
-                    handler({request, response, userAction, action.selected_option->value});
+                    handler({request, response, userAction, UPtrToString(action.selected_option.value())});
                 }
                 else if (type == "button") {
                     // handleActionsButton(request, response, event, action.action_id, action.value.value());
-                    handler({request, response, userAction, action.value.value()});
+                    handler({request, response, userAction, UPtrToString(action.value.value())});
                 }
                 else if (type == "plain_text_input") {
                     // handleActionsPlainTextInput(request, response, event, action.action_id, action.value.value());
-                    handler({request, response, userAction, action.value.value()});
+                    handler({request, response, userAction, UPtrToString(action.value.value())});
                 }
                 else {
                     ThorsLogError("UserTodoSlackEventHandler", "handleUserActions", "Unknown Action: ", request.variables()["payload"]);
@@ -341,7 +371,7 @@ class SlackEventHandler
                     return nullOption;
                 }
 
-                void handleActionsCheckBox(Request const& request, Response& response, API::BlockActions const& event, std::string const& action_id, BlockKit::VecElOption const& values, ActionHandler const& handler)
+                void handleActionsCheckBox(Request const& request, Response& response, API::BlockActions const& event, std::string const& action_id, std::unique_ptr<BlockKit::VecElOption> const& values, ActionHandler const& handler)
                 {
                     ThorsLogDebug("SlackEventHandler", "processesActionsCheckBox", "Recievent User Click on Checkbox");
 
@@ -352,8 +382,11 @@ class SlackEventHandler
 
                     // Extract the currently selected options into a set.
                     std::set<std::string>   currentState;
-                    for (auto const& option: values) {
-                        currentState.insert(option.value);
+                    if (values.get() != nullptr)
+                    {
+                        for (auto const& option: (*values)) {
+                            currentState.insert(option.value);
+                        }
                     }
 
                     // Extract the previously selected options
@@ -374,7 +407,7 @@ class SlackEventHandler
                             }
                             // Updating the init options.
                             // This will we will write back to the UI below.
-                            initOption = values;
+                            initOption = *values;
                         }
                     }
 

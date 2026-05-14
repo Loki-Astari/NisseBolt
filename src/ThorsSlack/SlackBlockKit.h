@@ -741,6 +741,9 @@ struct Video
     ThorsAnvil_VariantSerializerWithName(ThorsAnvil::Slack::BlockKit::Video, video);
     ThorsAnvil_TypeFieldName(type);
 };
+
+// See Also InputValue.
+// This set of variants should be kept in sync with the type InputValue.
 using InputElement = std::variant<ElActCheckbox, ElActDatePicker, ElActDatetimePicker, ElActEMail, ElActNumberInput, ElActPlainTextInput, ElActRadioButton/*, ElActRichTextInput*/, ElActSelectMenu, ElActTimePicker, ElActURLInput>;
 struct Input
 {
