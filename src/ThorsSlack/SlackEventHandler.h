@@ -146,10 +146,12 @@ class SlackEventHandler
         ActionHandlerMap const&         actionHandlerMap;
 
         // For handling view Submissions.
-        ViewHandlerMap const&           viewHandlerMap;
+        // This is not const as we remove handlers when they have been used.
+        // Unlike the handlers above which are in the control of their owners.
+        ViewHandlerMap&                 viewHandlerMap;
 
     public:
-        SlackEventHandler(std::string_view slackSecret, EventHandlerMap const& eventHandlerMap = {}, SlashCommandHandlerMap const& slashCommandHandlerMap = {}, ActionHandlerMap const& actionHandlerMap = {}, ViewHandlerMap const& viewHandlerMap = {});
+        SlackEventHandler(std::string_view slackSecret, EventHandlerMap const& eventHandlerMap, SlashCommandHandlerMap const& slashCommandHandlerMap, ActionHandlerMap const& actionHandlerMap, ViewHandlerMap& viewHandlerMap);
 
         // Method to validate Slack message comes from slack.
         bool validateRequest(Request const& request);
@@ -250,6 +252,7 @@ class SlackEventHandler
                 }
                 View const& view = find->second;
                 view(request, response, viewAction);
+                plugin.viewHandlerMap.erase(find);
             }
             // Handles the interaction of individual components.
             std::string const& UPtrToString(std::unique_ptr<std::string> const& ptr)
@@ -472,7 +475,7 @@ class SlackEventHandler
 };
 
 inline
-SlackEventHandler::SlackEventHandler(std::string_view slackSecret, EventHandlerMap const& eventHandlerMap, SlashCommandHandlerMap const& slashCommandHandlerMap, ActionHandlerMap const& actionHandlerMap, ViewHandlerMap const& viewHandlerMap)
+SlackEventHandler::SlackEventHandler(std::string_view slackSecret, EventHandlerMap const& eventHandlerMap, SlashCommandHandlerMap const& slashCommandHandlerMap, ActionHandlerMap const& actionHandlerMap, ViewHandlerMap& viewHandlerMap)
     : slackSecret(slackSecret)
     , eventHandlerMap{eventHandlerMap}
     , slashCommandHandlerMap{slashCommandHandlerMap}
