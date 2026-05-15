@@ -158,8 +158,6 @@ class SlackEventHandler
 
         void handleURLVerificationEvent(Request const& request, Response& response, Event::EventURLVerification const& event);
 
-        void handleCallbackEvent(Request const& request, Response& response, Event::EventCallback const& event);
-
         /* Local Visitor types */
         struct VisitorEvent
         {
@@ -168,7 +166,7 @@ class SlackEventHandler
             Response&               response;
 
             void operator()(Event::EventURLVerification const& event)    {plugin.handleURLVerificationEvent(request, response, event);}
-            void operator()(Event::EventCallback const& event)           {plugin.handleCallbackEvent(request, response, event);}
+            void operator()(Event::EventCallback const& event)           {std::visit(VisitorCallbackEvent{plugin, event, request, response}, event.event);}
         };
         struct VisitorCallbackEvent
         {
@@ -193,212 +191,30 @@ class SlackEventHandler
                 eventHandler(EventRequest<T>{request, response, eventBase, event});
             }
         };
+        struct UPtrToString   // Extract a string from a unique ptr (use empty string for null)
+        {
+            static std::string constexpr emptyString = "";
+            std::string operator()(std::unique_ptr<std::string> const& ptr)     {if (ptr) {return *ptr;}                    return emptyString;}
+            std::string operator()(std::unique_ptr<BK::ElOption> const& ptr)    {if (ptr) {return ptr->value;}              return emptyString;}
+            std::string operator()(std::unique_ptr<long> const& ptr)            {if (ptr) {return std::to_string(*ptr);}    return emptyString;}
+        };
         struct UserActionCallback
         {
             SlackEventHandler&          plugin;
             Request const&              request;
             Response&                   response;
+            UPtrToString                ptr2String;
 
             // Handles View Interactions
             // API::Views::ViewSubmission, API::Views::ViewClose
             template<typename T>
-            void operator()(T const& viewAction)
-            {
-                std::string const&   viewId = viewAction.view.id;
-                auto find = plugin.viewHandlerMap.find(viewId);
-                if (find == plugin.viewHandlerMap.end()) {
-                    // No handler
-                    return;
-                }
-                View const& view = find->second;
-                view(request, response, viewAction);
-                plugin.viewHandlerMap.erase(find);
-            }
+            void operator()(T const& viewAction);
             // Handles the interaction of individual components.
-            std::string const& UPtrToString(std::unique_ptr<std::string> const& ptr)
-            {
-                static std::string const emptyString;
-
-                if (ptr.get() == nullptr) {
-                    return emptyString;
-                }
-                return *ptr;
-            }
-            std::string const& UPtrToString(std::unique_ptr<BK::ElOption> const& ptr)
-            {
-                static std::string const emptyString;
-
-                if (ptr.get() == nullptr) {
-                    return emptyString;
-                }
-                return ptr->value;
-            }
-            std::string UPtrToString(std::unique_ptr<long> const& ptr)
-            {
-                if (ptr.get() == nullptr) {
-                    return "";
-                }
-                return std::to_string(*ptr);
-            }
-            void operator()(API::BlockActions const& userAction)
-            {
-                auto view = plugin.viewHandlerMap.end();
-                if (userAction.view.has_value()) {
-                    std::string const&          triggerId   = userAction.view.value().id;
-                    view = plugin.viewHandlerMap.find(triggerId);
-                }
-                ActionHandlerMap const& actionHandlerMap = view == plugin.viewHandlerMap.end() ? plugin.actionHandlerMap : view->second.actionHandlerMap;
-
-                API::SlackAction const&     action      = userAction.actions.value()[0];
-                std::string const&          actionId    = action.action_id;
-
-                auto find = actionHandlerMap.find(actionId);
-                if (find == actionHandlerMap.end()) {
-                    // No installed handler for this action.
-                    return;
-                }
-
-                std::string const&          type        = action.type;
-                ActionHandler const&        handler     = find->second;
-
-                if (type == "datepicker") {
-                    // handleActionsDatePicker(request, response, event, action.action_id, action.selected_date.value());
-                    handler({request, response, userAction, UPtrToString(action.selected_date.value())});
-                }
-                else if (type == "datetimepicker") {
-                    // handleActionsDateTimePicker(request, response, event, action.action_id, action.selected_date_time.value());
-                    handler({request, response, userAction, UPtrToString(action.selected_date_time.value())});
-                }
-                else if (type == "timepicker") {
-                    // handleActionsTimePicker(request, response, event, action.action_id, action.selected_time.value());
-                    handler({request, response, userAction, UPtrToString(action.selected_time.value())});
-                }
-                else if (type == "checkboxes") {
-                    handleActionsCheckBox(request, response, userAction, action.action_id, action.selected_options.value(), handler);
-                }
-                else if (type == "radio_buttons") {
-                    // handleActionsRadioButton(request, response, event, action.action_id, action.selected_option->value);
-                    handler({request, response, userAction, UPtrToString(action.selected_option.value())});
-                }
-                else if (type == "static_select") {
-                    // handleActionsStaticMenu(request, response, event, action.action_id, action.selected_option->value);
-                    handler({request, response, userAction, UPtrToString(action.selected_option.value())});
-                }
-                else if (type == "overflow") {
-                    // handleActionsOverflowMenu(request, response, event, action.action_id, action.selected_option->value);
-                    handler({request, response, userAction, UPtrToString(action.selected_option.value())});
-                }
-                else if (type == "button") {
-                    // handleActionsButton(request, response, event, action.action_id, action.value.value());
-                    handler({request, response, userAction, UPtrToString(action.value.value())});
-                }
-                else if (type == "plain_text_input") {
-                    // handleActionsPlainTextInput(request, response, event, action.action_id, action.value.value());
-                    handler({request, response, userAction, UPtrToString(action.value.value())});
-                }
-                else {
-                    ThorsLogError("UserTodoSlackEventHandler", "handleUserActions", "Unknown Action: ", request.variables()["payload"]);
-                }
-            }
+            void operator()(API::BlockActions const& userAction);
             private:
-                BlockKit::VecElOption&  getInitialOptions(BlockKit::Block& block, std::string const& action_id)
-                {
-                    static BlockKit::VecElOption nullOption;
-                    nullOption.clear();
-
-                    if (holds_alternative<BlockKit::Input>(block)) {
-                        BlockKit::Input& inputBlock = std::get<BlockKit::Input>(block);
-                        BlockKit::ElActCheckbox& inputCheckBox = std::get<BlockKit::ElActCheckbox>(inputBlock.element);
-                        if (!inputCheckBox.initial_options.has_value()) {
-                            inputCheckBox.initial_options = BlockKit::VecElOption{};
-                        }
-                        return inputCheckBox.initial_options.value();
-                    }
-                    else if (holds_alternative<BlockKit::Actions>(block)) {
-                        BlockKit::Actions& actionsBlock = std::get<BlockKit::Actions>(block);
-                        std::vector<BlockKit::ElActive>& actionBlockElements = actionsBlock.elements;
-                        for (auto& element: actionBlockElements) {
-                            std::string const& actionId = std::visit(ActionIdGetter{}, element);
-                            if (action_id == actionId) {
-                                BlockKit::ElActCheckbox& inputCheckBox = std::get<BlockKit::ElActCheckbox>(element);
-                                if (!inputCheckBox.initial_options.has_value()) {
-                                    inputCheckBox.initial_options = BlockKit::VecElOption{};
-                                }
-                                return inputCheckBox.initial_options.value();
-                            }
-                        }
-                    }
-                    return nullOption;
-                }
-
-                void handleActionsCheckBox(Request const& request, Response& response, API::BlockActions const& event, std::string const& action_id, std::unique_ptr<BlockKit::VecElOption> const& values, ActionHandler const& handler)
-                {
-
-                    ThorsLogDebug("SlackEventHandler", "processesActionsCheckBox", "Recievent User Click on Checkbox");
-                    // Make a copy of the blocks.
-                    // We are going to modify this with the new state and update the UI.
-                    // This will make sure that the new state matches what the user has clicked.
-                    BlockKit::Blocks blocks = event.view.has_value() ? event.view.value().blocks : event.message.value().blocks;
-
-                    // Extract the currently selected options into a set.
-                    std::set<std::string>   currentState;
-                    if (values.get() != nullptr)
-                    {
-                        for (auto const& option: (*values)) {
-                            currentState.insert(option.value);
-                        }
-                    }
-
-                    // Extract the previously selected options
-                    // We need to search through the event to go find the exact info.
-                    std::set<std::string>   initState;
-                    std::string const& blockId = event.actions.value()[0].block_id;
-                    // We are searching fro the block that contains the set of checkboxes.
-                    for (auto& block : blocks) {
-                        std::string const& theBlockId = std::visit(BlockIdGetter{}, block);
-                        if (theBlockId == blockId) {
-                            // The initOptions is the value we need to update in the UI.
-                            // We need to find this to update it but also extract the initial state.
-                            BlockKit::VecElOption&  initOption = getInitialOptions(block, action_id);
-
-                            // Get the initialy selected options into a set.
-                            for (auto const& option: initOption) {
-                                initState.insert(option.value);
-                            }
-                            // Updating the init options.
-                            // This will we will write back to the UI below.
-                            initOption = *values;
-                        }
-                    }
-
-                    // Using the current state and the initial state.
-                    // We can now discover which checkbox the user clicked.
-                    // A lot of work thanks slack.
-                    std::set<std::string>   turnedOn;
-                    std::set<std::string>   turnedOff;
-
-                    std::set_difference(std::begin(currentState), std::end(currentState), std::begin(initState), std::end(initState),
-                                        std::inserter(turnedOn, turnedOn.begin()));
-                    std::set_difference(std::begin(initState), std::end(initState), std::begin(currentState), std::end(currentState),
-                                        std::inserter(turnedOff, turnedOff.begin()));
-
-
-                    // There should only be one change.
-                    if (turnedOn.size() + turnedOff.size() != 1) {
-                        ThorsLogError("TodoSlackEventHandler", "handleActionsCheckBox", "Change in state is not consistent: ", turnedOn.size(), " ", turnedOff.size());
-                    }
-                    else {
-                        if (turnedOn.size() == 1) {
-                            // handleActionsCheckBox(request, response, event, action_id, values, (*turnedOn.begin()), true, blocks);
-                            handler({request, response, event, std::string("+") + (*turnedOn.begin())});
-                        }
-                        if (turnedOff.size() == 1) {
-                            // handleActionsCheckBox(request, response, event, action_id, values, (*turnedOff.begin()), false, blocks);
-                            handler({request, response, event, std::string("-") + (*turnedOff.begin())});
-                        }
-                    }
-
-                }
+                // Checkboxes need a bit more handling than the other controls.
+                // So split a small amount of code out for readability
+                void handleActionsCheckBox(Request const& request, Response& response, API::BlockActions const& event, std::string const& action_id, std::unique_ptr<BlockKit::VecElOption> const& values, ActionHandler const& handler);
         };
 
         struct BlockIdGetter // Extract block_id from Block type
@@ -530,13 +346,6 @@ void SlackEventHandler::handleURLVerificationEvent(Request const& /*request*/, R
 }
 
 inline
-void SlackEventHandler::handleCallbackEvent(Request const& request, Response& response, Event::EventCallback const& event)
-{
-    ThorsLogTrack("ThorsAnvil::Slack::SlackEventHandler", "handleCallbackEvent", "Handling callback event");
-    std::visit(VisitorCallbackEvent{*this, event, request, response}, event.event);
-}
-
-inline
 void SlackEventHandler::handleUserActions(Request const& request, Response& response)
 {
     ThorsLogTrack("ThorsAnvil::Slack::TodoSlackEventHandler", "handleUserActions", "Recievent User Action");
@@ -559,6 +368,103 @@ void SlackEventHandler::handleSlashCommand(Request const& request, Response& res
         return;
     }
     find->second({request, response, command});
+}
+
+template<typename T>
+void SlackEventHandler::UserActionCallback::operator()(T const& viewAction)
+{
+    std::string const&   viewId = viewAction.view.id;
+    auto find = plugin.viewHandlerMap.find(viewId);
+    if (find == plugin.viewHandlerMap.end()) {
+        // No handler
+        return;
+    }
+    View const& view = find->second;
+    view(request, response, viewAction);
+    plugin.viewHandlerMap.erase(find);
+}
+
+// Handles the interaction of individual components.
+inline
+void SlackEventHandler::UserActionCallback::operator()(API::BlockActions const& userAction)
+{
+    auto view = plugin.viewHandlerMap.end();
+    if (userAction.view.has_value()) {
+        std::string const&          triggerId   = userAction.view.value().id;
+        view = plugin.viewHandlerMap.find(triggerId);
+    }
+    ActionHandlerMap const& actionHandlerMap = view == plugin.viewHandlerMap.end() ? plugin.actionHandlerMap : view->second.actionHandlerMap;
+
+    API::SlackAction const&     action      = userAction.actions.value()[0];
+    std::string const&          actionId    = action.action_id;
+
+    auto find = actionHandlerMap.find(actionId);
+    if (find == actionHandlerMap.end()) {
+        // No installed handler for this action.
+        return;
+    }
+
+    std::string const&          type        = action.type;
+    ActionHandler const&        handler     = find->second;
+
+    if (type == "datepicker") {
+        // handleActionsDatePicker(request, response, event, action.action_id, action.selected_date.value());
+        handler({request, response, userAction, ptr2String(action.selected_date.value())});
+    }
+    else if (type == "datetimepicker") {
+        // handleActionsDateTimePicker(request, response, event, action.action_id, action.selected_date_time.value());
+        handler({request, response, userAction, ptr2String(action.selected_date_time.value())});
+    }
+    else if (type == "timepicker") {
+        // handleActionsTimePicker(request, response, event, action.action_id, action.selected_time.value());
+        handler({request, response, userAction, ptr2String(action.selected_time.value())});
+    }
+    else if (type == "checkboxes") {
+        handleActionsCheckBox(request, response, userAction, action.action_id, action.selected_options.value(), handler);
+    }
+    else if (type == "radio_buttons") {
+        // handleActionsRadioButton(request, response, event, action.action_id, action.selected_option->value);
+        handler({request, response, userAction, ptr2String(action.selected_option.value())});
+    }
+    else if (type == "static_select") {
+        // handleActionsStaticMenu(request, response, event, action.action_id, action.selected_option->value);
+        handler({request, response, userAction, ptr2String(action.selected_option.value())});
+    }
+    else if (type == "overflow") {
+        // handleActionsOverflowMenu(request, response, event, action.action_id, action.selected_option->value);
+        handler({request, response, userAction, ptr2String(action.selected_option.value())});
+    }
+    else if (type == "button") {
+        // handleActionsButton(request, response, event, action.action_id, action.value.value());
+        handler({request, response, userAction, ptr2String(action.value.value())});
+    }
+    else if (type == "plain_text_input") {
+        // handleActionsPlainTextInput(request, response, event, action.action_id, action.value.value());
+        handler({request, response, userAction, ptr2String(action.value.value())});
+    }
+    else {
+        ThorsLogError("UserTodoSlackEventHandler", "handleUserActions", "Unknown Action: ", request.variables()["payload"]);
+    }
+}
+
+inline
+void SlackEventHandler::UserActionCallback::handleActionsCheckBox(Request const& request, Response& response, API::BlockActions const& event, std::string const& action_id, std::unique_ptr<BlockKit::VecElOption> const& values, ActionHandler const& handler)
+{
+    ThorsLogDebug("SlackEventHandler", "processesActionsCheckBox", "Recievent User Click on Checkbox");
+
+    // Extract the currently selected options into a set.
+    std::string     currentState;
+    std::string     seporator = "";     // initial empty;
+    if (values.get() != nullptr)
+    {
+        for (auto const& option: (*values)) {
+            currentState += seporator;
+            currentState += option.value;
+            seporator = ":";
+        }
+    }
+
+    handler({request, response, event, currentState});
 }
 
 }
