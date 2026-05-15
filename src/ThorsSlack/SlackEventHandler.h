@@ -176,20 +176,7 @@ class SlackEventHandler
             Response&                   response;
 
             template<typename T>
-            void operator()(T const& event)
-            {
-                std::string const& key = T::typeName();
-                auto find = plugin.eventHandlerMap.find(key);
-                if (find == plugin.eventHandlerMap.end()) {
-                    ThorsLogError("ThorsAnvil::Slack::SlackEventHandler::VisitorCallbackEvent::operator()", key, "Call to unimplemented method");
-                    response.setStatus(501);
-                    return;
-                }
-                ThorsLogDebug("ThorsAnvil::Slack::SlackEventHandler::VisitorCallbackEvent::operator()", key, "Calling client handler");
-                AnyEventHandler const&  anyHandler   = find->second;
-                EventHandler<T> const&  eventHandler = std::get<EventHandler<T>>(anyHandler);
-                eventHandler(EventRequest<T>{request, response, eventBase, event});
-            }
+            void operator()(T const& event);
         };
         struct UserActionCallback
         {
@@ -360,6 +347,7 @@ void SlackEventHandler::handleUserActions(Request const& request, Response& resp
 inline
 void SlackEventHandler::handleSlashCommand(Request const& request, Response& response)
 {
+    ThorsLogTrack("ThorsAnvil::Slack::SlackEventHandler", "handleSlashCommand", "Slash command: ");
     SlashCommand        command(request);
     auto find = slashCommandHandlerMap.find(command.command);
     if (find == slashCommandHandlerMap.end()) {
@@ -371,8 +359,26 @@ void SlackEventHandler::handleSlashCommand(Request const& request, Response& res
 }
 
 template<typename T>
+void SlackEventHandler::VisitorCallbackEvent::operator()(T const& event)
+{
+    ThorsLogTrack("ThorsAnvil::Slack::SlackEventHandler::VisitorCallbackEvent", "operator()(event)", "Message Recieved:");
+    std::string const& key = T::typeName();
+    auto find = plugin.eventHandlerMap.find(key);
+    if (find == plugin.eventHandlerMap.end()) {
+        ThorsLogError("ThorsAnvil::Slack::SlackEventHandler::VisitorCallbackEvent::operator()", key, "Call to unimplemented method");
+        response.setStatus(501);
+        return;
+    }
+    ThorsLogDebug("ThorsAnvil::Slack::SlackEventHandler::VisitorCallbackEvent::operator()", key, "Calling client handler");
+    AnyEventHandler const&  anyHandler   = find->second;
+    EventHandler<T> const&  eventHandler = std::get<EventHandler<T>>(anyHandler);
+    eventHandler(EventRequest<T>{request, response, eventBase, event});
+}
+
+template<typename T>
 void SlackEventHandler::UserActionCallback::operator()(T const& viewAction)
 {
+    ThorsLogTrack("ThorsAnvil::Slack::SlackEventHandler::UserActionCallback", "operator()(ViewAction)", "Message Recieved:");
     std::string const&   viewId = viewAction.view.id;
     auto find = plugin.viewHandlerMap.find(viewId);
     if (find == plugin.viewHandlerMap.end()) {
@@ -388,6 +394,7 @@ void SlackEventHandler::UserActionCallback::operator()(T const& viewAction)
 inline
 void SlackEventHandler::UserActionCallback::operator()(API::BlockActions const& userAction)
 {
+    ThorsLogTrack("ThorsAnvil::Slack::SlackEventHandler::UserActionCallback", "operator()(ViewAction)", "Message Recieved:");
     auto view = plugin.viewHandlerMap.end();
     if (userAction.view.has_value()) {
         std::string const&          triggerId   = userAction.view.value().id;
@@ -443,8 +450,6 @@ void SlackEventHandler::UserActionCallback::operator()(API::BlockActions const& 
 inline
 void SlackEventHandler::UserActionCallback::handleActionsCheckBox(Request const& request, Response& response, API::BlockActions const& event, std::unique_ptr<BlockKit::VecElOption> const& values, ActionHandler const& handler)
 {
-    ThorsLogDebug("SlackEventHandler", "processesActionsCheckBox", "Recievent User Click on Checkbox");
-
     // Extract the currently selected options into a set.
     std::string     currentState;
     std::string     seporator = "";     // initial empty;
