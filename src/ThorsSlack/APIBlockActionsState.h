@@ -18,105 +18,104 @@ using NullString        = std::unique_ptr<std::string>;
 using NullTime          = std::unique_ptr<std::time_t>;
 
 // The value for a CheckBox
-struct ElActCheckboxValue
+struct CheckboxesValue
 {
     // std::string                         type;               // checkboxes Have Example
     NullVecElOption                     selected_options;
     NullVecElOption const&  getValue() const {return selected_options;}
-    ThorsAnvil_VariantSerializerWithName(ThorsAnvil::Slack::BlockKit::ElActCheckboxValue, checkboxes);
+    ThorsAnvil_VariantSerializerWithName(ThorsAnvil::Slack::BlockKit::CheckboxesValue, checkboxes);
     ThorsAnvil_TypeFieldName(type);
 };
 
-struct ElActDatePickerValue
+struct DatePickerValue
 {
     // std::string                         type;               // datepicker Have Example
     NullString                          selected_date;
     NullString const&  getValue() const {return selected_date;}
-    ThorsAnvil_VariantSerializerWithName(ThorsAnvil::Slack::BlockKit::ElActDatePickerValue, datepicker);
+    ThorsAnvil_VariantSerializerWithName(ThorsAnvil::Slack::BlockKit::DatePickerValue, datepicker);
     ThorsAnvil_TypeFieldName(type);
 };
 
-struct ElActDatetimePickerValue
+struct DateTimePickerValue
 {
     // std::string                         type;               // datetimepicker Have Example
     NullTime                            selected_date_time;
     NullTime const&  getValue() const {return selected_date_time;}
-    ThorsAnvil_VariantSerializerWithName(ThorsAnvil::Slack::BlockKit::ElActDatetimePickerValue, datetimepicker);
+    ThorsAnvil_VariantSerializerWithName(ThorsAnvil::Slack::BlockKit::DateTimePickerValue, datetimepicker);
     ThorsAnvil_TypeFieldName(type);
 };
 
 
-struct ElActEMailValue
+struct EmailTextInputValue
 {
     // std::string                         type;               // email_text_input => NEED EXAMPLE <=
     NullString                          initial_value;
     NullString const&  getValue() const {return initial_value;}
-    ThorsAnvil_VariantSerializerWithName(ThorsAnvil::Slack::BlockKit::ElActEMailValue, email_text_input);
+    ThorsAnvil_VariantSerializerWithName(ThorsAnvil::Slack::BlockKit::EmailTextInputValue, email_text_input);
     ThorsAnvil_TypeFieldName(type);
 };
 
-struct ElActNumberInputValue
+struct NumberInputValue
 {
     // std::string                         type;               // number_input => NEED EXAMPLE <=
     NullString                          initial_value;
     NullString const&  getValue() const {return initial_value;}
-    ThorsAnvil_VariantSerializerWithName(ThorsAnvil::Slack::BlockKit::ElActNumberInputValue, number_input);
+    ThorsAnvil_VariantSerializerWithName(ThorsAnvil::Slack::BlockKit::NumberInputValue, number_input);
     ThorsAnvil_TypeFieldName(type);
 };
 
 // The value for a text input field.
-struct ElActPlainTextInputValue
+struct PlainTextInputValue
 {
     //std::string                         type;               // plain_text_input
     NullString                          value;
 
     NullString const&  getValue() const {return value;}
-    ThorsAnvil_VariantSerializerWithName(ThorsAnvil::Slack::BlockKit::ElActPlainTextInputValue, plain_text_input);
+    ThorsAnvil_VariantSerializerWithName(ThorsAnvil::Slack::BlockKit::PlainTextInputValue, plain_text_input);
     ThorsAnvil_TypeFieldName(type);
 };
 
 // The value for a RadioButton
-struct ElActRadioButtonValue
+struct RadioButtonsValue
 {
     // std::string                         type;               // radio_buttons: Have Example
     BK::ElOption                        selected_option;
     BK::ElOption const&  getValue() const {return selected_option;}
-    ThorsAnvil_VariantSerializerWithName(ThorsAnvil::Slack::BlockKit::ElActRadioButtonValue, radio_buttons);
+    ThorsAnvil_VariantSerializerWithName(ThorsAnvil::Slack::BlockKit::RadiosButtonValue, radio_buttons);
     ThorsAnvil_TypeFieldName(type);
 };
 
-struct ElActSelectMenuValue
+struct StaticSelectValue
 {
     // std::string                         type;               // static_select: Have Example
     NullElOption                        selected_option;
     NullElOption const&  getValue() const {return selected_option;}
-    ThorsAnvil_VariantSerializerWithName(ThorsAnvil::Slack::BlockKit::ElActSelectMenuValue, static_select);
+    ThorsAnvil_VariantSerializerWithName(ThorsAnvil::Slack::BlockKit::StaticSelectValue, static_select);
     ThorsAnvil_TypeFieldName(type);
 };
 
-struct ElActTimePickerValue
+struct TimePickerValue
 {
     // std::string                         type;               // timepicker: Have Example
     NullString                          selected_time;
     NullString const&  getValue() const {return selected_time;}
-    ThorsAnvil_VariantSerializerWithName(ThorsAnvil::Slack::BlockKit::ElActTimePickerValue, timepicker);
+    ThorsAnvil_VariantSerializerWithName(ThorsAnvil::Slack::BlockKit::TimePickerValue, timepicker);
     ThorsAnvil_TypeFieldName(type);
 };
 
-// InputElement = std::variant<ElActURLInput>;
-struct ElActURLInputValue
+struct URLTextInputValue
 {
     // std::string                         type;               // url_text_input: => NEED EXAMPLE <=
     NullString                          initial_value;
     NullString const&  getValue() const {return initial_value;}
-    ThorsAnvil_VariantSerializerWithName(ThorsAnvil::Slack::BlockKit::ElActURLInputValue, url_text_input);
+    ThorsAnvil_VariantSerializerWithName(ThorsAnvil::Slack::BlockKit::URLTextInputValue, url_text_input);
     ThorsAnvil_TypeFieldName(type);
 };
 
 
 // See Also InputElement.
 // This set of variants should be kept in sync with the type InputElement.
-using InputValue = std::variant<ElActCheckboxValue, ElActDatePickerValue, ElActDatetimePickerValue, ElActEMailValue, ElActNumberInputValue, ElActPlainTextInputValue, ElActRadioButtonValue, /*ElActRichTextInputValue,*/ ElActSelectMenuValue, ElActTimePickerValue, ElActURLInputValue>;
+using InputValue = std::variant<CheckboxesValue, DatePickerValue, DateTimePickerValue, EmailTextInputValue, NumberInputValue, PlainTextInputValue, RadioButtonsValue, /*RichTextInputValue,*/ StaticSelectValue, TimePickerValue, URLTextInputValue>;
 
 
 // action_id of the "InputElement" object
@@ -147,16 +146,16 @@ using NullSlackState = std::unique_ptr<SlackState>;
 
 }
 
-ThorsAnvil_MakeTrait(ThorsAnvil::Slack::API::ElActCheckboxValue, selected_options);         //
-ThorsAnvil_MakeTrait(ThorsAnvil::Slack::API::ElActDatePickerValue, selected_date);
-ThorsAnvil_MakeTrait(ThorsAnvil::Slack::API::ElActDatetimePickerValue, selected_date_time);
-ThorsAnvil_MakeTrait(ThorsAnvil::Slack::API::ElActEMailValue, initial_value);
-ThorsAnvil_MakeTrait(ThorsAnvil::Slack::API::ElActNumberInputValue, initial_value);
-ThorsAnvil_MakeTrait(ThorsAnvil::Slack::API::ElActPlainTextInputValue, value);
-ThorsAnvil_MakeTrait(ThorsAnvil::Slack::API::ElActRadioButtonValue, selected_option);
-ThorsAnvil_MakeTrait(ThorsAnvil::Slack::API::ElActSelectMenuValue, selected_option);
-ThorsAnvil_MakeTrait(ThorsAnvil::Slack::API::ElActTimePickerValue, selected_time);
-ThorsAnvil_MakeTrait(ThorsAnvil::Slack::API::ElActURLInputValue, initial_value);
+ThorsAnvil_MakeTrait(ThorsAnvil::Slack::API::CheckboxesValue, selected_options);         //
+ThorsAnvil_MakeTrait(ThorsAnvil::Slack::API::DatePickerValue, selected_date);
+ThorsAnvil_MakeTrait(ThorsAnvil::Slack::API::DateTimePickerValue, selected_date_time);
+ThorsAnvil_MakeTrait(ThorsAnvil::Slack::API::EmailTextInputValue, initial_value);
+ThorsAnvil_MakeTrait(ThorsAnvil::Slack::API::NumberInputValue, initial_value);
+ThorsAnvil_MakeTrait(ThorsAnvil::Slack::API::PlainTextInputValue, value);
+ThorsAnvil_MakeTrait(ThorsAnvil::Slack::API::RadioButtonsValue, selected_option);
+ThorsAnvil_MakeTrait(ThorsAnvil::Slack::API::StaticSelectValue, selected_option);
+ThorsAnvil_MakeTrait(ThorsAnvil::Slack::API::TimePickerValue, selected_time);
+ThorsAnvil_MakeTrait(ThorsAnvil::Slack::API::URLTextInputValue, initial_value);
 
 ThorsAnvil_MakeTrait(ThorsAnvil::Slack::API::SlackState, values);
 

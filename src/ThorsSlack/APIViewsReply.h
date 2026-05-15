@@ -12,7 +12,7 @@
 namespace ThorsAnvil::Slack::API::Views
 {
 
-using UPtrElTextPlain = std::unique_ptr<BlockKit::ElTextPlain>;
+using UPtrPlainText   = std::unique_ptr<BlockKit::PlainText>;
 using UPtrString      = std::unique_ptr<std::string>;
 
 
@@ -21,10 +21,10 @@ struct ViewReply
     std::string                         id;
     std::string                         team_id;
     std::string                         type;
-    BlockKit::ElTextPlain               title;
+    BlockKit::PlainText                 title;
     BlockKit::Blocks                    blocks;
-    UPtrElTextPlain                     close;
-    UPtrElTextPlain                     submit;
+    UPtrPlainText                       close;
+    UPtrPlainText                       submit;
     std::string                         private_metadata;
     std::string                         callback_id;
     bool                                clear_on_close;

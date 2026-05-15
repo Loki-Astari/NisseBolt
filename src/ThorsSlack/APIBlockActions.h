@@ -62,14 +62,14 @@ struct SlackAction
     std::string                         block_id;
     std::string                         action_ts;
     // Value Part
-    OptNullString                       selected_date;      // ElActDatePicker      Example: "2025-12-25"
-    OptNullTime                         selected_date_time; // ElActDatetimePicker  Example: 1766732220
-    OptNullString                       selected_time;      // ElActTimePicker      Example: "04:00"
-    OptNullElText                       text;               // ElActButton
-    OptNullString                       value;              // ElActButton
-    OptNullVecElOption                  selected_options;   // ElActCheckbox
-    OptNullElOption                     selected_option;    // ElActRadioButton / ElActSelectMenu / ElActOverflowMenu
-    // No Event Generated for:                              // ElActEMail / ElActNumberInput / ElActPlainTextInput / ElActURLInput
+    OptNullString                       selected_date;      // DatePicker      Example: "2025-12-25"
+    OptNullTime                         selected_date_time; // DatetimePicker  Example: 1766732220
+    OptNullString                       selected_time;      // TimePicker      Example: "04:00"
+    OptNullElText                       text;               // Button
+    OptNullString                       value;              // Button
+    OptNullVecElOption                  selected_options;   // Checkboxes
+    OptNullElOption                     selected_option;    // RadioButtons / StaticSelect / Overflow
+    // No Event Generated for:                              // EmailTextInput / NumberInput / PlainTextInput / URLTextInput
 };
 using VecSlackActions = std::vector<SlackAction>;
 using OptVecSlackActions = std::optional<VecSlackActions>;

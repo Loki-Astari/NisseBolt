@@ -56,8 +56,8 @@ TEST(APIChatMessageTest, SimpleText)
     ASSERT_TRUE(std::holds_alternative<BK::RichTextSection>(text.elements[0]));
     BK::RichTextSection&    section = std::get<BK::RichTextSection>(text.elements[0]);
 
-    ASSERT_TRUE(std::holds_alternative<BK::ElRtText>(section.elements[0]));
-    BK::ElRtText&           rtext = std::get<BK::ElRtText>(section.elements[0]);
+    ASSERT_TRUE(std::holds_alternative<BK::Text>(section.elements[0]));
+    BK::Text&               rtext = std::get<BK::Text>(section.elements[0]);
 
     EXPECT_EQ("I hope the tour went well, Mr. Wonka.", rtext.text);
 }
@@ -69,16 +69,11 @@ TEST(APIChatMessageTest, Block_Section_ElText)
                             .channel = environment.slackChannel,
                             .blocks = BK::Blocks{
                                         BK::Section{
-                                            .text = BK::ElText{
-                                                        .type = BK::mrkdwn,
-                                                        .text = "Stuff to print"}
+                                            .text = BK::MrkDwn{.text = "Stuff to print"}
                                             },
                                         BK::Divider{},
                                         BK::Section{
-                                            .text = BK::ElText{
-                                                        .type = BK::plain_text,
-                                                        .text = "Here we go"
-                                            }
+                                            .text = BK::PlainText{.text = "Here we go"}
                                         }
                             }
                        }, reply, true);
@@ -86,15 +81,17 @@ TEST(APIChatMessageTest, Block_Section_ElText)
     ASSERT_EQ(3, reply.message.blocks.size());
     ASSERT_TRUE(std::holds_alternative<BK::Section>(reply.message.blocks[0]));
     BK::Section&            section1 = std::get<BK::Section>(reply.message.blocks[0]);
+    ThorsAnvil::Slack::BlockKit::TextGetter              text;
+
     ASSERT_TRUE(section1.text.has_value());
-    EXPECT_EQ("Stuff to print", section1.text.value().text);
+    EXPECT_EQ("Stuff to print", std::visit(text, section1.text.value()));
 
     ASSERT_TRUE(std::holds_alternative<BK::Divider>(reply.message.blocks[1]));
 
     ASSERT_TRUE(std::holds_alternative<BK::Section>(reply.message.blocks[2]));
     BK::Section&            section2 = std::get<BK::Section>(reply.message.blocks[2]);
     ASSERT_TRUE(section2.text.has_value());
-    EXPECT_EQ("Here we go", section2.text.value().text);
+    EXPECT_EQ("Here we go", std::visit(text, section2.text.value()));
 }
 
 TEST(APIChatMessageTest, MessageWithBadJSON)
@@ -115,8 +112,8 @@ TEST(APIChatMessageTest, Delete)
     ASSERT_TRUE(std::holds_alternative<BK::RichTextSection>(text.elements[0]));
     BK::RichTextSection&    section = std::get<BK::RichTextSection>(text.elements[0]);
 
-    ASSERT_TRUE(std::holds_alternative<BK::ElRtText>(section.elements[0]));
-    BK::ElRtText&           rtext = std::get<BK::ElRtText>(section.elements[0]);
+    ASSERT_TRUE(std::holds_alternative<BK::Text>(section.elements[0]));
+    BK::Text&               rtext = std::get<BK::Text>(section.elements[0]);
 
     EXPECT_EQ("I hope the tour went well, Mr. Wonka.", rtext.text);
 
@@ -154,8 +151,8 @@ TEST(APIChatMessageTest, Update)
     ASSERT_TRUE(std::holds_alternative<BK::RichTextSection>(text.elements[0]));
     BK::RichTextSection&    section = std::get<BK::RichTextSection>(text.elements[0]);
 
-    ASSERT_TRUE(std::holds_alternative<BK::ElRtText>(section.elements[0]));
-    BK::ElRtText&           rtext = std::get<BK::ElRtText>(section.elements[0]);
+    ASSERT_TRUE(std::holds_alternative<BK::Text>(section.elements[0]));
+    BK::Text&               rtext = std::get<BK::Text>(section.elements[0]);
 
     EXPECT_EQ("I hope the tour went well, Mr. Wonka.", rtext.text);
 
@@ -175,8 +172,8 @@ TEST(APIChatMessageTest, Update)
     ASSERT_TRUE(std::holds_alternative<BK::RichTextSection>(text1.elements[0]));
     BK::RichTextSection&    section1 = std::get<BK::RichTextSection>(text1.elements[0]);
 
-    ASSERT_TRUE(std::holds_alternative<BK::ElRtText>(section1.elements[0]));
-    BK::ElRtText&           rtext1 = std::get<BK::ElRtText>(section1.elements[0]);
+    ASSERT_TRUE(std::holds_alternative<BK::Text>(section1.elements[0]));
+    BK::Text&               rtext1 = std::get<BK::Text>(section1.elements[0]);
 
     EXPECT_EQ("Update text.", rtext1.text);
 }

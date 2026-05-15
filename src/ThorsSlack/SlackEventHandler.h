@@ -222,14 +222,14 @@ class SlackEventHandler
         };
         struct ActionIdGetter // Extract block_id from ElActive type
         {
-            std::string const& operator()(BlockKit::ElActButton const& action){return action.action_id.value();}
-            std::string const& operator()(BlockKit::ElActCheckbox const& action){return action.action_id.value();}
-            std::string const& operator()(BlockKit::ElActDatePicker const& action){return action.action_id.value();}
-            std::string const& operator()(BlockKit::ElActDatetimePicker const& action){return action.action_id.value();}
-            std::string const& operator()(BlockKit::ElActOverflowMenu const& action){return action.action_id.value();}
-            std::string const& operator()(BlockKit::ElActRadioButton const& action){return action.action_id.value();}
-            std::string const& operator()(BlockKit::ElActSelectMenu const& action){return action.action_id.value();}
-            std::string const& operator()(BlockKit::ElActTimePicker const& action){return action.action_id.value();}
+            std::string const& operator()(BlockKit::Button const& action){return action.action_id.value();}
+            std::string const& operator()(BlockKit::Checkboxes const& action){return action.action_id.value();}
+            std::string const& operator()(BlockKit::DatePicker const& action){return action.action_id.value();}
+            std::string const& operator()(BlockKit::DateTimePicker const& action){return action.action_id.value();}
+            std::string const& operator()(BlockKit::Overflow const& action){return action.action_id.value();}
+            std::string const& operator()(BlockKit::RadioButtons const& action){return action.action_id.value();}
+            std::string const& operator()(BlockKit::StaticSelect const& action){return action.action_id.value();}
+            std::string const& operator()(BlockKit::TimePicker const& action){return action.action_id.value();}
         };
 
 };
