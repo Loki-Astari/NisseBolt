@@ -35,7 +35,7 @@ namespace ThorsAnvil::Slack
 using ThorsAnvil::Nisse::HTTP::Request;
 using ThorsAnvil::Nisse::HTTP::Response;
 
-using EventObject = std::variant<API::BlockActions, API::Views::ViewSubmission, API::Views::ViewClose>;
+using EventObject = std::variant<API::BlockActions, API::Views::ViewSubmission, API::Views::ViewClosed>;
 using CmdEvent  = std::variant<API::Views::ViewSubmission const*>;
 
 template<typename T>
@@ -103,18 +103,18 @@ struct ViewHandlerRequest
     EventObject const&                          command;
 };
 using ViewSubmitHandler     = std::function<void(ThorsAnvil::Nisse::HTTP::Request const&, ThorsAnvil::Nisse::HTTP::Response&, API::Views::ViewSubmission const&)>;
-using ViewCloseHandler      = std::function<void(ThorsAnvil::Nisse::HTTP::Request const&, ThorsAnvil::Nisse::HTTP::Response&, API::Views::ViewClose const&)>;
+using ViewClosedHandler     = std::function<void(ThorsAnvil::Nisse::HTTP::Request const&, ThorsAnvil::Nisse::HTTP::Response&, API::Views::ViewClosed const&)>;
 using ViewActionHandler     = std::function<void(ThorsAnvil::Nisse::HTTP::Request const&, ThorsAnvil::Nisse::HTTP::Response&, API::BlockActions const&, std::string const& value)>;
 
 
 struct View
 {
     ViewSubmitHandler   submitHandler;
-    ViewCloseHandler    closeHanlder;
+    ViewClosedHandler   closedHanlder;
     ActionHandlerMap    actionHandlerMap;
 
     void operator()(ThorsAnvil::Nisse::HTTP::Request const& request, ThorsAnvil::Nisse::HTTP::Response& response, API::Views::ViewSubmission const& submit)                     const {submitHandler(request, response, submit);}
-    void operator()(ThorsAnvil::Nisse::HTTP::Request const& request, ThorsAnvil::Nisse::HTTP::Response& response, API::Views::ViewClose const& close)                           const {closeHanlder(request, response, close);}
+    void operator()(ThorsAnvil::Nisse::HTTP::Request const& request, ThorsAnvil::Nisse::HTTP::Response& response, API::Views::ViewClosed const& close)                          const {closedHanlder(request, response, close);}
 };
 
 using ViewHandlerMap        = std::map<std::string, View>;
@@ -198,7 +198,7 @@ class SlackEventHandler
             Response&                   response;
 
             // Handles View Interactions
-            // API::Views::ViewSubmission, API::Views::ViewClose
+            // API::Views::ViewSubmission, API::Views::ViewClosed
             template<typename T>
             void operator()(T const& viewAction);
             // Handles the interaction of individual components.

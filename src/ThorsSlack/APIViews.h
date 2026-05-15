@@ -176,15 +176,15 @@ struct ViewSubmission
     ThorsAnvil_TypeFieldName(type);
 };
 
-struct ViewClose
+struct ViewClosed
 {
-    // std::string                         type;               // view_close
+    // std::string                         type;               // view_closed
     SlackTeam                           team;
     SlackUser                           user;
     ViewReply                           view;
     bool                                is_cleared;
 
-    ThorsAnvil_VariantSerializerWithName(ThorsAnvil::Slack::BlockKit::ViewSubmission, view_close);
+    ThorsAnvil_VariantSerializerWithName(ThorsAnvil::Slack::BlockKit::ViewSubmission, view_closed);
     ThorsAnvil_TypeFieldName(type);
 };
 
@@ -202,6 +202,6 @@ ThorsAnvil_MakeTrait(ThorsAnvil::Slack::API::Views::Push, view, trigger_id, inte
 ThorsAnvil_MakeTrait(ThorsAnvil::Slack::API::Views::Update, view, view_id, external_id, hash);
 
 ThorsAnvil_MakeTrait(ThorsAnvil::Slack::API::Views::ViewSubmission, team, user, api_app_id, token, trigger_id, view, response_urls, is_enterprise_install, enterprise);
-ThorsAnvil_MakeTrait(ThorsAnvil::Slack::API::Views::ViewClose, team, user, view, is_cleared);
+ThorsAnvil_MakeTrait(ThorsAnvil::Slack::API::Views::ViewClosed, team, user, view, is_cleared);
 
 #endif

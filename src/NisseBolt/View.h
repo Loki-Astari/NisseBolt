@@ -18,7 +18,7 @@ class View
 
     public:
         View(ThorsAnvil::Slack::API::Views::View&& view, ViewSubmitHandler&& submitHandler);
-        View(ThorsAnvil::Slack::API::Views::View&& view, ViewSubmitHandler&& submitHandler, ViewCloseHandler&& closeHandler);
+        View(ThorsAnvil::Slack::API::Views::View&& view, ViewSubmitHandler&& submitHandler, ViewClosedHandler&& closeHandler);
 
         // Handle User Actions.
         void action(std::string const& actionId, ActionHandler&& handler);

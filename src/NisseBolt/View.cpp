@@ -2,7 +2,7 @@
 
 using namespace ThorsAnvil::Nisse::Bolt;
 
-View::View(ThorsAnvil::Slack::API::Views::View&& view, ViewSubmitHandler&& submitHandler, ViewCloseHandler&& closeHandler)
+View::View(ThorsAnvil::Slack::API::Views::View&& view, ViewSubmitHandler&& submitHandler, ViewClosedHandler&& closeHandler)
     : view{std::move(view)}
     , viewHandlers{
                     [submit = std::move(submitHandler)](ThorsAnvil::Nisse::HTTP::Request const& /*request*/, ThorsAnvil::Nisse::HTTP::Response& response, ThorsAnvil::Slack::API::Views::ViewSubmission const& view)
@@ -11,7 +11,7 @@ View::View(ThorsAnvil::Slack::API::Views::View&& view, ViewSubmitHandler&& submi
                         Response    response1;
                         submit(ack, response1, view);
                     },
-                    [close = std::move(closeHandler)](ThorsAnvil::Nisse::HTTP::Request const& /*request*/, ThorsAnvil::Nisse::HTTP::Response& response, ThorsAnvil::Slack::API::Views::ViewClose const& view)
+                    [close = std::move(closeHandler)](ThorsAnvil::Nisse::HTTP::Request const& /*request*/, ThorsAnvil::Nisse::HTTP::Response& response, ThorsAnvil::Slack::API::Views::ViewClosed const& view)
                     {
                         Ack         ack{response};
                         Response    response1;
@@ -32,7 +32,7 @@ View::View(ThorsAnvil::Slack::API::Views::View&& view, ViewSubmitHandler&& submi
                         Response    response1;
                         submit(ack, response1, view);
                     },
-                    [](ThorsAnvil::Nisse::HTTP::Request const& /*request*/, ThorsAnvil::Nisse::HTTP::Response& /*response*/, ThorsAnvil::Slack::API::Views::ViewClose const& /*view*/)  {},
+                    [](ThorsAnvil::Nisse::HTTP::Request const& /*request*/, ThorsAnvil::Nisse::HTTP::Response& /*response*/, ThorsAnvil::Slack::API::Views::ViewClosed const& /*view*/)  {},
                     {}
                   }
 {}
