@@ -191,19 +191,11 @@ class SlackEventHandler
                 eventHandler(EventRequest<T>{request, response, eventBase, event});
             }
         };
-        struct UPtrToString   // Extract a string from a unique ptr (use empty string for null)
-        {
-            static std::string constexpr emptyString = "";
-            std::string operator()(std::unique_ptr<std::string> const& ptr)     {if (ptr) {return *ptr;}                    return emptyString;}
-            std::string operator()(std::unique_ptr<BK::ElOption> const& ptr)    {if (ptr) {return ptr->value;}              return emptyString;}
-            std::string operator()(std::unique_ptr<long> const& ptr)            {if (ptr) {return std::to_string(*ptr);}    return emptyString;}
-        };
         struct UserActionCallback
         {
             SlackEventHandler&          plugin;
             Request const&              request;
             Response&                   response;
-            UPtrToString                ptr2String;
 
             // Handles View Interactions
             // API::Views::ViewSubmission, API::Views::ViewClose
@@ -214,9 +206,17 @@ class SlackEventHandler
             private:
                 // Checkboxes need a bit more handling than the other controls.
                 // So split a small amount of code out for readability
-                void handleActionsCheckBox(Request const& request, Response& response, API::BlockActions const& event, std::string const& action_id, std::unique_ptr<BlockKit::VecElOption> const& values, ActionHandler const& handler);
+                void handleActionsCheckBox(Request const& request, Response& response, API::BlockActions const& event, std::unique_ptr<BlockKit::VecElOption> const& values, ActionHandler const& handler);
         };
 
+        // Simple Utility helpers.
+        struct UPtrToString   // Extract a string from a unique ptr (use empty string for null)
+        {
+            static std::string constexpr emptyString = "";
+            std::string operator()(std::unique_ptr<std::string> const& ptr)     {if (ptr) {return *ptr;}                    return emptyString;}
+            std::string operator()(std::unique_ptr<BK::ElOption> const& ptr)    {if (ptr) {return ptr->value;}              return emptyString;}
+            std::string operator()(std::unique_ptr<long> const& ptr)            {if (ptr) {return std::to_string(*ptr);}    return emptyString;}
+        };
         struct BlockIdGetter // Extract block_id from Block type
         {
             std::string const& operator()(BlockKit::Actions const& block){return block.block_id.value();}
@@ -406,40 +406,33 @@ void SlackEventHandler::UserActionCallback::operator()(API::BlockActions const& 
 
     std::string const&          type        = action.type;
     ActionHandler const&        handler     = find->second;
+    UPtrToString                ptr2String;
 
     if (type == "datepicker") {
-        // handleActionsDatePicker(request, response, event, action.action_id, action.selected_date.value());
         handler({request, response, userAction, ptr2String(action.selected_date.value())});
     }
     else if (type == "datetimepicker") {
-        // handleActionsDateTimePicker(request, response, event, action.action_id, action.selected_date_time.value());
         handler({request, response, userAction, ptr2String(action.selected_date_time.value())});
     }
     else if (type == "timepicker") {
-        // handleActionsTimePicker(request, response, event, action.action_id, action.selected_time.value());
         handler({request, response, userAction, ptr2String(action.selected_time.value())});
     }
     else if (type == "checkboxes") {
-        handleActionsCheckBox(request, response, userAction, action.action_id, action.selected_options.value(), handler);
+        handleActionsCheckBox(request, response, userAction, action.selected_options.value(), handler);
     }
     else if (type == "radio_buttons") {
-        // handleActionsRadioButton(request, response, event, action.action_id, action.selected_option->value);
         handler({request, response, userAction, ptr2String(action.selected_option.value())});
     }
     else if (type == "static_select") {
-        // handleActionsStaticMenu(request, response, event, action.action_id, action.selected_option->value);
         handler({request, response, userAction, ptr2String(action.selected_option.value())});
     }
     else if (type == "overflow") {
-        // handleActionsOverflowMenu(request, response, event, action.action_id, action.selected_option->value);
         handler({request, response, userAction, ptr2String(action.selected_option.value())});
     }
     else if (type == "button") {
-        // handleActionsButton(request, response, event, action.action_id, action.value.value());
         handler({request, response, userAction, ptr2String(action.value.value())});
     }
     else if (type == "plain_text_input") {
-        // handleActionsPlainTextInput(request, response, event, action.action_id, action.value.value());
         handler({request, response, userAction, ptr2String(action.value.value())});
     }
     else {
@@ -448,7 +441,7 @@ void SlackEventHandler::UserActionCallback::operator()(API::BlockActions const& 
 }
 
 inline
-void SlackEventHandler::UserActionCallback::handleActionsCheckBox(Request const& request, Response& response, API::BlockActions const& event, std::string const& action_id, std::unique_ptr<BlockKit::VecElOption> const& values, ActionHandler const& handler)
+void SlackEventHandler::UserActionCallback::handleActionsCheckBox(Request const& request, Response& response, API::BlockActions const& event, std::unique_ptr<BlockKit::VecElOption> const& values, ActionHandler const& handler)
 {
     ThorsLogDebug("SlackEventHandler", "processesActionsCheckBox", "Recievent User Click on Checkbox");
 
