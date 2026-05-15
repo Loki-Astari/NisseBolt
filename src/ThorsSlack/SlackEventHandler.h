@@ -286,9 +286,6 @@ class SlackEventHandler
                 if (userAction.view.has_value()) {
                     std::string const&          triggerId   = userAction.view.value().id;
                     view = plugin.viewHandlerMap.find(triggerId);
-                    if (view == plugin.viewHandlerMap.end()) {
-                        std::cerr << "No Associated View: Using Standard block actions\n";
-                    }
                 }
                 ActionHandlerMap const& actionHandlerMap = view == plugin.viewHandlerMap.end() ? plugin.actionHandlerMap : view->second.actionHandlerMap;
 
@@ -376,12 +373,12 @@ class SlackEventHandler
 
                 void handleActionsCheckBox(Request const& request, Response& response, API::BlockActions const& event, std::string const& action_id, std::unique_ptr<BlockKit::VecElOption> const& values, ActionHandler const& handler)
                 {
-                    ThorsLogDebug("SlackEventHandler", "processesActionsCheckBox", "Recievent User Click on Checkbox");
 
+                    ThorsLogDebug("SlackEventHandler", "processesActionsCheckBox", "Recievent User Click on Checkbox");
                     // Make a copy of the blocks.
                     // We are going to modify this with the new state and update the UI.
                     // This will make sure that the new state matches what the user has clicked.
-                    BlockKit::Blocks blocks = event.message.value().blocks;
+                    BlockKit::Blocks blocks = event.view.has_value() ? event.view.value().blocks : event.message.value().blocks;
 
                     // Extract the currently selected options into a set.
                     std::set<std::string>   currentState;
