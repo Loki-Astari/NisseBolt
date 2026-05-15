@@ -222,10 +222,22 @@ void App::action(std::string const& actionId, ActionHandler&& handler)
     );
 }
 
-void App::viewOpen(std::string const& viewId, View view)
+void App::viewOpen(std::string const& triggerId, View view)
 {
-    getClient().sendMessage(ThorsAnvil::Slack::API::Views::Open{std::move(view.view), viewId, {}},
+    getClient().sendMessage(ThorsAnvil::Slack::API::Views::Open{std::move(view.view), triggerId, {}},
                             [&](ThorsAnvil::Slack::API::Views::OpenReply&& reply)
+                            {
+                                viewHandlerMap.insert_or_assign(reply.view.id, view.viewHandlers);
+                            }
+                           );
+}
+
+void App::viewPush(std::string const& triggerId, View view)
+{
+    std::cerr << "View Push\n";
+    getClient().sendMessage(ThorsAnvil::Slack::API::Views::Push{std::move(view.view), triggerId, {}},
+                            // [&](ThorsAnvil::Slack::API::Views::OpenReply&& reply)
+                            [&](ThorsAnvil::Slack::API::OK&& reply)
                             {
                                 viewHandlerMap.insert_or_assign(reply.view.id, view.viewHandlers);
                             }
