@@ -3,6 +3,7 @@
 
 #include "API.h"
 #include "SlackBlockKit.h"
+#include "Util.h"
 #include <string>
 #include <memory>
 
@@ -10,6 +11,20 @@ namespace BK = ThorsAnvil::Slack::BlockKit;
 
 namespace ThorsAnvil::Slack::API
 {
+struct SlackUser
+{
+    std::string                         id;
+    std::string                         username;
+    std::string                         name;
+    std::string                         team_id;
+};
+
+struct SlackTeam
+{
+    std::string                         id;
+    std::string                         domain;
+};
+
 
 using NullVecElOption   = std::unique_ptr<BK::VecElOption>;
 using NullElText        = std::unique_ptr<BK::ElText>;
@@ -45,6 +60,33 @@ struct DateTimePickerValue
     ThorsAnvil_TypeFieldName(type);
 };
 
+// The value for a RadioButton
+struct RadioButtonsValue
+{
+    // std::string                         type;               // radio_buttons: Have Example
+    NullElOption                        selected_option;
+    NullElOption const&  getValue() const {return selected_option;}
+    ThorsAnvil_VariantSerializerWithName(ThorsAnvil::Slack::BlockKit::RadiosButtonValue, radio_buttons);
+    ThorsAnvil_TypeFieldName(type);
+};
+
+struct StaticSelectValue
+{
+    // std::string                         type;               // static_select: Have Example
+    NullElOption                        selected_option;
+    NullElOption const&  getValue() const {return selected_option;}
+    ThorsAnvil_VariantSerializerWithName(ThorsAnvil::Slack::BlockKit::StaticSelectValue, static_select);
+    ThorsAnvil_TypeFieldName(type);
+};
+
+struct TimePickerValue
+{
+    // std::string                         type;               // timepicker: Have Example
+    NullString                          selected_time;
+    NullString const&  getValue() const {return selected_time;}
+    ThorsAnvil_VariantSerializerWithName(ThorsAnvil::Slack::BlockKit::TimePickerValue, timepicker);
+    ThorsAnvil_TypeFieldName(type);
+};
 
 struct EmailTextInputValue
 {
@@ -75,34 +117,6 @@ struct PlainTextInputValue
     ThorsAnvil_TypeFieldName(type);
 };
 
-// The value for a RadioButton
-struct RadioButtonsValue
-{
-    // std::string                         type;               // radio_buttons: Have Example
-    BK::ElOption                        selected_option;
-    BK::ElOption const&  getValue() const {return selected_option;}
-    ThorsAnvil_VariantSerializerWithName(ThorsAnvil::Slack::BlockKit::RadiosButtonValue, radio_buttons);
-    ThorsAnvil_TypeFieldName(type);
-};
-
-struct StaticSelectValue
-{
-    // std::string                         type;               // static_select: Have Example
-    NullElOption                        selected_option;
-    NullElOption const&  getValue() const {return selected_option;}
-    ThorsAnvil_VariantSerializerWithName(ThorsAnvil::Slack::BlockKit::StaticSelectValue, static_select);
-    ThorsAnvil_TypeFieldName(type);
-};
-
-struct TimePickerValue
-{
-    // std::string                         type;               // timepicker: Have Example
-    NullString                          selected_time;
-    NullString const&  getValue() const {return selected_time;}
-    ThorsAnvil_VariantSerializerWithName(ThorsAnvil::Slack::BlockKit::TimePickerValue, timepicker);
-    ThorsAnvil_TypeFieldName(type);
-};
-
 struct URLTextInputValue
 {
     // std::string                         type;               // url_text_input: => NEED EXAMPLE <=
@@ -115,7 +129,7 @@ struct URLTextInputValue
 
 // See Also InputElement.
 // This set of variants should be kept in sync with the type InputElement.
-using InputValue = std::variant<CheckboxesValue, DatePickerValue, DateTimePickerValue, EmailTextInputValue, NumberInputValue, PlainTextInputValue, RadioButtonsValue, /*RichTextInputValue,*/ StaticSelectValue, TimePickerValue, URLTextInputValue>;
+using InputValue = std::variant<CheckboxesValue, DatePickerValue, DateTimePickerValue, RadioButtonsValue, StaticSelectValue, TimePickerValue, EmailTextInputValue, NumberInputValue, PlainTextInputValue, /*RichTextInputValue,*/ URLTextInputValue>;
 
 
 // action_id of the "InputElement" object
@@ -141,10 +155,20 @@ struct SlackState
         static typename T::ValueReturnType nullOption;
         return nullOption;
     }
+
+    template<typename T>
+    std::string getStringValue(std::string const& block_id, std::string const& action_id) const
+    {
+        InputValueToString   converter;
+        return converter(getValue<T>(block_id, action_id));
+    };
 };
 using NullSlackState = std::unique_ptr<SlackState>;
 
 }
+
+ThorsAnvil_MakeTrait(ThorsAnvil::Slack::API::SlackUser, id, username, name, team_id);
+ThorsAnvil_MakeTrait(ThorsAnvil::Slack::API::SlackTeam, id, domain);
 
 ThorsAnvil_MakeTrait(ThorsAnvil::Slack::API::CheckboxesValue, selected_options);         //
 ThorsAnvil_MakeTrait(ThorsAnvil::Slack::API::DatePickerValue, selected_date);

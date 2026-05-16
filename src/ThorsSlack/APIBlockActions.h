@@ -14,26 +14,12 @@ namespace BK = ThorsAnvil::Slack::BlockKit;
 namespace ThorsAnvil::Slack::API
 {
 
-struct SlackUser
-{
-    std::string                         id;
-    std::string                         username;
-    std::string                         name;
-    std::string                         team_id;
-};
-
 struct SlackContainer
 {
     std::string                         type;
     std::string                         message_ts;
     std::string                         channel_id;
     bool                                is_ephemeral;
-};
-
-struct SlackTeam
-{
-    std::string                         id;
-    std::string                         domain;
 };
 
 struct SlackEnterprise
@@ -107,9 +93,7 @@ struct BlockActions
 
 }
 
-ThorsAnvil_MakeTrait(ThorsAnvil::Slack::API::SlackUser, id, username, name, team_id);
 ThorsAnvil_MakeTrait(ThorsAnvil::Slack::API::SlackContainer, type, message_ts, channel_id, is_ephemeral);
-ThorsAnvil_MakeTrait(ThorsAnvil::Slack::API::SlackTeam, id, domain);
 ThorsAnvil_MakeTrait(ThorsAnvil::Slack::API::SlackEnterprise);
 ThorsAnvil_MakeTrait(ThorsAnvil::Slack::API::SlackChannel, id, name);
 

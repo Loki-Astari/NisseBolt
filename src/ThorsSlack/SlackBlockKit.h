@@ -115,8 +115,17 @@ ElActive:                                       = One Of
 
 namespace ThorsAnvil::Slack::API
 {
-    struct SlackSelectedCheckBox;
-    struct SlackPlainTextInput;
+    struct CheckboxesValue;
+    struct DatePickerValue;
+    struct DateTimePickerValue;
+    struct OverflowValue;
+    struct EmailTextInputValue;
+    struct NumberInputValue;
+    struct PlainTextInputValue;
+    struct RadioButtonsValue;
+    struct StaticSelectValue;
+    struct TimePickerValue;
+    struct URLTextInputValue;
 }
 
 namespace ThorsAnvil::Slack::BlockKit
@@ -190,8 +199,13 @@ using OptVector     = std::optional<std::vector<T>>;
     };
 
     using OptElOption = std::optional<ElOption>;
+    using NullElOption = std::unique_ptr<ElOption>;
     using VecElOption = std::vector<ElOption>;
     using OptVecElOption = std::optional<VecElOption>;
+    using NullVecElOption = std::unique_ptr<VecElOption>;
+    using NullString = std::unique_ptr<std::string>;
+    using NullTime = std::unique_ptr<std::time_t>;
+
     struct ElDispatch
     {
         // https://docs.slack.dev/reference/block-kit/composition-objects/dispatch-action-configuration-object
@@ -220,8 +234,8 @@ using OptVector     = std::optional<std::vector<T>>;
     };
     struct Checkboxes
     {
-        using ValueStorageType = API::SlackSelectedCheckBox;
-        using ValueReturnType  = OptVecElOption;
+        using ValueStorageType = API::CheckboxesValue;
+        using ValueReturnType  = NullVecElOption;
         // https://docs.slack.dev/reference/block-kit/block-elements/checkboxes-element/
         //std::string                 type;           // always "checkboxes".
         OptString                   action_id;      // An identifier for the action triggered when the checkbox group is changed. You can use this when you receive an interaction payload to identify the source of the action. Should be unique among all other action_ids in the containing block. Maximum length is 255 characters.
@@ -238,6 +252,8 @@ using OptVector     = std::optional<std::vector<T>>;
 
     struct DatePicker
     {
+        using ValueStorageType = API::DatePickerValue;
+        using ValueReturnType  = NullString;
         // https://docs.slack.dev/reference/block-kit/block-elements/date-picker-element/
         // std::string                 type;           // always "datepicker".
         OptString                   action_id;      // An identifier for the action triggered when a menu option is selected. You can use this when you receive an interaction payload to identify the source of the action. Should be unique among all other action_ids in the containing block. Maximum length is 255 characters.
@@ -250,6 +266,8 @@ using OptVector     = std::optional<std::vector<T>>;
     };
     struct DateTimePicker
     {
+        using ValueStorageType = API::DateTimePickerValue;
+        using ValueReturnType  = NullTime;
         // https://docs.slack.dev/reference/block-kit/block-elements/datetime-picker-element/
         //std::string                 type;           // always "datetimepicker"
         OptString                   action_id;      // An identifier for the input value when the parent modal is submitted. You can use this when you receive a view_submission payload to identify the value of the input element. Should be unique among all other action_ids in the containing block. Maximum length is 255 characters.
@@ -274,6 +292,8 @@ using OptVector     = std::optional<std::vector<T>>;
     };
     struct RadioButtons
     {
+        using ValueStorageType = API::RadioButtonsValue;
+        using ValueReturnType  = NullElOption;
         // https://docs.slack.dev/reference/block-kit/block-elements/radio-button-group-element/
         // std::string                 type;           // always "radio_buttons".
         OptString                   action_id;      // An identifier for the action triggered when the radio button group is changed. You can use this when you receive an interaction payload to identify the source of the action. Should be unique among all other action_ids in the containing block. Maximum length is 255 characters.
@@ -289,6 +309,8 @@ using OptVector     = std::optional<std::vector<T>>;
     };
     struct StaticSelect
     {
+        using ValueStorageType = API::StaticSelectValue;
+        using ValueReturnType  = NullElOption;
         // https://docs.slack.dev/reference/block-kit/block-elements/select-menu-element/
         //std::string                 type;           // always "static_select"
         OptString                   action_id;      // An identifier for the action triggered when a menu option is selected. You can use this when you receive an interaction payload to identify the source of the action. Should be unique among all other action_ids in the containing block. Maximum length is 255 characters.
@@ -306,6 +328,8 @@ using OptVector     = std::optional<std::vector<T>>;
     };
     struct TimePicker
     {
+        using ValueStorageType = API::TimePickerValue;
+        using ValueReturnType  = NullString;
         // https://docs.slack.dev/reference/block-kit/block-elements/time-picker-element/
         //std::string                 type;           // always "timepicker"
         OptString                   action_id;      // An identifier for the action triggered when a time is selected. You can use this when you receive an interaction payload to identify the source of the action. Should be unique among all other action_ids in the containing block. Maximum length is 255 characters.
@@ -319,6 +343,8 @@ using OptVector     = std::optional<std::vector<T>>;
     };
     struct EmailTextInput
     {
+        using ValueStorageType = API::EmailTextInputValue;
+        using ValueReturnType  = NullString;
         //https://docs.slack.dev/reference/block-kit/block-elements/email-input-element/
         //std::string                 type;           // always "email_text_input"
         OptString                   action_id;      // An identifier for the input value when the parent modal is submitted. You can use this when you receive a view_submission payload to identify the value of the input element. Should be unique among all other action_ids in the containing block. Maximum length is 255 characters.
@@ -331,6 +357,8 @@ using OptVector     = std::optional<std::vector<T>>;
     };
     struct NumberInput
     {
+        using ValueStorageType = API::NumberInputValue;
+        using ValueReturnType  = NullString;
         // https://docs.slack.dev/reference/block-kit/block-elements/number-input-element/
         //std::string                 type;           // always "number_input"
         bool                        is_decimal_allowed; // Decimal numbers are allowed if is_decimal_allowed= true, set the value to false otherwise.
@@ -346,8 +374,8 @@ using OptVector     = std::optional<std::vector<T>>;
     };
     struct PlainTextInput
     {
-        using ValueStorageType = API::SlackPlainTextInput;
-        using ValueReturnType  = std::string;
+        using ValueStorageType = API::PlainTextInputValue;
+        using ValueReturnType  = NullString;
         // https://docs.slack.dev/reference/block-kit/block-elements/plain-text-input-element/
         // std::string                 type;           // always "plain_text_input"
         OptString                   action_id;      // An identifier for the input value when the parent modal is submitted. You can use this when you receive a view_submission payload to identify the value of the input element. Should be unique among all other action_ids in the containing block. Maximum length is 255 characters.
@@ -363,6 +391,8 @@ using OptVector     = std::optional<std::vector<T>>;
     };
     struct URLTextInput
     {
+        using ValueStorageType = API::URLTextInputValue;
+        using ValueReturnType  = NullString;
         // https://docs.slack.dev/reference/block-kit/block-elements/url-input-element/
         // std::string                 type;           // always "url_text_input"
         OptString                   action_id;      // An identifier for the input value when the parent modal is submitted. You can use this when you receive a view_submission payload to identify the value of the input element. Should be unique among all other action_ids in the containing block. Maximum length is 255 characters.
@@ -740,7 +770,7 @@ struct Video
 
 // See Also InputValue.
 // This set of variants should be kept in sync with the type InputValue.
-using InputElement = std::variant<Checkboxes, DatePicker, DateTimePicker, EmailTextInput, NumberInput, PlainTextInput, RadioButtons/*, RichTextInput*/, StaticSelect, TimePicker, URLTextInput>;
+using InputElement = std::variant<Checkboxes, DatePicker, DateTimePicker, RadioButtons, StaticSelect, TimePicker, EmailTextInput, NumberInput, PlainTextInput, /* RichTextInput,*/ URLTextInput>;
 struct Input
 {
     // https://docs.slack.dev/reference/block-kit/blocks/input-block/

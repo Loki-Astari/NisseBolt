@@ -5,12 +5,14 @@
 #include "ThorSerialize/JsonThor.h"
 #include "ThorsSlackConfig.h"
 #include "APIViews.h"
+#include "APIBlockActions.h"
 #include "Event.h"
 #include "EventCallback.h"
 #include "SlashCommand.h"
 #include "EventCallbackMessage.h"
 #include "EventCallbackReaction.h"
 #include "EventURLVerification.h"
+#include "Util.h"
 
 #include "NisseHTTP/Request.h"
 #include "NisseHTTP/Response.h"
@@ -192,22 +194,11 @@ class SlackEventHandler
             // Handles the interaction of individual components.
             void operator()(API::BlockActions const& userAction);
             private:
-                // Checkboxes need a bit more handling than the other controls.
-                // So split a small amount of code out for readability
-                void handleActionsCheckBox(Request const& request, Response& response, API::BlockActions const& event, std::unique_ptr<BlockKit::VecElOption> const& values, ActionHandler const& handler);
-
                 void handleViewAction(API::Views::ViewSubmission const&, ViewHandlerMap::const_iterator)    {}
                 void handleViewAction(API::Views::ViewClosed const&, ViewHandlerMap::const_iterator);
         };
 
         // Simple Utility helpers.
-        struct UPtrToString   // Extract a string from a unique ptr (use empty string for null)
-        {
-            static std::string constexpr emptyString = "";
-            std::string operator()(std::unique_ptr<std::string> const& ptr)     {if (ptr) {return *ptr;}                    return emptyString;}
-            std::string operator()(std::unique_ptr<BK::ElOption> const& ptr)    {if (ptr) {return ptr->value;}              return emptyString;}
-            std::string operator()(std::unique_ptr<long> const& ptr)            {if (ptr) {return std::to_string(*ptr);}    return emptyString;}
-        };
         struct BlockIdGetter // Extract block_id from Block type
         {
             std::string const& operator()(BlockKit::Actions const& block){return block.block_id.value();}
@@ -434,7 +425,7 @@ void SlackEventHandler::UserActionCallback::operator()(API::BlockActions const& 
 
     std::string const&          type        = action.type;
     ActionHandler const&        handler     = find->second;
-    UPtrToString                ptr2String;
+    InputValueToString          ptr2String;
 
     if (type == "datepicker") {
         handler({request, response, userAction, ptr2String(action.selected_date.value())});
@@ -446,7 +437,7 @@ void SlackEventHandler::UserActionCallback::operator()(API::BlockActions const& 
         handler({request, response, userAction, ptr2String(action.selected_time.value())});
     }
     else if (type == "checkboxes") {
-        handleActionsCheckBox(request, response, userAction, action.selected_options.value(), handler);
+        handler({request, response, userAction, ptr2String(action.selected_options.value())});
     }
     else if (type == "radio_buttons") {
         handler({request, response, userAction, ptr2String(action.selected_option.value())});
@@ -468,23 +459,6 @@ void SlackEventHandler::UserActionCallback::operator()(API::BlockActions const& 
     }
 }
 
-inline
-void SlackEventHandler::UserActionCallback::handleActionsCheckBox(Request const& request, Response& response, API::BlockActions const& event, std::unique_ptr<BlockKit::VecElOption> const& values, ActionHandler const& handler)
-{
-    // Extract the currently selected options into a set.
-    std::string     currentState;
-    std::string     seporator = "";     // initial empty;
-    if (values.get() != nullptr)
-    {
-        for (auto const& option: (*values)) {
-            currentState += seporator;
-            currentState += option.value;
-            seporator = ":";
-        }
-    }
-
-    handler({request, response, event, currentState});
-}
 
 }
 

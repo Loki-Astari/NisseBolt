@@ -5,7 +5,7 @@
 #include "ThorsSlackConfig.h"
 #include "API.h"
 #include "APIViewsInfo.h"
-#include "APIBlockActions.h"
+#include "APIBlockActionsState.h"
 #include "EventCallback.h"
 #include <string>
 
