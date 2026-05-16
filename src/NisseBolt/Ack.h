@@ -11,11 +11,33 @@ namespace ThorsAnvil::Nisse::Bolt
 
 class Ack
 {
-    ThorsAnvil::Nisse::HTTP::Response&      response;
+    protected:
+        ThorsAnvil::Nisse::HTTP::Response&      response;
     public:
         Ack(ThorsAnvil::Nisse::HTTP::Response& response);
         void operator()() const;
         void operator()(int responseCode) const;
+};
+
+class SlashAck: public Ack
+{
+    class JsonHeader: public ThorsAnvil::Nisse::HTTP::HeaderResponse
+    {
+        public:
+            JsonHeader()
+            {
+                add("Content-Type", "application/json");
+            }
+    };
+    static ThorsAnvil::Serialize::PrinterConfig     const printerConfig;
+    static JsonHeader                               const jsonHeaders;
+    public:
+        using Ack::Ack;
+        using Ack::operator();
+        void operator()(int responseCode, std::string const& message) const;
+        void operator()(int responseCode, ThorsAnvil::Slack::BlockKit::Blocks const& message) const;
+        void operator()(std::string const& message) const;
+        void operator()(ThorsAnvil::Slack::BlockKit::Blocks const& message) const;
 };
 
 }

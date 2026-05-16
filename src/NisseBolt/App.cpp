@@ -204,7 +204,7 @@ void App::command(std::string const& command, SlashCommandHandler&& handler)
     slashCommandHandlerMap.insert_or_assign(index,
                                             [h = std::move(handler)](ThorsAnvil::Slack::SlashCommandRequest const& request)
                                             {
-                                                Ack         ack{request.response};
+                                                SlashAck    ack{request.response};
                                                 Response    response;
                                                 h(ack, response, request.command);
                                             }
