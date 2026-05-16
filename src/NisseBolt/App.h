@@ -61,8 +61,9 @@ class App: ThorsAnvil::ThorsMug::MugPluginSimple
         void action(std::string const& actionId, ActionHandler&& handler);
 
         // Handle Views
-        void viewOpen(std::string const& triggerId, View view);
-        void viewPush(std::string const& triggerId, View view);
+        void viewOpen(std::string const& triggerId, View const& view);
+        void viewPush(std::string const& triggerId, View const& view);
+        void viewUpdate(std::string const& viewId, ThorsAnvil::Slack::API::Views::View view);
 
         // Temp
         ThorsAnvil::Slack::SlackClient const& getClient() const {return client;}

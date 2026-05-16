@@ -2,9 +2,9 @@
 
 using namespace ThorsAnvil::Nisse::Bolt;
 
-View::View(ThorsAnvil::Slack::API::Views::View&& view, ViewSubmitHandler&& submitHandler, ViewClosedHandler&& closeHandler)
-    : view{std::move(view)}
-    , viewHandlers{
+View::View(ThorsAnvil::Slack::API::Views::View display, ViewSubmitHandler&& submitHandler, ViewClosedHandler&& closeHandler)
+    : display(std::move(display))
+    , handlers{
                     [submit = std::move(submitHandler)](ThorsAnvil::Nisse::HTTP::Request const& /*request*/, ThorsAnvil::Nisse::HTTP::Response& response, ThorsAnvil::Slack::API::Views::ViewSubmission const& view)
                     {
                         Ack         ack{response};
@@ -19,14 +19,14 @@ View::View(ThorsAnvil::Slack::API::Views::View&& view, ViewSubmitHandler&& submi
                     },
                     {},
                     ""
-                  }
+              }
 {
-    this->view.notify_on_close = true;
+    display.notify_on_close = true;
 }
 
-View::View(ThorsAnvil::Slack::API::Views::View&& view, ViewSubmitHandler&& submitHandler)
-    : view{std::move(view)}
-    , viewHandlers{
+View::View(ThorsAnvil::Slack::API::Views::View display, ViewSubmitHandler&& submitHandler)
+    : display(std::move(display))
+    , handlers{
                     [submit = std::move(submitHandler)](ThorsAnvil::Nisse::HTTP::Request const& /*request*/, ThorsAnvil::Nisse::HTTP::Response& response, ThorsAnvil::Slack::API::Views::ViewSubmission const& view)
                     {
                         Ack         ack{response};
@@ -36,16 +36,22 @@ View::View(ThorsAnvil::Slack::API::Views::View&& view, ViewSubmitHandler&& submi
                     [](ThorsAnvil::Nisse::HTTP::Request const& /*request*/, ThorsAnvil::Nisse::HTTP::Response& /*response*/, ThorsAnvil::Slack::API::Views::ViewClosed const& /*view*/)  {},
                     {},
                     ""
-                  }
-{}
+              }
+{
+    display.notify_on_close = true;
+}
 
 void View::action(std::string const& actionId, ActionHandler&& handler)
 {
-    viewHandlers.actionHandlerMap.insert_or_assign(actionId, [h = std::move(handler)](ThorsAnvil::Slack::ActionHandlerRequest const& request)
-                  {
-                    Ack         ack{request.response};
-                    Response    response;
-                    h(ack, response, request.command, request.value);
-                  }
-    );
+    handlers.actionHandlerMap.insert_or_assign(actionId, [h = std::move(handler)](ThorsAnvil::Slack::ActionHandlerRequest const& request)
+    {
+        Ack         ack{request.response};
+        Response    response;
+        h(ack, response, request.command, request.value);
+    });
+}
+
+ThorsAnvil::Slack::API::Views::View const& View::getDisplayView() const
+{
+    return display;
 }

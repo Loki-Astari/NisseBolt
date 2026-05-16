@@ -13,15 +13,18 @@ class App;
 class View
 {
     friend class App;
-    ThorsAnvil::Slack::API::Views::View             view;
-    ThorsAnvil::Slack::View                         viewHandlers;
+        ThorsAnvil::Slack::API::Views::View     display;
+        ThorsAnvil::Slack::View                 handlers;
 
     public:
-        View(ThorsAnvil::Slack::API::Views::View&& view, ViewSubmitHandler&& submitHandler);
-        View(ThorsAnvil::Slack::API::Views::View&& view, ViewSubmitHandler&& submitHandler, ViewClosedHandler&& closeHandler);
+        View(ThorsAnvil::Slack::API::Views::View display,ViewSubmitHandler&& submitHandler);
+        View(ThorsAnvil::Slack::API::Views::View display, ViewSubmitHandler&& submitHandler, ViewClosedHandler&& closeHandler);
+        virtual ~View() {}
 
         // Handle User Actions.
         void action(std::string const& actionId, ActionHandler&& handler);
+
+        ThorsAnvil::Slack::API::Views::View const& getDisplayView() const;
 };
 
 
