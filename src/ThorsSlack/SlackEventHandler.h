@@ -112,6 +112,7 @@ struct View
     ViewSubmitHandler   submitHandler;
     ViewClosedHandler   closedHanlder;
     ActionHandlerMap    actionHandlerMap;
+    std::string         parentView;
 
     void operator()(ThorsAnvil::Nisse::HTTP::Request const& request, ThorsAnvil::Nisse::HTTP::Response& response, API::Views::ViewSubmission const& submit)                     const {submitHandler(request, response, submit);}
     void operator()(ThorsAnvil::Nisse::HTTP::Request const& request, ThorsAnvil::Nisse::HTTP::Response& response, API::Views::ViewClosed const& close)                          const {closedHanlder(request, response, close);}
@@ -194,6 +195,9 @@ class SlackEventHandler
                 // Checkboxes need a bit more handling than the other controls.
                 // So split a small amount of code out for readability
                 void handleActionsCheckBox(Request const& request, Response& response, API::BlockActions const& event, std::unique_ptr<BlockKit::VecElOption> const& values, ActionHandler const& handler);
+
+                void handleViewAction(API::Views::ViewSubmission const&, ViewHandlerMap::const_iterator)    {}
+                void handleViewAction(API::Views::ViewClosed const&, ViewHandlerMap::const_iterator);
         };
 
         // Simple Utility helpers.
@@ -387,14 +391,31 @@ void SlackEventHandler::UserActionCallback::operator()(T const& viewAction)
     }
     View const& view = find->second;
     view(request, response, viewAction);
+    handleViewAction(viewAction, find); // Used when closing multiple dialogs at the same time.
     plugin.viewHandlerMap.erase(find);
+}
+
+inline
+void SlackEventHandler::UserActionCallback::handleViewAction(API::Views::ViewClosed const& viewAction, ViewHandlerMap::const_iterator find)
+{
+    if (viewAction.is_cleared) {
+        std::string parent = find->second.parentView;
+        while (parent != "") {
+            auto find = plugin.viewHandlerMap.find(parent);
+            if (find == plugin.viewHandlerMap.end()) {
+                break;
+            }
+            parent = find->second.parentView;
+            plugin.viewHandlerMap.erase(find);
+        }
+    }
 }
 
 // Handles the interaction of individual components.
 inline
 void SlackEventHandler::UserActionCallback::operator()(API::BlockActions const& userAction)
 {
-    ThorsLogTrack("ThorsAnvil::Slack::SlackEventHandler::UserActionCallback", "operator()(ViewAction)", "Message Recieved:");
+    ThorsLogTrack("ThorsAnvil::Slack::SlackEventHandler::UserActionCallback", "operator()(BlockAction)", "Message Recieved:");
     auto view = plugin.viewHandlerMap.end();
     if (userAction.view.has_value()) {
         std::string const&          triggerId   = userAction.view.value().id;
@@ -437,7 +458,7 @@ void SlackEventHandler::UserActionCallback::operator()(API::BlockActions const& 
         handler({request, response, userAction, ptr2String(action.selected_option.value())});
     }
     else if (type == "button") {
-        handler({request, response, userAction, ptr2String(action.value.value())});
+        handler({request, response, userAction, ""});
     }
     else if (type == "plain_text_input") {
         handler({request, response, userAction, ptr2String(action.value.value())});

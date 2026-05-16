@@ -17,7 +17,8 @@ View::View(ThorsAnvil::Slack::API::Views::View&& view, ViewSubmitHandler&& submi
                         Response    response1;
                         close(ack, response1, view);
                     },
-                    {}
+                    {},
+                    ""
                   }
 {
     this->view.notify_on_close = true;
@@ -33,7 +34,8 @@ View::View(ThorsAnvil::Slack::API::Views::View&& view, ViewSubmitHandler&& submi
                         submit(ack, response1, view);
                     },
                     [](ThorsAnvil::Nisse::HTTP::Request const& /*request*/, ThorsAnvil::Nisse::HTTP::Response& /*response*/, ThorsAnvil::Slack::API::Views::ViewClosed const& /*view*/)  {},
-                    {}
+                    {},
+                    ""
                   }
 {}
 

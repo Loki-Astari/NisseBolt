@@ -16,7 +16,7 @@ using UPtrPlainText   = std::unique_ptr<BlockKit::PlainText>;
 using UPtrString      = std::unique_ptr<std::string>;
 
 
-struct ViewReply
+struct ViewsInfo
 {
     std::string                         id;
     std::string                         team_id;
@@ -40,11 +40,11 @@ struct ViewReply
     std::string                         bot_id;
 };
 
-using OptViewReply = std::optional<ViewReply>;
+using OptViewsInfo = std::optional<ViewsInfo>;
 
 }
 
 // Response objects
-ThorsAnvil_MakeTrait(ThorsAnvil::Slack::API::Views::ViewReply, id, team_id, type, title, blocks, close, submit, private_metadata, callback_id, clear_on_close, notify_on_close, external_id, submit_disabled, previous_view_id, state, hash, root_view_id, app_id, app_installed_team_id, bot_id);
+ThorsAnvil_MakeTrait(ThorsAnvil::Slack::API::Views::ViewsInfo, id, team_id, type, title, blocks, close, submit, private_metadata, callback_id, clear_on_close, notify_on_close, external_id, submit_disabled, previous_view_id, state, hash, root_view_id, app_id, app_installed_team_id, bot_id);
 
 #endif

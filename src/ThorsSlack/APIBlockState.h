@@ -13,8 +13,8 @@ namespace BK = ThorsAnvil::Slack::BlockKit;
 // https://docs.slack.dev/reference/interaction-payloads/block_actions-payload
 namespace ThorsAnvil::Slack::API::Views
 {
-    struct ViewReply;
-    using OptViewReply = std::optional<ViewReply>;
+    struct ViewsInfo;
+    using OptViewsInfo = std::optional<ViewsInfo>;
 };
 namespace ThorsAnvil::Slack::API
 {
@@ -220,7 +220,7 @@ struct BlockActions
     OptBool                             is_enterprise_install;
     OptSlackChannel                     channel;            // The channel where this block action took place.
     API::OptMessage                     message;            // The message where this block action took place, if the block was contained in a message.
-    API::Views::OptViewReply            view;               // The view where this block action took place, if the block was contained in a view.
+    API::Views::OptViewsInfo            view;               // The view where this block action took place, if the block was contained in a view.
     OptVecSlackActions                  actions;            // Contains data from the specific interactive component that was used. App surfaces can contain blocks with multiple interactive components, and each of those components can have multiple values selected by users.
     NullSlackState                      state;              // A property including all stateful elements, not just input blocks
 // Conditional Sent to non-function only

@@ -4,7 +4,7 @@
 
 #include "ThorsSlackConfig.h"
 #include "API.h"
-#include "APIViewsReply.h"
+#include "APIViewsInfo.h"
 #include "APIBlockActions.h"
 #include "EventCallback.h"
 #include <string>
@@ -98,11 +98,11 @@ struct View
     ThorsAnvil_TypeFieldName(type);
 };
 
-struct OpenReply
+struct ViewReply
 {
     bool                                ok;
-    ViewReply                           view;
-    ThorsAnvil_VariantSerializer(ThorsAnvil::Slack::API::Views::OpenReply);
+    ViewsInfo                           view;
+    ThorsAnvil_VariantSerializer(ThorsAnvil::Slack::API::Views::ViewReply);
 };
 
 struct Open
@@ -111,7 +111,7 @@ struct Open
     static constexpr char const* api = "https://slack.com/api/views.open";
     static constexpr Method method = Method::POST;
     static constexpr Scope  scope = Scope::Bot;
-    using Reply = OpenReply;
+    using Reply = ViewReply;
 
     View                                view;               // A view payload. This must be a JSON-encoded string.
     OptString                           trigger_id;         // Exchange a trigger to post to the user. Example: 12345.98765.abcd2358fdea
@@ -124,7 +124,7 @@ struct Publish
     static constexpr char const* api = "https://slack.com/api/views.publish";
     static constexpr Method method = Method::POST;
     static constexpr Scope  scope = Scope::Bot;
-    using Reply = API::OK;
+    using Reply = API::OK; // Probably ViewReply
 
     std::string                         user_id;            // id of the user you want publish a view to.
     View                                view;               // A view payload. This must be a JSON-encoded string.
@@ -137,7 +137,7 @@ struct Push
     static constexpr char const* api = "https://slack.com/api/views.push";
     static constexpr Method method = Method::POST;
     static constexpr Scope  scope = Scope::Bot;
-    using Reply = API::OK;
+    using Reply = ViewReply;
 
     View                                view;               // A view payload. This must be a JSON-encoded string.
     OptString                           trigger_id;         // Exchange a trigger to post to the user. Example: 12345.98765.abcd2358fdea
@@ -150,7 +150,7 @@ struct Update
     static constexpr char const* api = "https://slack.com/api/views.update";
     static constexpr Method method = Method::POST;
     static constexpr Scope  scope = Scope::Bot;
-    using Reply = API::OK;
+    using Reply = API::OK; // Probably ViewReply
 
     View                                view;               // A view object. This must be a JSON-encoded string.
     OptString                           view_id;            // A unique identifier of the view to be updated. Either view_id or external_id is required.
@@ -167,7 +167,7 @@ struct ViewSubmission
     std::string                         api_app_id;
     std::string                         token;
     std::string                         trigger_id;
-    ViewReply                           view;
+    ViewsInfo                           view;
     std::vector<std::string>            response_urls;
     bool                                is_enterprise_install;
     Event::Enterprise*                  enterprise;
@@ -181,7 +181,7 @@ struct ViewClosed
     // std::string                         type;               // view_closed
     SlackTeam                           team;
     SlackUser                           user;
-    ViewReply                           view;
+    ViewsInfo                           view;
     bool                                is_cleared;
 
     ThorsAnvil_VariantSerializerWithName(ThorsAnvil::Slack::BlockKit::ViewSubmission, view_closed);
@@ -191,7 +191,7 @@ struct ViewClosed
 }
 
 // Response objects
-ThorsAnvil_MakeTrait(ThorsAnvil::Slack::API::Views::OpenReply, ok, view);
+ThorsAnvil_MakeTrait(ThorsAnvil::Slack::API::Views::ViewReply, ok, view);
 
 
 // Action objects
