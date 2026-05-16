@@ -222,10 +222,32 @@ void App::action(std::string const& actionId, ActionHandler&& handler)
     );
 }
 
-void App::viewOpen(std::string const& viewId, View view)
+void App::viewOpen(std::string const& triggerId, View const& view)
 {
-    viewHandlerMap.insert_or_assign(viewId, view.viewHandlers);
-    getClient().sendMessage(ThorsAnvil::Slack::API::Views::Open{std::move(view.view), viewId, {}});
+    getClient().sendMessage(ThorsAnvil::Slack::API::Views::Open{view.getDisplayView(), triggerId, {}},
+                            [&](ThorsAnvil::Slack::API::Views::ViewReply&& reply)
+                            {
+                                viewHandlerMap.insert_or_assign(reply.view.id, view.handlers);
+                            }
+                           );
+}
+
+void App::viewPush(std::string const& triggerId, View const& view)
+{
+    getClient().sendMessage(ThorsAnvil::Slack::API::Views::Push{view.getDisplayView(), triggerId, {}},
+                            [&](ThorsAnvil::Slack::API::Views::ViewReply&& reply)
+                            {
+                                auto insert = viewHandlerMap.insert_or_assign(reply.view.id, view.handlers);
+                                if (reply.view.previous_view_id) {
+                                    insert.first->second.parentView = (*reply.view.previous_view_id);
+                                }
+                            }
+                           );
+}
+
+void App::viewUpdate(std::string const& viewId, ThorsAnvil::Slack::API::Views::View display)
+{
+    getClient().sendMessage(ThorsAnvil::Slack::API::Views::Update{std::move(display), viewId, {}, {}});
 }
 
 std::map<std::string, std::unique_ptr<App>>& App::getServerInfo()

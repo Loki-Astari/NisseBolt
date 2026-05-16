@@ -146,13 +146,13 @@ class SlackClient
         void  validateMessage(T const& message)
         {
             SlackStream             stream;
-            std::cerr << "Sending: " << ThorsAnvil::Serialize::jsonExporter(message) << "\n----------\n";
             sendMessageData(message, stream);
 
             Nisse::ClientResponse   response(stream);
             Nisse::StreamInput      input(stream, response.getContentSize());
             std::string line;
             while (std::getline(input, line)) {
+                // Don't remove this function is used for debugging.
                 std::cerr << "L: " << line << "\n";
             }
             std::cerr << "DONE\n\n";
@@ -161,7 +161,7 @@ class SlackClient
         bool  sendMessage(T const& message, typename T::Reply& result, bool dumpError = false)
         {
             bool good = true;
-            sendMessage(message, [&result](typename T::Reply&& value){result = std::move(value);}, [&dumpError,&good](API::Error&& value){good = false;if (dumpError){std::cerr << ThorsAnvil::Serialize::jsonExporter(value) << "\n";}});
+            sendMessage(message, [&result](typename T::Reply&& value){result = std::move(value);}, [&dumpError,&good](API::Error&& value){good = false;if (dumpError){/*DON'T remove*/std::cerr << ThorsAnvil::Serialize::jsonExporter(value) << "\n";}});
             return good;
         }
 };

@@ -37,8 +37,8 @@ TEST(APIChatUtilTest, GetPermalink)
     ASSERT_TRUE(std::holds_alternative<BK::RichTextSection>(text.elements[0]));
     BK::RichTextSection&    section = std::get<BK::RichTextSection>(text.elements[0]);
 
-    ASSERT_TRUE(std::holds_alternative<BK::ElRtText>(section.elements[0]));
-    BK::ElRtText&           rtext = std::get<BK::ElRtText>(section.elements[0]);
+    ASSERT_TRUE(std::holds_alternative<BK::Text>(section.elements[0]));
+    BK::Text&               rtext = std::get<BK::Text>(section.elements[0]);
 
     EXPECT_EQ("I hope the tour went well, Mr. Wonka.", rtext.text);
 
@@ -82,7 +82,7 @@ TEST(APIChatUtilTest, UnfurlURL)
                                     {
                                         .elements =
                                         {
-                                            ThorsAnvil::Slack::BlockKit::ElRtText
+                                            ThorsAnvil::Slack::BlockKit::Text
                                             {
                                                 .text = "I see: Time"
                                             }

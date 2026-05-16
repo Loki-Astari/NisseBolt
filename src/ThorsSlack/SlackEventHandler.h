@@ -4,14 +4,15 @@
 #include "EventCallbackAppMentioned.h"
 #include "ThorSerialize/JsonThor.h"
 #include "ThorsSlackConfig.h"
-#include "APIBlockActions.h"
 #include "APIViews.h"
+#include "APIBlockActions.h"
 #include "Event.h"
 #include "EventCallback.h"
 #include "SlashCommand.h"
 #include "EventCallbackMessage.h"
 #include "EventCallbackReaction.h"
 #include "EventURLVerification.h"
+#include "Util.h"
 
 #include "NisseHTTP/Request.h"
 #include "NisseHTTP/Response.h"
@@ -36,21 +37,8 @@ namespace ThorsAnvil::Slack
 using ThorsAnvil::Nisse::HTTP::Request;
 using ThorsAnvil::Nisse::HTTP::Response;
 
-using EventObject = std::variant<API::BlockActions, API::Views::ViewSubmission, API::Views::ViewClose>;
+using EventObject = std::variant<API::BlockActions, API::Views::ViewSubmission, API::Views::ViewClosed>;
 using CmdEvent  = std::variant<API::Views::ViewSubmission const*>;
-
-#if 0
-struct SlackRequest
-{
-    ThorsAnvil::Nisse::HTTP::Request const&     request;
-    ThorsAnvil::Nisse::HTTP::Response&          response;
-    CmdEvent const&                             event;
-};
-
-// using Cmd       = std::function<void(SlackRequest const&)>;
-// using CmdMap    = std::map<std::string, Cmd>;
-#endif
-
 
 template<typename T>
 struct EventRequest
@@ -117,18 +105,19 @@ struct ViewHandlerRequest
     EventObject const&                          command;
 };
 using ViewSubmitHandler     = std::function<void(ThorsAnvil::Nisse::HTTP::Request const&, ThorsAnvil::Nisse::HTTP::Response&, API::Views::ViewSubmission const&)>;
-using ViewCloseHandler      = std::function<void(ThorsAnvil::Nisse::HTTP::Request const&, ThorsAnvil::Nisse::HTTP::Response&, API::Views::ViewClose const&)>;
+using ViewClosedHandler     = std::function<void(ThorsAnvil::Nisse::HTTP::Request const&, ThorsAnvil::Nisse::HTTP::Response&, API::Views::ViewClosed const&)>;
 using ViewActionHandler     = std::function<void(ThorsAnvil::Nisse::HTTP::Request const&, ThorsAnvil::Nisse::HTTP::Response&, API::BlockActions const&, std::string const& value)>;
 
 
 struct View
 {
     ViewSubmitHandler   submitHandler;
-    ViewCloseHandler    closeHanlder;
+    ViewClosedHandler   closedHanlder;
     ActionHandlerMap    actionHandlerMap;
+    std::string         parentView;
 
     void operator()(ThorsAnvil::Nisse::HTTP::Request const& request, ThorsAnvil::Nisse::HTTP::Response& response, API::Views::ViewSubmission const& submit)                     const {submitHandler(request, response, submit);}
-    void operator()(ThorsAnvil::Nisse::HTTP::Request const& request, ThorsAnvil::Nisse::HTTP::Response& response, API::Views::ViewClose const& close)                           const {closeHanlder(request, response, close);}
+    void operator()(ThorsAnvil::Nisse::HTTP::Request const& request, ThorsAnvil::Nisse::HTTP::Response& response, API::Views::ViewClosed const& close)                          const {closedHanlder(request, response, close);}
 };
 
 using ViewHandlerMap        = std::map<std::string, View>;
@@ -147,10 +136,12 @@ class SlackEventHandler
         ActionHandlerMap const&         actionHandlerMap;
 
         // For handling view Submissions.
-        ViewHandlerMap const&           viewHandlerMap;
+        // This is not const as we remove handlers when they have been used.
+        // Unlike the handlers above which are in the control of their owners.
+        ViewHandlerMap&                 viewHandlerMap;
 
     public:
-        SlackEventHandler(std::string_view slackSecret, EventHandlerMap const& eventHandlerMap = {}, SlashCommandHandlerMap const& slashCommandHandlerMap = {}, ActionHandlerMap const& actionHandlerMap = {}, ViewHandlerMap const& viewHandlerMap = {});
+        SlackEventHandler(std::string_view slackSecret, EventHandlerMap const& eventHandlerMap, SlashCommandHandlerMap const& slashCommandHandlerMap, ActionHandlerMap const& actionHandlerMap, ViewHandlerMap& viewHandlerMap);
 
         // Method to validate Slack message comes from slack.
         bool validateRequest(Request const& request);
@@ -170,35 +161,6 @@ class SlackEventHandler
 
         void handleURLVerificationEvent(Request const& request, Response& response, Event::EventURLVerification const& event);
 
-        void handleCallbackEvent(Request const& request, Response& response, Event::EventCallback const& event);
-        // virtual void handleActionsViewSubmit(Request const& request, Response& response, API::Views::ViewSubmission const& event)                                               { handleUsingCmdMap(request, response, &event, "View/ViewSubmission/" + event.view.id, "handleActionsViewSubmit"); }
-
-        /*
-         * The following 8 methods are called from: handleUserActions
-         */
-        // virtual void handleActionsDatePicker(Request const&, Response& response, API::BlockActions const&, std::string const& /*action_id*/, std::string const& /*selected_date*/)    { ThorsLogError("ThorsAnvil::Slack::SlackEventHandler", "handleActionsDatePicker", "Call to unimplemented method"); response.setStatus(501); }
-        // virtual void handleActionsDateTimePicker(Request const&, Response& response, API::BlockActions const&, std::string const& /*action_id*/, std::time_t /*selected_date_time*/)  { ThorsLogError("ThorsAnvil::Slack::SlackEventHandler", "handleActionsDateTimePicker", "Call to unimplemented method"); response.setStatus(501); }
-        // virtual void handleActionsTimePicker(Request const&, Response& response, API::BlockActions const&, std::string const& /*action_id*/, std::string const& /*selected_time*/)    { ThorsLogError("ThorsAnvil::Slack::SlackEventHandler", "handleActionsTimePicker", "Call to unimplemented method"); response.setStatus(501); }
-        // virtual void handleActionsRadioButton(Request const&, Response& response, API::BlockActions const&, std::string const& /*action_id*/, std::string const& /*value*/)           { ThorsLogError("ThorsAnvil::Slack::SlackEventHandler", "handleActionsRadioButton", "Call to unimplemented method"); response.setStatus(501); }
-        // virtual void handleActionsStaticMenu(Request const&, Response& response, API::BlockActions const&, std::string const& /*action_id*/, std::string const& /*value*/)            { ThorsLogError("ThorsAnvil::Slack::SlackEventHandler", "handleActionsStaticMenu", "Call to unimplemented method"); response.setStatus(501); }
-        // virtual void handleActionsOverflowMenu(Request const&, Response& response, API::BlockActions const&, std::string const& /*action_id*/, std::string const& /*value*/)          { ThorsLogError("ThorsAnvil::Slack::SlackEventHandler", "handleActionsOverflowMenu", "Call to unimplemented method"); response.setStatus(501); }
-        // virtual void handleActionsButton(Request const&, Response& response, API::BlockActions const&, std::string const& /*action_id*/, std::string const& /*value*/)                { ThorsLogError("ThorsAnvil::Slack::SlackEventHandler", "handleActionsButton", "Call to unimplemented method"); response.setStatus(501); }
-        // virtual void handleActionsPlainTextInput(Request const&, Response& response, API::BlockActions const&, std::string const& /*action_id*/, std::string const& /*value*/)        { ThorsLogError("ThorsAnvil::Slack::SlackEventHandler", "handleActionsPlainTextInput", "Call to unimplemented method"); response.setStatus(501); }
-        // virtual void handleActionsCheckBox(Request const& /*request*/, Response& response, API::BlockActions const& event, std::string const& action_id, BlockKit::VecElOption const& value);
-
-
-        /*
-         * Checkboxes are complicated.
-         * Need some extra processing before handing of
-         */
-#if 0
-        virtual void handleActionsCheckBox(Request const&, Response& response, API::BlockActions const&, std::string const& /*action_id*/, BlockKit::VecElOption const& /*value*/, std::string const& /*changed*/, bool /*state*/, BlockKit::Blocks& /*newUI*/)
-        { ThorsLogError("ThorsAnvil::Slack::SlackEventHandler", "SlackEventHandler", "Call to unimplemented method"); response.setStatus(501); }
-        BlockKit::VecElOption&  getInitialOptions(BlockKit::Block& block, std::string const& action_id);
-#endif
-
-        //void handleUsingCmdMap(Request const& request, Response& response, CmdEvent const& event, std::string const& key, char const* msg);
-
         /* Local Visitor types */
         struct VisitorEvent
         {
@@ -207,7 +169,7 @@ class SlackEventHandler
             Response&               response;
 
             void operator()(Event::EventURLVerification const& event)    {plugin.handleURLVerificationEvent(request, response, event);}
-            void operator()(Event::EventCallback const& event)           {plugin.handleCallbackEvent(request, response, event);}
+            void operator()(Event::EventCallback const& event)           {std::visit(VisitorCallbackEvent{plugin, event, request, response}, event.event);}
         };
         struct VisitorCallbackEvent
         {
@@ -217,20 +179,7 @@ class SlackEventHandler
             Response&                   response;
 
             template<typename T>
-            void operator()(T const& event)
-            {
-                std::string const& key = T::typeName();
-                auto find = plugin.eventHandlerMap.find(key);
-                if (find == plugin.eventHandlerMap.end()) {
-                    ThorsLogError("ThorsAnvil::Slack::SlackEventHandler::VisitorCallbackEvent::operator()", key, "Call to unimplemented method");
-                    response.setStatus(501);
-                    return;
-                }
-                ThorsLogDebug("ThorsAnvil::Slack::SlackEventHandler::VisitorCallbackEvent::operator()", key, "Calling client handler");
-                AnyEventHandler const&  anyHandler   = find->second;
-                EventHandler<T> const&  eventHandler = std::get<EventHandler<T>>(anyHandler);
-                eventHandler(EventRequest<T>{request, response, eventBase, event});
-            }
+            void operator()(T const& event);
         };
         struct UserActionCallback
         {
@@ -239,175 +188,17 @@ class SlackEventHandler
             Response&                   response;
 
             // Handles View Interactions
-            // API::Views::ViewSubmission, API::Views::ViewClose
+            // API::Views::ViewSubmission, API::Views::ViewClosed
             template<typename T>
-            void operator()(T const& viewAction)
-            {
-                std::string const&   viewId = viewAction.view.id;
-                auto find = plugin.viewHandlerMap.find(viewId);
-                if (find == plugin.viewHandlerMap.end()) {
-                    // No handler
-                    return;
-                }
-                View const& view = find->second;
-                view(request, response, viewAction);
-            }
+            void operator()(T const& viewAction);
             // Handles the interaction of individual components.
-            void operator()(API::BlockActions const& userAction)
-            {
-                std::string const&          triggerId   = userAction.trigger_id;
-                auto view = plugin.viewHandlerMap.find(triggerId);
-                ActionHandlerMap const& actionHandlerMap = view == plugin.viewHandlerMap.end() ? plugin.actionHandlerMap : view->second.actionHandlerMap;
-
-                API::SlackAction const&     action      = userAction.actions.value()[0];
-                std::string const&          actionId    = action.action_id;
-
-                auto find = actionHandlerMap.find(actionId);
-                if (find == actionHandlerMap.end()) {
-                    // No installed handler for this action.
-                    return;
-                }
-
-                std::string const&          type        = action.type;
-                ActionHandler const&        handler     = find->second;
-
-                if (type == "datepicker") {
-                    // handleActionsDatePicker(request, response, event, action.action_id, action.selected_date.value());
-                    handler({request, response, userAction, action.selected_date.value()});
-                }
-                else if (type == "datetimepicker") {
-                    // handleActionsDateTimePicker(request, response, event, action.action_id, action.selected_date_time.value());
-                    handler({request, response, userAction, std::to_string(action.selected_date_time.value())});
-                }
-                else if (type == "timepicker") {
-                    // handleActionsTimePicker(request, response, event, action.action_id, action.selected_time.value());
-                    handler({request, response, userAction, action.selected_time.value()});
-                }
-                else if (type == "checkboxes") {
-                    handleActionsCheckBox(request, response, userAction, action.action_id, action.selected_options.value(), handler);
-                }
-                else if (type == "radio_buttons") {
-                    // handleActionsRadioButton(request, response, event, action.action_id, action.selected_option->value);
-                    handler({request, response, userAction, action.selected_option->value});
-                }
-                else if (type == "static_select") {
-                    // handleActionsStaticMenu(request, response, event, action.action_id, action.selected_option->value);
-                    handler({request, response, userAction, action.selected_option->value});
-                }
-                else if (type == "overflow") {
-                    // handleActionsOverflowMenu(request, response, event, action.action_id, action.selected_option->value);
-                    handler({request, response, userAction, action.selected_option->value});
-                }
-                else if (type == "button") {
-                    // handleActionsButton(request, response, event, action.action_id, action.value.value());
-                    handler({request, response, userAction, action.value.value()});
-                }
-                else if (type == "plain_text_input") {
-                    // handleActionsPlainTextInput(request, response, event, action.action_id, action.value.value());
-                    handler({request, response, userAction, action.value.value()});
-                }
-                else {
-                    ThorsLogError("UserTodoSlackEventHandler", "handleUserActions", "Unknown Action: ", request.variables()["payload"]);
-                }
-            }
+            void operator()(API::BlockActions const& userAction);
             private:
-                BlockKit::VecElOption&  getInitialOptions(BlockKit::Block& block, std::string const& action_id)
-                {
-                    static BlockKit::VecElOption nullOption;
-                    nullOption.clear();
-
-                    if (holds_alternative<BlockKit::Input>(block)) {
-                        BlockKit::Input& inputBlock = std::get<BlockKit::Input>(block);
-                        BlockKit::ElActCheckbox& inputCheckBox = std::get<BlockKit::ElActCheckbox>(inputBlock.element);
-                        if (!inputCheckBox.initial_options.has_value()) {
-                            inputCheckBox.initial_options = BlockKit::VecElOption{};
-                        }
-                        return inputCheckBox.initial_options.value();
-                    }
-                    else if (holds_alternative<BlockKit::Actions>(block)) {
-                        BlockKit::Actions& actionsBlock = std::get<BlockKit::Actions>(block);
-                        std::vector<BlockKit::ElActive>& actionBlockElements = actionsBlock.elements;
-                        for (auto& element: actionBlockElements) {
-                            std::string const& actionId = std::visit(ActionIdGetter{}, element);
-                            if (action_id == actionId) {
-                                BlockKit::ElActCheckbox& inputCheckBox = std::get<BlockKit::ElActCheckbox>(element);
-                                if (!inputCheckBox.initial_options.has_value()) {
-                                    inputCheckBox.initial_options = BlockKit::VecElOption{};
-                                }
-                                return inputCheckBox.initial_options.value();
-                            }
-                        }
-                    }
-                    return nullOption;
-                }
-
-                void handleActionsCheckBox(Request const& request, Response& response, API::BlockActions const& event, std::string const& action_id, BlockKit::VecElOption const& values, ActionHandler const& handler)
-                {
-                    ThorsLogDebug("SlackEventHandler", "processesActionsCheckBox", "Recievent User Click on Checkbox");
-
-                    // Make a copy of the blocks.
-                    // We are going to modify this with the new state and update the UI.
-                    // This will make sure that the new state matches what the user has clicked.
-                    BlockKit::Blocks blocks = event.message.value().blocks;
-
-                    // Extract the currently selected options into a set.
-                    std::set<std::string>   currentState;
-                    for (auto const& option: values) {
-                        currentState.insert(option.value);
-                    }
-
-                    // Extract the previously selected options
-                    // We need to search through the event to go find the exact info.
-                    std::set<std::string>   initState;
-                    std::string const& blockId = event.actions.value()[0].block_id;
-                    // We are searching fro the block that contains the set of checkboxes.
-                    for (auto& block : blocks) {
-                        std::string const& theBlockId = std::visit(BlockIdGetter{}, block);
-                        if (theBlockId == blockId) {
-                            // The initOptions is the value we need to update in the UI.
-                            // We need to find this to update it but also extract the initial state.
-                            BlockKit::VecElOption&  initOption = getInitialOptions(block, action_id);
-
-                            // Get the initialy selected options into a set.
-                            for (auto const& option: initOption) {
-                                initState.insert(option.value);
-                            }
-                            // Updating the init options.
-                            // This will we will write back to the UI below.
-                            initOption = values;
-                        }
-                    }
-
-                    // Using the current state and the initial state.
-                    // We can now discover which checkbox the user clicked.
-                    // A lot of work thanks slack.
-                    std::set<std::string>   turnedOn;
-                    std::set<std::string>   turnedOff;
-
-                    std::set_difference(std::begin(currentState), std::end(currentState), std::begin(initState), std::end(initState),
-                                        std::inserter(turnedOn, turnedOn.begin()));
-                    std::set_difference(std::begin(initState), std::end(initState), std::begin(currentState), std::end(currentState),
-                                        std::inserter(turnedOff, turnedOff.begin()));
-
-
-                    // There should only be one change.
-                    if (turnedOn.size() + turnedOff.size() != 1) {
-                        ThorsLogError("TodoSlackEventHandler", "handleActionsCheckBox", "Change in state is not consistent: ", turnedOn.size(), " ", turnedOff.size());
-                    }
-                    else {
-                        if (turnedOn.size() == 1) {
-                            // handleActionsCheckBox(request, response, event, action_id, values, (*turnedOn.begin()), true, blocks);
-                            handler({request, response, event, std::string("+") + (*turnedOn.begin())});
-                        }
-                        if (turnedOff.size() == 1) {
-                            // handleActionsCheckBox(request, response, event, action_id, values, (*turnedOff.begin()), false, blocks);
-                            handler({request, response, event, std::string("-") + (*turnedOff.begin())});
-                        }
-                    }
-
-                }
+                void handleViewAction(API::Views::ViewSubmission const&, ViewHandlerMap::const_iterator)    {}
+                void handleViewAction(API::Views::ViewClosed const&, ViewHandlerMap::const_iterator);
         };
 
+        // Simple Utility helpers.
         struct BlockIdGetter // Extract block_id from Block type
         {
             std::string const& operator()(BlockKit::Actions const& block){return block.block_id.value();}
@@ -426,20 +217,20 @@ class SlackEventHandler
         };
         struct ActionIdGetter // Extract block_id from ElActive type
         {
-            std::string const& operator()(BlockKit::ElActButton const& action){return action.action_id.value();}
-            std::string const& operator()(BlockKit::ElActCheckbox const& action){return action.action_id.value();}
-            std::string const& operator()(BlockKit::ElActDatePicker const& action){return action.action_id.value();}
-            std::string const& operator()(BlockKit::ElActDatetimePicker const& action){return action.action_id.value();}
-            std::string const& operator()(BlockKit::ElActOverflowMenu const& action){return action.action_id.value();}
-            std::string const& operator()(BlockKit::ElActRadioButton const& action){return action.action_id.value();}
-            std::string const& operator()(BlockKit::ElActSelectMenu const& action){return action.action_id.value();}
-            std::string const& operator()(BlockKit::ElActTimePicker const& action){return action.action_id.value();}
+            std::string const& operator()(BlockKit::Button const& action){return action.action_id.value();}
+            std::string const& operator()(BlockKit::Checkboxes const& action){return action.action_id.value();}
+            std::string const& operator()(BlockKit::DatePicker const& action){return action.action_id.value();}
+            std::string const& operator()(BlockKit::DateTimePicker const& action){return action.action_id.value();}
+            std::string const& operator()(BlockKit::Overflow const& action){return action.action_id.value();}
+            std::string const& operator()(BlockKit::RadioButtons const& action){return action.action_id.value();}
+            std::string const& operator()(BlockKit::StaticSelect const& action){return action.action_id.value();}
+            std::string const& operator()(BlockKit::TimePicker const& action){return action.action_id.value();}
         };
 
 };
 
 inline
-SlackEventHandler::SlackEventHandler(std::string_view slackSecret, EventHandlerMap const& eventHandlerMap, SlashCommandHandlerMap const& slashCommandHandlerMap, ActionHandlerMap const& actionHandlerMap, ViewHandlerMap const& viewHandlerMap)
+SlackEventHandler::SlackEventHandler(std::string_view slackSecret, EventHandlerMap const& eventHandlerMap, SlashCommandHandlerMap const& slashCommandHandlerMap, ActionHandlerMap const& actionHandlerMap, ViewHandlerMap& viewHandlerMap)
     : slackSecret(slackSecret)
     , eventHandlerMap{eventHandlerMap}
     , slashCommandHandlerMap{slashCommandHandlerMap}
@@ -537,13 +328,6 @@ void SlackEventHandler::handleURLVerificationEvent(Request const& /*request*/, R
 }
 
 inline
-void SlackEventHandler::handleCallbackEvent(Request const& request, Response& response, Event::EventCallback const& event)
-{
-    ThorsLogTrack("ThorsAnvil::Slack::SlackEventHandler", "handleCallbackEvent", "Handling callback event");
-    std::visit(VisitorCallbackEvent{*this, event, request, response}, event.event);
-}
-
-inline
 void SlackEventHandler::handleUserActions(Request const& request, Response& response)
 {
     ThorsLogTrack("ThorsAnvil::Slack::TodoSlackEventHandler", "handleUserActions", "Recievent User Action");
@@ -553,17 +337,12 @@ void SlackEventHandler::handleUserActions(Request const& request, Response& resp
     stream >> ThorsAnvil::Serialize::jsonImporter(eventObject);
 
     std::visit(UserActionCallback{*this, request, response}, eventObject);
-#if 0
-                API::BlockActions const&    event       = std::get<API::BlockActions>(eventObject);
-                API::SlackAction const&     action      = event.actions.value()[0];
-                std::string const&          type        = action.type;
-                std::string const&          actionId    = action.action_id;
-#endif
 }
 
 inline
 void SlackEventHandler::handleSlashCommand(Request const& request, Response& response)
 {
+    ThorsLogTrack("ThorsAnvil::Slack::SlackEventHandler", "handleSlashCommand", "Slash command: ");
     SlashCommand        command(request);
     auto find = slashCommandHandlerMap.find(command.command);
     if (find == slashCommandHandlerMap.end()) {
@@ -574,20 +353,112 @@ void SlackEventHandler::handleSlashCommand(Request const& request, Response& res
     find->second({request, response, command});
 }
 
-#if 0
-inline
-void SlackEventHandler::handleUsingCmdMap(Request const& request, Response& response, CmdEvent const& event, std::string const& key, char const* msg)
+template<typename T>
+void SlackEventHandler::VisitorCallbackEvent::operator()(T const& event)
 {
-    auto find = cmdMap.find(key);
-    if (find == cmdMap.end()) {
-        ThorsLogError("ThorsAnvil::Slack::SlackEventHandler", msg, "Call to unimplemented method");
+    ThorsLogTrack("ThorsAnvil::Slack::SlackEventHandler::VisitorCallbackEvent", "operator()(event)", "Message Recieved:");
+    std::string const& key = T::typeName();
+    auto find = plugin.eventHandlerMap.find(key);
+    if (find == plugin.eventHandlerMap.end()) {
+        ThorsLogError("ThorsAnvil::Slack::SlackEventHandler::VisitorCallbackEvent::operator()", key, "Call to unimplemented method");
         response.setStatus(501);
         return;
     }
-    ThorsLogDebug("ThorsAnvil::Slack::SlackEventHandler", msg, "Calling client handler");
-    find->second(SlackRequest{request, response, event});
+    ThorsLogDebug("ThorsAnvil::Slack::SlackEventHandler::VisitorCallbackEvent::operator()", key, "Calling client handler");
+    AnyEventHandler const&  anyHandler   = find->second;
+    EventHandler<T> const&  eventHandler = std::get<EventHandler<T>>(anyHandler);
+    eventHandler(EventRequest<T>{request, response, eventBase, event});
 }
-#endif
+
+template<typename T>
+void SlackEventHandler::UserActionCallback::operator()(T const& viewAction)
+{
+    ThorsLogTrack("ThorsAnvil::Slack::SlackEventHandler::UserActionCallback", "operator()(ViewAction)", "Message Recieved:");
+    std::string const&   viewId = viewAction.view.id;
+    auto find = plugin.viewHandlerMap.find(viewId);
+    if (find == plugin.viewHandlerMap.end()) {
+        // No handler
+        return;
+    }
+    View const& view = find->second;
+    view(request, response, viewAction);
+    handleViewAction(viewAction, find); // Used when closing multiple dialogs at the same time.
+    plugin.viewHandlerMap.erase(find);
+}
+
+inline
+void SlackEventHandler::UserActionCallback::handleViewAction(API::Views::ViewClosed const& viewAction, ViewHandlerMap::const_iterator find)
+{
+    if (viewAction.is_cleared) {
+        std::string parent = find->second.parentView;
+        while (parent != "") {
+            auto find = plugin.viewHandlerMap.find(parent);
+            if (find == plugin.viewHandlerMap.end()) {
+                break;
+            }
+            parent = find->second.parentView;
+            plugin.viewHandlerMap.erase(find);
+        }
+    }
+}
+
+// Handles the interaction of individual components.
+inline
+void SlackEventHandler::UserActionCallback::operator()(API::BlockActions const& userAction)
+{
+    ThorsLogTrack("ThorsAnvil::Slack::SlackEventHandler::UserActionCallback", "operator()(BlockAction)", "Message Recieved:");
+    auto view = plugin.viewHandlerMap.end();
+    if (userAction.view.has_value()) {
+        std::string const&          triggerId   = userAction.view.value().id;
+        view = plugin.viewHandlerMap.find(triggerId);
+    }
+    ActionHandlerMap const& actionHandlerMap = view == plugin.viewHandlerMap.end() ? plugin.actionHandlerMap : view->second.actionHandlerMap;
+
+    API::SlackAction const&     action      = userAction.actions.value()[0];
+    std::string const&          actionId    = action.action_id;
+
+    auto find = actionHandlerMap.find(actionId);
+    if (find == actionHandlerMap.end()) {
+        // No installed handler for this action.
+        return;
+    }
+
+    std::string const&          type        = action.type;
+    ActionHandler const&        handler     = find->second;
+    InputValueToString          ptr2String;
+
+    if (type == "datepicker") {
+        handler({request, response, userAction, ptr2String(action.selected_date.value())});
+    }
+    else if (type == "datetimepicker") {
+        handler({request, response, userAction, ptr2String(action.selected_date_time.value())});
+    }
+    else if (type == "timepicker") {
+        handler({request, response, userAction, ptr2String(action.selected_time.value())});
+    }
+    else if (type == "checkboxes") {
+        handler({request, response, userAction, ptr2String(action.selected_options.value())});
+    }
+    else if (type == "radio_buttons") {
+        handler({request, response, userAction, ptr2String(action.selected_option.value())});
+    }
+    else if (type == "static_select") {
+        handler({request, response, userAction, ptr2String(action.selected_option.value())});
+    }
+    else if (type == "overflow") {
+        handler({request, response, userAction, ptr2String(action.selected_option.value())});
+    }
+    else if (type == "button") {
+        handler({request, response, userAction, ""});
+    }
+    else if (type == "plain_text_input") {
+        handler({request, response, userAction, ptr2String(action.value.value())});
+    }
+    else {
+        ThorsLogError("UserTodoSlackEventHandler", "handleUserActions", "Unknown Action: ", request.variables()["payload"]);
+    }
+}
+
 
 }
 

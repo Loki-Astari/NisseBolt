@@ -55,7 +55,7 @@ using SlashCommandHandler   = std::function<void(Ack const&, Response const&, Th
 using ActionHandler         = std::function<void(Ack const&, Response const&, ThorsAnvil::Slack::API::BlockActions const&, std::string const& value)>;
 
 using ViewSubmitHandler     = std::function<void(Ack const&, Response const&, ThorsAnvil::Slack::API::Views::ViewSubmission const&)>;
-using ViewCloseHandler      = std::function<void(Ack const&, Response const&, ThorsAnvil::Slack::API::Views::ViewClose const&)>;
+using ViewClosedHandler     = std::function<void(Ack const&, Response const&, ThorsAnvil::Slack::API::Views::ViewClosed const&)>;
 
 }
 
