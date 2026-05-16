@@ -50,7 +50,7 @@ using AnyEventHandler       = std::variant<
 using Filter                = std::function<bool(ThorsAnvil::Slack::Event::Message const&)>;
 using MessageHandler        = EventHandler<ThorsAnvil::Slack::Event::Message>;
 
-using SlashCommandHandler   = std::function<void(Ack const&, Response const&, ThorsAnvil::Slack::SlashCommand const&)>;
+using SlashCommandHandler   = std::function<void(SlashAck const&, Response const&, ThorsAnvil::Slack::SlashCommand const&)>;
 
 using ActionHandler         = std::function<void(Ack const&, Response const&, ThorsAnvil::Slack::API::BlockActions const&, std::string const& value)>;
 
