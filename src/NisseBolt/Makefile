@@ -1,7 +1,7 @@
 CONFIG_NAME					= NisseBolt
 THORSANVIL_ROOT				?= $(realpath ../../)
 TARGET						= NisseBolt.slib
-FILE_WARNING_FLAGS			+= -Wno-missing-braces -Wno-deprecated-copy-with-user-provided-dtor -Wno-deprecated-declarations
+FILE_WARNING_FLAGS			+= -Wno-missing-braces -Wno-deprecated-copy-with-user-provided-dtor -Wno-deprecated-declarations -Wno-missing-field-initializers
 
 LDLIBS_EXTERN_BUILD			+= ThorSerialize MagicEnum Nisse event
 LDLIBS						+= -lboost_filesystem -lboost_context -lcrypto -lssl
