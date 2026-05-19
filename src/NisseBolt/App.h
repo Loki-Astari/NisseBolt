@@ -40,7 +40,7 @@ class App: ThorsAnvil::ThorsMug::MugPluginSimple
         void addUserActionHandlers();
         void addEventHandlers();
     public:
-        App(AppConfig const& config);
+        App(AppConfig const& config, std::string const& slot);
         virtual std::vector<ThorsAnvil::ThorsMug::Action> getAction() override;
 
         // register handlers for the standard Message events that come from the slack server.
@@ -96,7 +96,7 @@ template<typename Server, typename ServerConfig>
 ThorsAnvil::ThorsMug::MugPlugin* App::add(ServerConfig&& serverConfig)
 {
     std::map<std::string, std::unique_ptr<App>>&    servers = getServerInfo();
-    std::string const& slot = static_cast<AppConfig&>(serverConfig).slot;
+    std::string const& slot = serverConfig.slot;
     auto find = servers.find(slot);
     if (find != servers.end() && find->second.get() != nullptr) {
         // Extracting the pointer here
@@ -104,7 +104,7 @@ ThorsAnvil::ThorsMug::MugPlugin* App::add(ServerConfig&& serverConfig)
         App* rawApp = find->second.get();
         ThorsLogAndThrowError(std::runtime_error, "ThorsAnvil::Nisse::Bolt::App", "add", "Can not load Mug Server this slot >", slot, " is already being used. Current: ", typeid(*rawApp).name(), " New: ", typeid(Server).name());
     }
-    find->second = std::make_unique<Server>(std::move(serverConfig));
+    find->second = std::make_unique<Server>(std::forward<ServerConfig>(serverConfig));
     return find->second.get();
 }
 
@@ -112,7 +112,7 @@ template<typename Server, typename ServerConfig>
 ThorsAnvil::ThorsMug::MugPlugin* App::rem(ServerConfig&& serverConfig)
 {
     std::map<std::string, std::unique_ptr<App>>&    servers = getServerInfo();
-    auto find = servers.find(static_cast<AppConfig&>(serverConfig).slot);
+    auto find = servers.find(serverConfig.slot);
     if (find != servers.end()) {
         find->second.reset();
     }

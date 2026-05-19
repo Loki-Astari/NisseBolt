@@ -36,10 +36,10 @@ void App::handleEvent(ThorsAnvil::Slack::EventRequest<T> const& request)
 }
 
 THORSSLACK_HEADER_ONLY_INCLUDE
-App::App(AppConfig const& config)
-    : slot{config.slot}
+App::App(AppConfig const& config, std::string const& slot)
+    : slot{slot}
     , client(config.botToken, config.userToken)
-    , slackHandler(config.signingSecret, eventHandlerMap, slashCommandHandlerMap, actionHandlerMap, viewHandlerMap)
+    , slackHandler(client, config.signingSecret, eventHandlerMap, slashCommandHandlerMap, actionHandlerMap, viewHandlerMap)
 {
     addEventHandlers();
     addSlashCommandHandlers();

@@ -11,7 +11,6 @@ namespace ThorsAnvil::Nisse::Bolt
 
 struct AppConfig
 {
-    std::string     slot;
     std::string     botToken;
     std::string     userToken;
     std::string     signingSecret;
@@ -20,6 +19,6 @@ struct AppConfig
 
 }
 
-ThorsAnvil_MakeTrait(ThorsAnvil::Nisse::Bolt::AppConfig, slot, botToken, userToken, signingSecret);
+ThorsAnvil_MakeTrait(ThorsAnvil::Nisse::Bolt::AppConfig, botToken, userToken, signingSecret);
 
 #endif
