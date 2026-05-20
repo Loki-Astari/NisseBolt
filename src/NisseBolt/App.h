@@ -59,6 +59,7 @@ class App: ThorsAnvil::ThorsMug::MugPluginSimple
 
         // Handle User Actions.
         void action(std::string const& actionId, ActionHandler&& handler);
+        void action(std::string const& actionId, std::string const& blockId, ActionHandler&& handler);
 
         // Handle Views
         void viewOpen(std::string const& triggerId, View const& view);

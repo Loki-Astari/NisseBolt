@@ -46,12 +46,31 @@ View::View(ThorsAnvil::Slack::API::Views::View display, ViewSubmitHandler&& subm
 THORSSLACK_HEADER_ONLY_INCLUDE
 void View::action(std::string const& actionId, ActionHandler&& handler)
 {
-    handlers.actionHandlerMap.insert_or_assign(actionId, [h = std::move(handler)](ThorsAnvil::Slack::ActionHandlerRequest const& request)
-    {
-        Ack         ack{request.response};
-        Response    response;
-        h(ack, response, request.command, request.value);
-    });
+    handlers.actionHandlerMap.insert_or_assign(actionId,
+      ThorsAnvil::Slack::FilterHandler{"",
+                                       [h = std::move(handler)](ThorsAnvil::Slack::ActionHandlerRequest const& request)
+                                        {
+                                                Ack         ack{request.response};
+                                                Response    response;
+                                                h(ack, response, request.command, request.value);
+                                        }
+                                      }
+    );
+}
+
+THORSSLACK_HEADER_ONLY_INCLUDE
+void View::action(std::string const& actionId, std::string const& blockId, ActionHandler&& handler)
+{
+    handlers.actionHandlerMap.insert_or_assign(actionId,
+      ThorsAnvil::Slack::FilterHandler{blockId,
+                                       [h = std::move(handler)](ThorsAnvil::Slack::ActionHandlerRequest const& request)
+                                        {
+                                                Ack         ack{request.response};
+                                                Response    response;
+                                                h(ack, response, request.command, request.value);
+                                        }
+                                      }
+    );
 }
 
 THORSSLACK_HEADER_ONLY_INCLUDE

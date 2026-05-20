@@ -99,7 +99,8 @@ struct ActionHandlerRequest
     std::string                                 value;
 };
 using ActionHandler         = std::function<void(ActionHandlerRequest const&)>;
-using ActionHandlerMap      = std::map<std::string, ActionHandler>;
+using FilterHandler         = std::pair<std::string, ActionHandler>;
+using ActionHandlerMap      = std::map<std::string, FilterHandler>;
 
 struct ViewHandlerRequest
 {
@@ -432,8 +433,13 @@ void SlackEventHandler::UserActionCallback::operator()(API::BlockActions const& 
         return;
     }
 
+    std::string const&          filter      = find->second.first;
+    if (!(filter == "" || filter == action.block_id)) {
+        return;
+    }
+
     std::string const&          type        = action.type;
-    ActionHandler const&        handler     = find->second;
+    ActionHandler const&        handler     = find->second.second;
     InputValueToString          ptr2String;
 
     if (type == "datepicker") {

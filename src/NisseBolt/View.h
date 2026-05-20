@@ -23,6 +23,7 @@ class View
 
         // Handle User Actions.
         void action(std::string const& actionId, ActionHandler&& handler);
+        void action(std::string const& actionId, std::string const& blockId, ActionHandler&& handler);
 
         ThorsAnvil::Slack::API::Views::View const& getDisplayView() const;
 };

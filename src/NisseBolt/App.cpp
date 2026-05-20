@@ -219,7 +219,7 @@ void App::command(std::string const& command, SlashCommandHandler&& handler)
     slashCommandHandlerMap.insert_or_assign(index,
                                             [h = std::move(handler)](ThorsAnvil::Slack::SlashCommandRequest const& request)
                                             {
-                                                SlashAck    ack{request.response};
+                                                Ack         ack{request.response};
                                                 Response    response;
                                                 h(ack, response, request.command);
                                             }
@@ -229,12 +229,30 @@ void App::command(std::string const& command, SlashCommandHandler&& handler)
 THORSSLACK_HEADER_ONLY_INCLUDE
 void App::action(std::string const& actionId, ActionHandler&& handler)
 {
-    actionHandlerMap.insert_or_assign(actionId, [h = std::move(handler)](ThorsAnvil::Slack::ActionHandlerRequest const& request)
-                                            {
+    actionHandlerMap.insert_or_assign(actionId,
+      ThorsAnvil::Slack::FilterHandler{"",
+                                        [h = std::move(handler)](ThorsAnvil::Slack::ActionHandlerRequest const& request)
+                                        {
                                                 Ack         ack{request.response};
                                                 Response    response;
                                                 h(ack, response, request.command, request.value);
-                                            }
+                                        }
+                                      }
+    );
+}
+
+THORSSLACK_HEADER_ONLY_INCLUDE
+void App::action(std::string const& actionId, std::string const& blockId, ActionHandler&& handler)
+{
+    actionHandlerMap.insert_or_assign(actionId,
+      ThorsAnvil::Slack::FilterHandler{blockId,
+                                       [h = std::move(handler)](ThorsAnvil::Slack::ActionHandlerRequest const& request)
+                                        {
+                                                Ack         ack{request.response};
+                                                Response    response;
+                                                h(ack, response, request.command, request.value);
+                                        }
+                                      }
     );
 }
 
