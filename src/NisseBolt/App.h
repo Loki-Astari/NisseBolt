@@ -23,7 +23,8 @@
 
 namespace ThorsAnvil::Nisse::Bolt
 {
-class App: ThorsAnvil::ThorsMug::MugPluginSimple
+
+class App: public ThorsAnvil::ThorsMug::MugPluginSimple
 {
     std::string                                     slot;
     ThorsAnvil::Slack::EventHandlerMap              eventHandlerMap;
@@ -73,75 +74,8 @@ class App: ThorsAnvil::ThorsMug::MugPluginSimple
         template<typename T>
         void handleEvent(ThorsAnvil::Slack::EventRequest<T> const& request);
         void handleEventMessage(ThorsAnvil::Slack::EventRequest<ThorsAnvil::Slack::Event::Message> const& request);
-
-
-        // Friend declaration so mugInterface can register robots.
-        template<typename Server, typename ServerConfig>
-        friend ThorsAnvil::ThorsMug::MugPlugin* mugCreateBoltInstance(int init, char const* configStr);
-
-        // Addig and removing Bots at runtime.
-        template<typename Server, typename ServerConfig>
-        static ThorsAnvil::ThorsMug::MugPlugin* add(ServerConfig&& serverConfig);
-        template<typename Server, typename ServerConfig>
-        static ThorsAnvil::ThorsMug::MugPlugin* rem(ServerConfig&& serverConfig);
-    private:
-        // Currently active Bots.
-        static std::map<std::string, std::unique_ptr<App>>& getServerInfo();
 };
 
-
-/**
- * Template functions that need to be in header file
- */
-template<typename Server, typename ServerConfig>
-ThorsAnvil::ThorsMug::MugPlugin* App::add(ServerConfig&& serverConfig)
-{
-    std::map<std::string, std::unique_ptr<App>>&    servers = getServerInfo();
-    std::string const& slot = serverConfig.slot;
-    auto find = servers.find(slot);
-    if (find != servers.end() && find->second.get() != nullptr) {
-        // Extracting the pointer here
-        // So I can use it in typeid() without generating a warning message.
-        App* rawApp = find->second.get();
-        ThorsLogAndThrowError(std::runtime_error, "ThorsAnvil::Nisse::Bolt::App", "add", "Can not load Mug Server this slot >", slot, " is already being used. Current: ", typeid(*rawApp).name(), " New: ", typeid(Server).name());
-    }
-    find->second = std::make_unique<Server>(std::forward<ServerConfig>(serverConfig));
-    return find->second.get();
-}
-
-template<typename Server, typename ServerConfig>
-ThorsAnvil::ThorsMug::MugPlugin* App::rem(ServerConfig&& serverConfig)
-{
-    std::map<std::string, std::unique_ptr<App>>&    servers = getServerInfo();
-    auto find = servers.find(serverConfig.slot);
-    if (find != servers.end()) {
-        find->second.reset();
-    }
-    return nullptr;
-}
-
-template<typename Server, typename ServerConfig>
-ThorsAnvil::ThorsMug::MugPlugin* mugCreateBoltInstance(int init, char const* configStr)
-{
-    ServerConfig    config = ThorsAnvil::Serialize::jsonBuilder<ServerConfig>(std::stringstream{configStr});
-    if (init) {
-        return ThorsAnvil::Nisse::Bolt::App::add<Server>(config);
-    }
-    else {
-        return ThorsAnvil::Nisse::Bolt::App::rem<Server>(config);
-    }
-}
-
-}
-
-/**
- * Simplify the Bot interface for Mug server
- **/
-#define THORS_ANVIL_NISSE_BOLT_SERVER_INIT(Config, Server)                                      \
-                                                                                                \
-extern "C" ThorsAnvil::ThorsMug::MugPlugin* mugCreateInstance(int init, char const* configStr)  \
-{                                                                                               \
-    return ThorsAnvil::Nisse::Bolt::mugCreateBoltInstance<Server, Config>(init, configStr);     \
 }
 
 #endif

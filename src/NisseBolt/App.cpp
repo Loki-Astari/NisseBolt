@@ -286,10 +286,3 @@ void App::viewUpdate(std::string const& viewId, ThorsAnvil::Slack::API::Views::V
 {
     getClient().sendMessage(ThorsAnvil::Slack::API::Views::Update{std::move(display), viewId, {}, {}});
 }
-
-THORSSLACK_HEADER_ONLY_INCLUDE
-std::map<std::string, std::unique_ptr<App>>& App::getServerInfo()
-{
-    static std::map<std::string, std::unique_ptr<App>>  apps;
-    return apps;
-}
