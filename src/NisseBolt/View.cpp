@@ -3,16 +3,16 @@
 using namespace ThorsAnvil::Nisse::Bolt;
 
 THORSSLACK_HEADER_ONLY_INCLUDE
-View::View(ThorsAnvil::Slack::API::Views::View display, ViewSubmitHandler&& submitHandler, ViewClosedHandler&& closeHandler)
+View::View(ThorsAnvil::Slack::API::Views::View display, ViewSubmitRunner&& submitRunner, ViewClosedRunner&& closeRunner)
     : display(std::move(display))
     , handlers{
-                    [submit = std::move(submitHandler)](ThorsAnvil::Nisse::HTTP::Request const& /*request*/, ThorsAnvil::Nisse::HTTP::Response& response, ThorsAnvil::Slack::API::Views::ViewSubmission const& view)
+                    [submit = std::move(submitRunner)](ThorsAnvil::Nisse::HTTP::Request const& /*request*/, ThorsAnvil::Nisse::HTTP::Response& response, ThorsAnvil::Slack::API::Views::ViewSubmission const& view)
                     {
                         Ack         ack{response};
                         Response    response1;
                         submit(ack, response1, view);
                     },
-                    [close = std::move(closeHandler)](ThorsAnvil::Nisse::HTTP::Request const& /*request*/, ThorsAnvil::Nisse::HTTP::Response& response, ThorsAnvil::Slack::API::Views::ViewClosed const& view)
+                    [close = std::move(closeRunner)](ThorsAnvil::Nisse::HTTP::Request const& /*request*/, ThorsAnvil::Nisse::HTTP::Response& response, ThorsAnvil::Slack::API::Views::ViewClosed const& view)
                     {
                         Ack         ack{response};
                         Response    response1;
@@ -26,10 +26,10 @@ View::View(ThorsAnvil::Slack::API::Views::View display, ViewSubmitHandler&& subm
 }
 
 THORSSLACK_HEADER_ONLY_INCLUDE
-View::View(ThorsAnvil::Slack::API::Views::View display, ViewSubmitHandler&& submitHandler)
+View::View(ThorsAnvil::Slack::API::Views::View display, ViewSubmitRunner&& submitRunner)
     : display(std::move(display))
     , handlers{
-                    [submit = std::move(submitHandler)](ThorsAnvil::Nisse::HTTP::Request const& /*request*/, ThorsAnvil::Nisse::HTTP::Response& response, ThorsAnvil::Slack::API::Views::ViewSubmission const& view)
+                    [submit = std::move(submitRunner)](ThorsAnvil::Nisse::HTTP::Request const& /*request*/, ThorsAnvil::Nisse::HTTP::Response& response, ThorsAnvil::Slack::API::Views::ViewSubmission const& view)
                     {
                         Ack         ack{response};
                         Response    response1;
@@ -44,11 +44,11 @@ View::View(ThorsAnvil::Slack::API::Views::View display, ViewSubmitHandler&& subm
 }
 
 THORSSLACK_HEADER_ONLY_INCLUDE
-void View::action(std::string const& actionId, ActionHandler&& handler)
+void View::action(std::string const& actionId, ActionRunner&& runner)
 {
     handlers.actionHandlerMap.insert_or_assign(actionId,
       ThorsAnvil::Slack::FilterHandler{"",
-                                       [h = std::move(handler)](ThorsAnvil::Slack::ActionHandlerRequest const& request)
+                                       [h = std::move(runner)](ThorsAnvil::Slack::ActionHandlerRequest const& request)
                                         {
                                                 Ack         ack{request.response};
                                                 Response    response;
@@ -59,11 +59,11 @@ void View::action(std::string const& actionId, ActionHandler&& handler)
 }
 
 THORSSLACK_HEADER_ONLY_INCLUDE
-void View::action(std::string const& actionId, std::string const& blockId, ActionHandler&& handler)
+void View::action(std::string const& actionId, std::string const& blockId, ActionRunner&& runner)
 {
     handlers.actionHandlerMap.insert_or_assign(actionId,
       ThorsAnvil::Slack::FilterHandler{blockId,
-                                       [h = std::move(handler)](ThorsAnvil::Slack::ActionHandlerRequest const& request)
+                                       [h = std::move(runner)](ThorsAnvil::Slack::ActionHandlerRequest const& request)
                                         {
                                                 Ack         ack{request.response};
                                                 Response    response;

@@ -29,9 +29,9 @@ template<typename T>
 void App::handleEvent(ThorsAnvil::Slack::EventRequest<T> const& request)
 {
     Say     say{client, Where{.channel = getChannel(request.event), .ts = getTS(request.event)}};
-    for (AnyEventHandler const& anyHandler: eventHandlers) {
-        EventHandler<T> const& eventHandler = std::get<EventHandler<T>>(anyHandler);
-        eventHandler(request.event, say);
+    for (AnyEventRunner const& anyRunner: eventRunners) {
+        EventRunner<T> const& eventRunner = std::get<EventRunner<T>>(anyRunner);
+        eventRunner(request.event, say);
     }
 }
 
@@ -177,47 +177,47 @@ std::vector<ThorsAnvil::ThorsMug::Action> App::getAction()
 }
 
 THORSSLACK_HEADER_ONLY_INCLUDE
-void App::message(Filter&& filter, MessageHandler&& handler)
+void App::message(Filter&& filter, MessageRunner&& runner)
 {
-    messageHandlers.emplace_back(std::move(filter), std::move(handler));
+    messageRunners.emplace_back(std::move(filter), std::move(runner));
 }
 
 THORSSLACK_HEADER_ONLY_INCLUDE
-void App::message(std::string filter, MessageHandler&& handler)
+void App::message(std::string filter, MessageRunner&& runner)
 {
-    message([filter = std::move(filter)](ThorsAnvil::Slack::Event::Message const& message){return message.text.find(filter) != std::string::npos;}, std::move(handler));
+    message([filter = std::move(filter)](ThorsAnvil::Slack::Event::Message const& message){return message.text.find(filter) != std::string::npos;}, std::move(runner));
 }
 
 THORSSLACK_HEADER_ONLY_INCLUDE
-void App::message(std::regex filter, MessageHandler&& handler)
+void App::message(std::regex filter, MessageRunner&& runner)
 {
-    message([filter = std::move(filter)](ThorsAnvil::Slack::Event::Message const& message){return std::regex_search(message.text, filter);}, std::move(handler));
+    message([filter = std::move(filter)](ThorsAnvil::Slack::Event::Message const& message){return std::regex_search(message.text, filter);}, std::move(runner));
 }
 
 THORSSLACK_HEADER_ONLY_INCLUDE
-void App::message(MessageHandler&& handler)
+void App::message(MessageRunner&& runner)
 {
-    message([](ThorsAnvil::Slack::Event::Message const&){return true;}, std::move(handler));
+    message([](ThorsAnvil::Slack::Event::Message const&){return true;}, std::move(runner));
 }
 
 THORSSLACK_HEADER_ONLY_INCLUDE
 void App::handleEventMessage(ThorsAnvil::Slack::EventRequest<ThorsAnvil::Slack::Event::Message> const& request)
 {
     Say     say{client, Where{.channel = request.event.channel.value_or("bad"), .ts = request.event.ts}};
-    for (auto const& messageHandler: messageHandlers) {
-        if (messageHandler.first(request.event)) {
-            messageHandler.second(request.event, say);
+    for (auto const& messageRunner: messageRunners) {
+        if (messageRunner.first(request.event)) {
+            messageRunner.second(request.event, say);
         }
     }
 }
 
 THORSSLACK_HEADER_ONLY_INCLUDE
-void App::command(std::string const& command, SlashCommandHandler&& handler)
+void App::command(std::string const& command, SlashCommandRunner&& runner)
 {
     std::string index = (command.size() != 0 && command[0] == '/') ? command : (std::string("/") + command);
 
     slashCommandHandlerMap.insert_or_assign(index,
-                                            [h = std::move(handler)](ThorsAnvil::Slack::SlashCommandRequest const& request)
+                                            [h = std::move(runner)](ThorsAnvil::Slack::SlashCommandRequest const& request)
                                             {
                                                 Ack         ack{request.response};
                                                 Response    response;
@@ -227,11 +227,11 @@ void App::command(std::string const& command, SlashCommandHandler&& handler)
 }
 
 THORSSLACK_HEADER_ONLY_INCLUDE
-void App::action(std::string const& actionId, ActionHandler&& handler)
+void App::action(std::string const& actionId, ActionRunner&& runner)
 {
     actionHandlerMap.insert_or_assign(actionId,
       ThorsAnvil::Slack::FilterHandler{"",
-                                        [h = std::move(handler)](ThorsAnvil::Slack::ActionHandlerRequest const& request)
+                                        [h = std::move(runner)](ThorsAnvil::Slack::ActionHandlerRequest const& request)
                                         {
                                                 Ack         ack{request.response};
                                                 Response    response;
@@ -242,11 +242,11 @@ void App::action(std::string const& actionId, ActionHandler&& handler)
 }
 
 THORSSLACK_HEADER_ONLY_INCLUDE
-void App::action(std::string const& actionId, std::string const& blockId, ActionHandler&& handler)
+void App::action(std::string const& actionId, std::string const& blockId, ActionRunner&& runner)
 {
     actionHandlerMap.insert_or_assign(actionId,
       ThorsAnvil::Slack::FilterHandler{blockId,
-                                       [h = std::move(handler)](ThorsAnvil::Slack::ActionHandlerRequest const& request)
+                                       [h = std::move(runner)](ThorsAnvil::Slack::ActionHandlerRequest const& request)
                                         {
                                                 Ack         ack{request.response};
                                                 Response    response;

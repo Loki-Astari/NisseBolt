@@ -6,7 +6,7 @@
 #include "Say.h"
 #include "Ack.h"
 #include "Response.h"
-#include "Handlers.h"
+#include "Runners.h"
 #include "View.h"
 
 #include "ThorsMug/MugPlugin.h"
@@ -34,8 +34,8 @@ class App: public ThorsAnvil::ThorsMug::MugPluginSimple
     ThorsAnvil::Slack::ActionHandlerMap             actionHandlerMap;
     ThorsAnvil::Slack::ViewHandlerMap               viewHandlerMap;
 
-    std::vector<std::pair<Filter, MessageHandler>>  messageHandlers;
-    std::vector<AnyEventHandler>                    eventHandlers;
+    std::vector<std::pair<Filter, MessageRunner>>   messageRunners;
+    std::vector<AnyEventRunner>                     eventRunners;
 
         void addSlashCommandHandlers();
         void addUserActionHandlers();
@@ -44,23 +44,23 @@ class App: public ThorsAnvil::ThorsMug::MugPluginSimple
         App(AppConfig const& config, std::string const& slot);
         virtual std::vector<ThorsAnvil::ThorsMug::Action> getAction() override;
 
-        // register handlers for the standard Message events that come from the slack server.
-        void message(Filter&& filter, MessageHandler&& handler);            // Generic filter.
-        void message(std::string filter, MessageHandler&& handler);         // Simple to use string filter.
-        void message(std::regex filter, MessageHandler&& handler);          // Simplish to use regular expression filter
-        void message(MessageHandler&& handler);                             // No filter handle all events.
+        // register runners for the standard Message events that come from the slack server.
+        void message(Filter&& filter, MessageRunner&& runner);            // Generic filter.
+        void message(std::string filter, MessageRunner&& runner);         // Simple to use string filter.
+        void message(std::regex filter, MessageRunner&& runner);          // Simplish to use regular expression filter
+        void message(MessageRunner&& runner);                             // No filter handle all events.
 
-        // register handlers for other Events (other than Message) that come from the slack server.
-        void event(EventHandler<Event::Message>&& handler)                  {message(std::move(handler));}
+        // register runners for other Events (other than Message) that come from the slack server.
+        void event(EventRunner<Event::Message>&& runner)                  {message(std::move(runner));}
         template<typename E>
-        void event(EventHandler<E>&& handler)                               {eventHandlers.emplace_back(std::move(handler));}
+        void event(EventRunner<E>&& runner)                               {eventRunners.emplace_back(std::move(runner));}
 
         // Handle slash commands:
-        void command(std::string const& command, SlashCommandHandler&& handler);
+        void command(std::string const& command, SlashCommandRunner&& runner);
 
         // Handle User Actions.
-        void action(std::string const& actionId, ActionHandler&& handler);
-        void action(std::string const& actionId, std::string const& blockId, ActionHandler&& handler);
+        void action(std::string const& actionId, ActionRunner&& runner);
+        void action(std::string const& actionId, std::string const& blockId, ActionRunner&& runner);
 
         // Handle Views
         void viewOpen(std::string const& triggerId, View const& view);
@@ -70,7 +70,7 @@ class App: public ThorsAnvil::ThorsMug::MugPluginSimple
         // Temp
         ThorsAnvil::Slack::SlackClient const& getClient() const {return client;}
     private:
-        // Handle incoming events and send to the registered handlers.
+        // Handle incoming events and send to the registered runners.
         template<typename T>
         void handleEvent(ThorsAnvil::Slack::EventRequest<T> const& request);
         void handleEventMessage(ThorsAnvil::Slack::EventRequest<ThorsAnvil::Slack::Event::Message> const& request);

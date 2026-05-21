@@ -3,7 +3,7 @@
 
 
 #include "NisseBoltConfig.h"
-#include "Handlers.h"
+#include "Runners.h"
 #include "ThorsSlack/APIViews.h"
 
 namespace ThorsAnvil::Nisse::Bolt
@@ -17,13 +17,13 @@ class View
         ThorsAnvil::Slack::View                 handlers;
 
     public:
-        View(ThorsAnvil::Slack::API::Views::View display,ViewSubmitHandler&& submitHandler);
-        View(ThorsAnvil::Slack::API::Views::View display, ViewSubmitHandler&& submitHandler, ViewClosedHandler&& closeHandler);
+        View(ThorsAnvil::Slack::API::Views::View display, ViewSubmitRunner&& submitRunner);
+        View(ThorsAnvil::Slack::API::Views::View display, ViewSubmitRunner&& submitRunner, ViewClosedRunner&& closeRunner);
         virtual ~View() {}
 
         // Handle User Actions.
-        void action(std::string const& actionId, ActionHandler&& handler);
-        void action(std::string const& actionId, std::string const& blockId, ActionHandler&& handler);
+        void action(std::string const& actionId, ActionRunner&& runner);
+        void action(std::string const& actionId, std::string const& blockId, ActionRunner&& runner);
 
         ThorsAnvil::Slack::API::Views::View const& getDisplayView() const;
 };
