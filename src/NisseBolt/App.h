@@ -24,6 +24,7 @@
 namespace ThorsAnvil::Nisse::Bolt
 {
 
+
 class App: public ThorsAnvil::ThorsMug::MugPluginSimple
 {
     std::string                                     slot;
@@ -40,6 +41,11 @@ class App: public ThorsAnvil::ThorsMug::MugPluginSimple
         void addSlashCommandHandlers();
         void addUserActionHandlers();
         void addEventHandlers();
+        template<typename T>
+        void addEventHandler();
+        template<typename... Args>
+        void addEachEventHandlers(std::variant<EventRunner<Args>...>*) {(addEventHandler<Args>(), ...);}
+        void addAllEventHandlers()                                     {addEachEventHandlers(static_cast<AnyEventRunner*>(nullptr));}
     public:
         App(AppConfig const& config, std::string const& slot);
         virtual std::vector<ThorsAnvil::ThorsMug::Action> getAction() override;
