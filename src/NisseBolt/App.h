@@ -51,22 +51,22 @@ class App: public ThorsAnvil::ThorsMug::MugPluginSimple
         virtual std::vector<ThorsAnvil::ThorsMug::Action> getAction() override;
 
         // register runners for the standard Message events that come from the slack server.
-        void message(Filter&& filter, MessageRunner&& runner);            // Generic filter.
-        void message(std::string filter, MessageRunner&& runner);         // Simple to use string filter.
-        void message(std::regex filter, MessageRunner&& runner);          // Simplish to use regular expression filter
-        void message(MessageRunner&& runner);                             // No filter handle all events.
+        void message(Filter filter, MessageRunner runner);              // Generic filter.
+        void message(std::string filter, MessageRunner runner);         // Simple to use string filter.
+        void message(std::regex filter, MessageRunner runner);          // Simplish to use regular expression filter
+        void message(MessageRunner runner);                             // No filter handle all events.
 
         // register runners for other Events (other than Message) that come from the slack server.
-        void event(EventRunner<Event::Message>&& runner)                  {message(std::move(runner));}
+        void event(EventRunner<Event::Message> runner)                  {message(std::move(runner));}
         template<typename E>
-        void event(EventRunner<E>&& runner)                               {eventRunners.emplace_back(std::move(runner));}
+        void event(EventRunner<E> runner)                               {eventRunners.emplace_back(std::move(runner));}
 
         // Handle slash commands:
-        void command(std::string const& command, SlashCommandRunner&& runner);
+        void command(std::string const& command, SlashCommandRunner runner);
 
         // Handle User Actions.
-        void action(std::string const& actionId, ActionRunner&& runner);
-        void action(std::string const& actionId, std::string const& blockId, ActionRunner&& runner);
+        void action(std::string const& actionId, ActionRunner runner);
+        void action(std::string const& actionId, std::string const& blockId, ActionRunner runner);
 
         // Handle Views
         void viewOpen(std::string const& triggerId, View const& view);

@@ -17,13 +17,13 @@ class View
         ThorsAnvil::Slack::View                 handlers;
 
     public:
-        View(ThorsAnvil::Slack::API::Views::View display, ViewSubmitRunner&& submitRunner);
-        View(ThorsAnvil::Slack::API::Views::View display, ViewSubmitRunner&& submitRunner, ViewClosedRunner&& closeRunner);
+        View(ThorsAnvil::Slack::API::Views::View display, ViewSubmitRunner submitRunner);
+        View(ThorsAnvil::Slack::API::Views::View display, ViewSubmitRunner submitRunner, ViewClosedRunner closeRunner);
         virtual ~View() {}
 
         // Handle User Actions.
-        void action(std::string const& actionId, ActionRunner&& runner);
-        void action(std::string const& actionId, std::string const& blockId, ActionRunner&& runner);
+        void action(std::string const& actionId, ActionRunner runner);
+        void action(std::string const& actionId, std::string const& blockId, ActionRunner runner);
 
         ThorsAnvil::Slack::API::Views::View const& getDisplayView() const;
 };

@@ -3,7 +3,7 @@
 using namespace ThorsAnvil::Nisse::Bolt;
 
 THORSSLACK_HEADER_ONLY_INCLUDE
-View::View(ThorsAnvil::Slack::API::Views::View display, ViewSubmitRunner&& submitRunner, ViewClosedRunner&& closeRunner)
+View::View(ThorsAnvil::Slack::API::Views::View display, ViewSubmitRunner submitRunner, ViewClosedRunner closeRunner)
     : display(std::move(display))
     , handlers{
                     [submit = std::move(submitRunner)](ThorsAnvil::Nisse::HTTP::Request const& /*request*/, ThorsAnvil::Nisse::HTTP::Response& response, ThorsAnvil::Slack::API::Views::ViewSubmission const& view)
@@ -26,7 +26,7 @@ View::View(ThorsAnvil::Slack::API::Views::View display, ViewSubmitRunner&& submi
 }
 
 THORSSLACK_HEADER_ONLY_INCLUDE
-View::View(ThorsAnvil::Slack::API::Views::View display, ViewSubmitRunner&& submitRunner)
+View::View(ThorsAnvil::Slack::API::Views::View display, ViewSubmitRunner submitRunner)
     : display(std::move(display))
     , handlers{
                     [submit = std::move(submitRunner)](ThorsAnvil::Nisse::HTTP::Request const& /*request*/, ThorsAnvil::Nisse::HTTP::Response& response, ThorsAnvil::Slack::API::Views::ViewSubmission const& view)
@@ -44,7 +44,7 @@ View::View(ThorsAnvil::Slack::API::Views::View display, ViewSubmitRunner&& submi
 }
 
 THORSSLACK_HEADER_ONLY_INCLUDE
-void View::action(std::string const& actionId, ActionRunner&& runner)
+void View::action(std::string const& actionId, ActionRunner runner)
 {
     handlers.actionHandlerMap.insert_or_assign(actionId,
       ThorsAnvil::Slack::FilterHandler{"",
@@ -59,7 +59,7 @@ void View::action(std::string const& actionId, ActionRunner&& runner)
 }
 
 THORSSLACK_HEADER_ONLY_INCLUDE
-void View::action(std::string const& actionId, std::string const& blockId, ActionRunner&& runner)
+void View::action(std::string const& actionId, std::string const& blockId, ActionRunner runner)
 {
     handlers.actionHandlerMap.insert_or_assign(actionId,
       ThorsAnvil::Slack::FilterHandler{blockId,

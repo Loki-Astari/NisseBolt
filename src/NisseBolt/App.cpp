@@ -97,25 +97,25 @@ std::vector<ThorsAnvil::ThorsMug::Action> App::getAction()
 }
 
 THORSSLACK_HEADER_ONLY_INCLUDE
-void App::message(Filter&& filter, MessageRunner&& runner)
+void App::message(Filter filter, MessageRunner runner)
 {
     messageRunners.emplace_back(std::move(filter), std::move(runner));
 }
 
 THORSSLACK_HEADER_ONLY_INCLUDE
-void App::message(std::string filter, MessageRunner&& runner)
+void App::message(std::string filter, MessageRunner runner)
 {
     message([filter = std::move(filter)](ThorsAnvil::Slack::Event::Message const& message){return message.text.find(filter) != std::string::npos;}, std::move(runner));
 }
 
 THORSSLACK_HEADER_ONLY_INCLUDE
-void App::message(std::regex filter, MessageRunner&& runner)
+void App::message(std::regex filter, MessageRunner runner)
 {
     message([filter = std::move(filter)](ThorsAnvil::Slack::Event::Message const& message){return std::regex_search(message.text, filter);}, std::move(runner));
 }
 
 THORSSLACK_HEADER_ONLY_INCLUDE
-void App::message(MessageRunner&& runner)
+void App::message(MessageRunner runner)
 {
     message([](ThorsAnvil::Slack::Event::Message const&){return true;}, std::move(runner));
 }
@@ -132,7 +132,7 @@ void App::handleEventMessage(ThorsAnvil::Slack::EventRequest<ThorsAnvil::Slack::
 }
 
 THORSSLACK_HEADER_ONLY_INCLUDE
-void App::command(std::string const& command, SlashCommandRunner&& runner)
+void App::command(std::string const& command, SlashCommandRunner runner)
 {
     std::string index = (command.size() != 0 && command[0] == '/') ? command : (std::string("/") + command);
 
@@ -147,7 +147,7 @@ void App::command(std::string const& command, SlashCommandRunner&& runner)
 }
 
 THORSSLACK_HEADER_ONLY_INCLUDE
-void App::action(std::string const& actionId, ActionRunner&& runner)
+void App::action(std::string const& actionId, ActionRunner runner)
 {
     actionHandlerMap.insert_or_assign(actionId,
       ThorsAnvil::Slack::FilterHandler{"",
@@ -162,7 +162,7 @@ void App::action(std::string const& actionId, ActionRunner&& runner)
 }
 
 THORSSLACK_HEADER_ONLY_INCLUDE
-void App::action(std::string const& actionId, std::string const& blockId, ActionRunner&& runner)
+void App::action(std::string const& actionId, std::string const& blockId, ActionRunner runner)
 {
     actionHandlerMap.insert_or_assign(actionId,
       ThorsAnvil::Slack::FilterHandler{blockId,
@@ -180,7 +180,7 @@ THORSSLACK_HEADER_ONLY_INCLUDE
 void App::viewOpen(std::string const& triggerId, View const& view)
 {
     getClient().sendMessage(ThorsAnvil::Slack::API::Views::Open{view.getDisplayView(), triggerId, {}},
-                            [&](ThorsAnvil::Slack::API::Views::ViewReply&& reply)
+                            [&](ThorsAnvil::Slack::API::Views::ViewReply reply)
                             {
                                 viewHandlerMap.insert_or_assign(reply.view.id, view.handlers);
                             }
@@ -191,7 +191,7 @@ THORSSLACK_HEADER_ONLY_INCLUDE
 void App::viewPush(std::string const& triggerId, View const& view)
 {
     getClient().sendMessage(ThorsAnvil::Slack::API::Views::Push{view.getDisplayView(), triggerId, {}},
-                            [&](ThorsAnvil::Slack::API::Views::ViewReply&& reply)
+                            [&](ThorsAnvil::Slack::API::Views::ViewReply reply)
                             {
                                 auto insert = viewHandlerMap.insert_or_assign(reply.view.id, view.handlers);
                                 if (reply.view.previous_view_id) {
