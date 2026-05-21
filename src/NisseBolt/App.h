@@ -84,4 +84,13 @@ class App: public ThorsAnvil::ThorsMug::MugPluginSimple
 
 }
 
+/*
+ * Currentl Nisse Bolt Server is a Simple Mug Server.
+ * Thus we simply redefine THORS_ANVIL_NISSE_BOLT_SERVER_INIT => THORS_ANVIL_SIMPLE_MUG_SERVER_INIT at this time.
+ * Note:
+ * This may change. But functionality will be maintained.
+ */
+#define THORS_ANVIL_NISSE_BOLT_SERVER_INIT(Config, Server)           THORS_ANVIL_SIMPLE_MUG_SERVER_INIT(Config, Server)
+
+
 #endif
