@@ -28,9 +28,9 @@ namespace ThorsAnvil::Nisse::Bolt
 class App: public ThorsAnvil::ThorsMug::MugPluginSimple
 {
     std::string                                     slot;
-    ThorsAnvil::Slack::EventFunctionMap             eventHandlerMap;
     ThorsAnvil::Slack::Client                       client;
     ThorsAnvil::Slack::EventHandler                 slackHandler;
+    ThorsAnvil::Slack::EventFunctionMap             eventHandlerMap;
     ThorsAnvil::Slack::SlashCommandHandlerMap       slashCommandHandlerMap;
     ThorsAnvil::Slack::ActionHandlerMap             actionHandlerMap;
     ThorsAnvil::Slack::ViewHandlerMap               viewHandlerMap;

@@ -17,8 +17,8 @@ class View
         ThorsAnvil::Slack::View                 handlers;
 
     public:
-        View(ThorsAnvil::Slack::API::Views::View display, ViewSubmitRunner submitRunner);
-        View(ThorsAnvil::Slack::API::Views::View display, ViewSubmitRunner submitRunner, ViewClosedRunner closeRunner);
+        View(ThorsAnvil::Slack::API::Views::View display, ViewSubmitRunner submitRunner, ThorsAnvil::Slack::ActionHandlerMap actionHandlers = {});
+        View(ThorsAnvil::Slack::API::Views::View display, ViewSubmitRunner submitRunner, ViewClosedRunner closeRunner, ThorsAnvil::Slack::ActionHandlerMap actionHandlers = {});
         virtual ~View() {}
 
         // Handle User Actions.

@@ -3,7 +3,7 @@
 using namespace ThorsAnvil::Nisse::Bolt;
 
 THORSSLACK_HEADER_ONLY_INCLUDE
-View::View(ThorsAnvil::Slack::API::Views::View display, ViewSubmitRunner submitRunner, ViewClosedRunner closeRunner)
+View::View(ThorsAnvil::Slack::API::Views::View display, ViewSubmitRunner submitRunner, ViewClosedRunner closeRunner, ThorsAnvil::Slack::ActionHandlerMap actionHandlers)
     : display(std::move(display))
     , handlers{
                     [submit = std::move(submitRunner)](ThorsAnvil::Nisse::HTTP::Request const& /*request*/, ThorsAnvil::Nisse::HTTP::Response& response, ThorsAnvil::Slack::API::Views::ViewSubmission const& view)
@@ -18,7 +18,7 @@ View::View(ThorsAnvil::Slack::API::Views::View display, ViewSubmitRunner submitR
                         Response    response1;
                         close(ack, response1, view);
                     },
-                    {},
+                    std::move(actionHandlers),
                     ""
               }
 {
@@ -26,7 +26,7 @@ View::View(ThorsAnvil::Slack::API::Views::View display, ViewSubmitRunner submitR
 }
 
 THORSSLACK_HEADER_ONLY_INCLUDE
-View::View(ThorsAnvil::Slack::API::Views::View display, ViewSubmitRunner submitRunner)
+View::View(ThorsAnvil::Slack::API::Views::View display, ViewSubmitRunner submitRunner, ThorsAnvil::Slack::ActionHandlerMap actionHandlers)
     : display(std::move(display))
     , handlers{
                     [submit = std::move(submitRunner)](ThorsAnvil::Nisse::HTTP::Request const& /*request*/, ThorsAnvil::Nisse::HTTP::Response& response, ThorsAnvil::Slack::API::Views::ViewSubmission const& view)
@@ -36,7 +36,7 @@ View::View(ThorsAnvil::Slack::API::Views::View display, ViewSubmitRunner submitR
                         submit(ack, response1, view);
                     },
                     [](ThorsAnvil::Nisse::HTTP::Request const& /*request*/, ThorsAnvil::Nisse::HTTP::Response& /*response*/, ThorsAnvil::Slack::API::Views::ViewClosed const& /*view*/)  {},
-                    {},
+                    std::move(actionHandlers),
                     ""
               }
 {
