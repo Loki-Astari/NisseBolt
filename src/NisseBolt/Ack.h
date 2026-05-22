@@ -3,7 +3,7 @@
 
 #include "NisseBoltConfig.h"
 
-#include "ThorsSlack/SlackClient.h"
+#include "ThorsSlack/Client.h"
 #include "NisseHTTP/Response.h"
 
 namespace ThorsAnvil::Nisse::Bolt

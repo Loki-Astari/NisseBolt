@@ -6,7 +6,7 @@
 using namespace ThorsAnvil::Nisse::Bolt;
 
 THORSSLACK_HEADER_ONLY_INCLUDE
-Say::Say(Slack::SlackClient& client, Where where)
+Say::Say(Slack::Client& client, Where where)
     : client{client}
     , where{std::move(where)}
 {}

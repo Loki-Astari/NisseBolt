@@ -10,8 +10,8 @@
 #include "View.h"
 
 #include "ThorsMug/MugPlugin.h"
-#include "ThorsSlack/SlackClient.h"
-#include "ThorsSlack/SlackEventHandler.h"
+#include "ThorsSlack/Client.h"
+#include "ThorsSlack/EventHandler.h"
 
 #include <map>
 #include <string>
@@ -28,9 +28,9 @@ namespace ThorsAnvil::Nisse::Bolt
 class App: public ThorsAnvil::ThorsMug::MugPluginSimple
 {
     std::string                                     slot;
-    ThorsAnvil::Slack::EventHandlerMap              eventHandlerMap;
-    ThorsAnvil::Slack::SlackClient                  client;
-    ThorsAnvil::Slack::SlackEventHandler            slackHandler;
+    ThorsAnvil::Slack::EventFunctionMap             eventHandlerMap;
+    ThorsAnvil::Slack::Client                       client;
+    ThorsAnvil::Slack::EventHandler                 slackHandler;
     ThorsAnvil::Slack::SlashCommandHandlerMap       slashCommandHandlerMap;
     ThorsAnvil::Slack::ActionHandlerMap             actionHandlerMap;
     ThorsAnvil::Slack::ViewHandlerMap               viewHandlerMap;
@@ -74,7 +74,7 @@ class App: public ThorsAnvil::ThorsMug::MugPluginSimple
         void viewUpdate(std::string const& viewId, ThorsAnvil::Slack::API::Views::View view);
 
         // Temp
-        ThorsAnvil::Slack::SlackClient const& getClient() const {return client;}
+        ThorsAnvil::Slack::Client const& getClient() const {return client;}
     private:
         // Handle incoming events and send to the registered runners.
         template<typename T>

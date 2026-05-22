@@ -6,7 +6,7 @@
 #include "Say.h"
 #include "Response.h"
 
-#include "ThorsSlack/SlackEventHandler.h"
+#include "ThorsSlack/EventHandler.h"
 
 #include <functional>
 #include <variant>

@@ -2,8 +2,8 @@
 #include <type_traits>
 #include "Ack.h"
 #include "Say.h"
-#include "ThorsSlack/SlackEventHandler.h"
-#include "ThorsSlack/SlackClient.h"
+#include "ThorsSlack/EventHandler.h"
+#include "ThorsSlack/Client.h"
 
 
 using namespace ThorsAnvil::Nisse::Bolt;

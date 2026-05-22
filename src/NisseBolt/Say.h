@@ -4,7 +4,7 @@
 #include "NisseBoltConfig.h"
 
 #include "ThorsSlack/APIChatMessage.h"
-#include "ThorsSlack/SlackClient.h"
+#include "ThorsSlack/Client.h"
 
 #include <string>
 #include <optional>
@@ -24,10 +24,10 @@ struct Where
 
 class Say
 {
-    Slack::SlackClient&     client;
+    Slack::Client&          client;
     Where                   where;
     public:
-        Say(Slack::SlackClient& client, Where where);
+        Say(Slack::Client& client, Where where);
         void operator()(std::string const& message) const;
         void operator()(std::string const& message, Where const& where) const;
         void operator()(Slack::BlockKit::Blocks const&) const;
