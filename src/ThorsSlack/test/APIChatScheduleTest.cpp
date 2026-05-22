@@ -4,20 +4,20 @@
 
 #include "APIChatSchedule.h"
 #include "Environment.h"
-#include "SlackClient.h"
-#include "SlackBlockKit.h"
+#include "Client.h"
+#include "BlockKit.h"
 
 #include <thread>
 
 using namespace std::literals::string_literals;
 namespace BK = ThorsAnvil::Slack::BlockKit;
 
-using ThorsAnvil::Slack::SlackClient;
+using ThorsAnvil::Slack::Client;
 using ThorsAnvil::Slack::API::Chat::ScheduleMessage;
 using ThorsAnvil::Slack::API::Chat::DeleteScheduledMessage;
 using ThorsAnvil::Slack::API::Chat::ScheduledMessagesList;
 
-extern SlackClient             client;
+extern Client                  client;
 extern Environment             environment;
 
 TEST(APIChatScheduleTest, CreateScheduledMessage)

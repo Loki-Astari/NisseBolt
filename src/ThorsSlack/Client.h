@@ -4,7 +4,7 @@
 #include "ThorsSlackConfig.h"
 #include "API.h"
 #include "APIAuth.h"
-#include "SlackStream.h"
+#include "Stream.h"
 #include "NisseHTTP/ClientRequest.h"
 #include "NisseHTTP/ClientResponse.h"
 #include "NisseHTTP/HeaderResponse.h"
@@ -48,14 +48,14 @@ struct VisitResult
     void operator()(API::Error& val)   {fail(std::move(val));}
 };
 
-class SlackClient
+class Client
 {
     Nisse::HeaderResponse   botHeaders;
     Nisse::HeaderResponse   userHeaders;
     std::string             botId;
     private:
         template<typename T>
-        void sendMessageData(T const& message, SlackStream& stream) const
+        void sendMessageData(T const& message, Stream& stream) const
         {
             if constexpr (T::method == API::Method::GET) {
                 std::string api = std::string{} + T::api + "?" + ThorsAnvil::Slack::API::buildQueryA(message);
@@ -90,18 +90,18 @@ class SlackClient
             hit = true;
             std::string_view    body = input.preloadStreamIntoBuffer();
             if (body.find(R"("ok":false)") != std::string_view::npos) {
-                ThorsLogInfo("ThorsAnvil::Slack::SlackClient", "getEventType", "Found: Error");
+                ThorsLogInfo("ThorsAnvil::Slack::Client", "getEventType", "Found: Error");
                 return "ThorsAnvil::Slack::API::Error";
             }
             if (body.find(R"("ok":true)") != std::string_view::npos) {
-                ThorsLogInfo("ThorsAnvil::Slack::SlackClient", "getEventType", "Found: Result: ", T::polyMorphicSerializerName());
+                ThorsLogInfo("ThorsAnvil::Slack::Client", "getEventType", "Found: Result: ", T::polyMorphicSerializerName());
                 return T::polyMorphicSerializerName();
             }
-            ThorsLogTrack("ThorsAnvil::Slack::SlackClient", "getEventType", "Found: Fallback object members");
+            ThorsLogTrack("ThorsAnvil::Slack::Client", "getEventType", "Found: Fallback object members");
             return "";
         }
     public:
-        SlackClient(std::string const& botToken, std::string const& userToken)
+        Client(std::string const& botToken, std::string const& userToken)
         {
             botHeaders.add("Connection", "close");
             botHeaders.add("Content-Type", "application/json; charset=utf-8");
@@ -124,9 +124,9 @@ class SlackClient
         {
             using ResultType = typename T::Reply;
             using OutputType = std::variant<API::Error, ResultType>;
-            ThorsLogTrackWithData(message, "ThorsAnvil::Slack::SlackClient", "sendMessage", "Sending Request");
+            ThorsLogTrackWithData(message, "ThorsAnvil::Slack::Client", "sendMessage", "Sending Request");
 
-            SlackStream             stream;
+            Stream                  stream;
             sendMessageData(message, stream);
 
             Nisse::ClientResponse   response(stream);
@@ -134,7 +134,7 @@ class SlackClient
             OutputType              reply;
             bool hit = false;
             input >> Ser::jsonImporter(reply, Ser::ParserConfig{}.setIdentifyDynamicClass([&](Ser::DataInputStream&){return getEventType<ResultType>(input, hit);}));
-            ThorsLogTrackWithData(reply, "ThorsAnvil::Slack::SlackClient", "sendMessage", "Response:");
+            ThorsLogTrackWithData(reply, "ThorsAnvil::Slack::Client", "sendMessage", "Response:");
 
             std::visit(VisitResult<ResultType>{std::move(succ), std::move(fail)}, reply);
         }
@@ -145,7 +145,7 @@ class SlackClient
         template<typename T>
         void  validateMessage(T const& message) const
         {
-            SlackStream             stream;
+            Stream                  stream;
             sendMessageData(message, stream);
 
             Nisse::ClientResponse   response(stream);

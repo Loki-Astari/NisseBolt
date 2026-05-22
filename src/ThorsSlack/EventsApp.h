@@ -4,7 +4,7 @@
 // Documentation: https://docs.slack.dev/reference/events/app_home_opened
 
 #include "ThorsSlackConfig.h"
-#include "SlackBlockKit.h"
+#include "BlockKit.h"
 #include "ThorSerialize/Traits.h"
 #include <ctime>
 #include <string>

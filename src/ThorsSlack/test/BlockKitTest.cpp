@@ -3,22 +3,22 @@
 #if !(defined(DISABLE_SLACKTEST) && (DISABLE_SLACKTEST == 1))
 
 #include "Environment.h"
-#include "SlackClient.h"
+#include "Client.h"
 #include "APIChatMessage.h"
-#include "SlackBlockKit.h"
+#include "BlockKit.h"
 
 #include <variant>
 
 using namespace std::literals::string_literals;
 namespace BK = ThorsAnvil::Slack::BlockKit;
 
-using ThorsAnvil::Slack::SlackClient;
+using ThorsAnvil::Slack::Client;
 using ThorsAnvil::Slack::API::Chat::POSTMessage;
 
-extern SlackClient             client;
+extern Client                  client;
 extern Environment             environment;
 
-TEST(SlackBlockKitTest, Block_Section_ElText)
+TEST(BlockKitTest, Block_Section_ElText)
 {
     POSTMessage::Reply      reply;
     client.sendMessage(POSTMessage{
@@ -46,7 +46,7 @@ TEST(SlackBlockKitTest, Block_Section_ElText)
     EXPECT_EQ("More Text after a divider", std::visit(text, section2.text.value()));
 }
 
-TEST(SlackBlockKitTest, Block_RichText_Section_Text)
+TEST(BlockKitTest, Block_RichText_Section_Text)
 {
     POSTMessage::Reply      reply;
     client.sendMessage(POSTMessage{
@@ -71,7 +71,7 @@ TEST(SlackBlockKitTest, Block_RichText_Section_Text)
     EXPECT_TRUE(rtext.style->code);
 }
 
-TEST(SlackBlockKitTest, Block_RichText_ListBullet_Section_Text)
+TEST(BlockKitTest, Block_RichText_ListBullet_Section_Text)
 {
     POSTMessage::Reply      reply;
     client.sendMessage(POSTMessage{
@@ -99,7 +99,7 @@ TEST(SlackBlockKitTest, Block_RichText_ListBullet_Section_Text)
     EXPECT_FALSE(rtext.style->code);
 }
 
-TEST(SlackBlockKitTest, Block_RichText_ListOrder_Section_Text)
+TEST(BlockKitTest, Block_RichText_ListOrder_Section_Text)
 {
     POSTMessage::Reply      reply;
     client.sendMessage(POSTMessage{
@@ -127,7 +127,7 @@ TEST(SlackBlockKitTest, Block_RichText_ListOrder_Section_Text)
     EXPECT_TRUE(rtext.style->code);
 }
 
-TEST(SlackBlockKitTest, Block_RichText_Pre_Formatted)
+TEST(BlockKitTest, Block_RichText_Pre_Formatted)
 {
     POSTMessage::Reply  reply;
     POSTMessage         message = {
@@ -138,7 +138,7 @@ TEST(SlackBlockKitTest, Block_RichText_Pre_Formatted)
     ASSERT_TRUE(reply.ok);
 }
 
-TEST(SlackBlockKitTest, Block_RichText_QUOTE)
+TEST(BlockKitTest, Block_RichText_QUOTE)
 {
     POSTMessage::Reply      reply;
     client.sendMessage(POSTMessage{
@@ -148,7 +148,7 @@ TEST(SlackBlockKitTest, Block_RichText_QUOTE)
     ASSERT_TRUE(reply.ok);
 }
 
-TEST(SlackBlockKitTest, BlockAllRichTextElements)
+TEST(BlockKitTest, BlockAllRichTextElements)
 {
     POSTMessage::Reply      reply;
     client.sendMessage(POSTMessage{
@@ -189,7 +189,7 @@ TEST(SlackBlockKitTest, BlockAllRichTextElements)
     ASSERT_TRUE(reply.ok);
 }
 
-TEST(SlackBlockKitTest, Block_RichText_Failure)
+TEST(BlockKitTest, Block_RichText_Failure)
 {
     POSTMessage::Reply      reply;
     client.sendMessage(POSTMessage{
@@ -199,7 +199,7 @@ TEST(SlackBlockKitTest, Block_RichText_Failure)
     ASSERT_FALSE(reply.ok);
 }
 
-TEST(SlackBlockKitTest, Block_Action_Button)
+TEST(BlockKitTest, Block_Action_Button)
 {
     POSTMessage     message{
                         .channel = environment.slackChannel,
@@ -237,7 +237,8 @@ TEST(SlackBlockKitTest, Block_Action_Button)
     ASSERT_TRUE(reply.ok);
 #endif
 }
-TEST(SlackBlockKitTest, Block_Section_All_Standard_Elements)
+
+TEST(BlockKitTest, Block_Section_All_Standard_Elements)
 {
     POSTMessage::Reply      reply;
     client.sendMessage(POSTMessage{

@@ -2,18 +2,18 @@
 #define THORSANVIL_SLACK_SLACKEVENTHANDLER_H
 
 #include "ThorsSlackConfig.h"
-#include "EventCallbackAppMentioned.h"
+#include "EventAppMentioned.h"
 #include "ThorSerialize/JsonThor.h"
 #include "ThorsSlackConfig.h"
-#include "SlackClient.h"
+#include "Client.h"
 #include "APIViews.h"
 #include "APIChatMessage.h"
 #include "APIBlockActions.h"
 #include "Event.h"
 #include "EventCallback.h"
 #include "SlashCommand.h"
-#include "EventCallbackMessage.h"
-#include "EventCallbackReaction.h"
+#include "EventMessage.h"
+#include "EventsReaction.h"
 #include "EventURLVerification.h"
 #include "Util.h"
 
@@ -52,35 +52,35 @@ struct EventRequest
     T const&                                    event;
 };
 template<typename T>
-using EventHandler      = std::function<void(EventRequest<T> const&)>;
-using AnyEventHandler   = std::variant< EventHandler<Event::AppDeleted>, EventHandler<Event::AppHomeOpened>, EventHandler<Event::AppInstalled>, EventHandler<Event::AppRateLimited>, EventHandler<Event::AppRequested>, EventHandler<Event::AppUninstalledTeam>, EventHandler<Event::AppUninstalled>, EventHandler<Event::AppMentioned>,
-                                        EventHandler<Event::AssistantThreadContextChanged>, EventHandler<Event::AssistantThreadStarted>,
-                                        EventHandler<Event::CallRejected>,
-                                        EventHandler<Event::ChannelArchive>, EventHandler<Event::ChannelCreated>, EventHandler<Event::ChannelDeleted>, EventHandler<Event::ChannelHistoryChanged>, EventHandler<Event::ChannelIdChanged>, EventHandler<Event::ChannelLeft>, EventHandler<Event::ChannelPostingPermissions>, EventHandler<Event::ChannelRename>, EventHandler<Event::ChannelShared>, EventHandler<Event::ChannelUnshared>,
-                                        EventHandler<Event::DndUpdated>, EventHandler<Event::DndUpdatedUser>,
-                                        EventHandler<Event::EmailDomainChanged>,
-                                        EventHandler<Event::EmojiChanged>,
-                                        EventHandler<Event::EntityDetailsRequested>,
-                                        EventHandler<Event::FileChange>, EventHandler<Event::FileCommentAdded>, EventHandler<Event::FileCommentDeleted>, EventHandler<Event::FileCommentEdited>, EventHandler<Event::FileCreated>, EventHandler<Event::FileDeleted>, EventHandler<Event::FilePublic>, EventHandler<Event::FileShared>, EventHandler<Event::FileUnshared>,
-                                        EventHandler<Event::FunctionExecuted>,
-                                        EventHandler<Event::GridMigrationFinished>, EventHandler<Event::GridMigrationStarted>,
-                                        EventHandler<Event::GroupClose>, EventHandler<Event::GroupDeleted>, EventHandler<Event::GroupHistoryChanged>, EventHandler<Event::GroupLeft>, EventHandler<Event::GroupOpen>, EventHandler<Event::GroupRename>,
-                                        EventHandler<Event::ImClose>, EventHandler<Event::ImCreated>, EventHandler<Event::ImHistoryChanged>, EventHandler<Event::ImOpen>,
-                                        EventHandler<Event::InviteRequested>,
-                                        EventHandler<Event::LinkShared>,
-                                        EventHandler<Event::MemberJoinedChannel>, EventHandler<Event::MemberLeftChannel>,
-                                        EventHandler<Event::Message>,
-                                        EventHandler<Event::MessageMetadataPosted>, EventHandler<Event::MessageMetadataUpdated>, EventHandler<Event::MessageMetadataDeleted>,
-                                        EventHandler<Event::PinAdded>, EventHandler<Event::PinRemoved>,
-                                        EventHandler<Event::ReactionAdded>, EventHandler<Event::ReactionRemoved>,
-                                        EventHandler<Event::SharedChannelInviteAccepted>, EventHandler<Event::SharedChannelInviteApproved>, EventHandler<Event::SharedChannelInviteDeclined>, EventHandler<Event::SharedChannelInviteReceived>, EventHandler<Event::SharedChannelInviteRequested>,
-                                        EventHandler<Event::StarAdded>, EventHandler<Event::StarRemoved>,
-                                        EventHandler<Event::SubteamCreated>, EventHandler<Event::SubteamMembersChanged>, EventHandler<Event::SubteamSelfAdded>, EventHandler<Event::SubteamSelfRemoved>, EventHandler<Event::SubteamUpdated>,
-                                        EventHandler<Event::TeamAccessGranted>, EventHandler<Event::TeamAccessRevoked>, EventHandler<Event::TeamDomainChange>, EventHandler<Event::TeamJoin>, EventHandler<Event::TeamRename>,
-                                        EventHandler<Event::TokensRevoked>,
-                                        EventHandler<Event::UserChange>, EventHandler<Event::UserConnection>, EventHandler<Event::UserHuddleChanged>
+using EventFunction      = std::function<void(EventRequest<T> const&)>;
+using AnyEventFunction   = std::variant< EventFunction<Event::AppDeleted>, EventFunction<Event::AppHomeOpened>, EventFunction<Event::AppInstalled>, EventFunction<Event::AppRateLimited>, EventFunction<Event::AppRequested>, EventFunction<Event::AppUninstalledTeam>, EventFunction<Event::AppUninstalled>, EventFunction<Event::AppMentioned>,
+                                        EventFunction<Event::AssistantThreadContextChanged>, EventFunction<Event::AssistantThreadStarted>,
+                                        EventFunction<Event::CallRejected>,
+                                        EventFunction<Event::ChannelArchive>, EventFunction<Event::ChannelCreated>, EventFunction<Event::ChannelDeleted>, EventFunction<Event::ChannelHistoryChanged>, EventFunction<Event::ChannelIdChanged>, EventFunction<Event::ChannelLeft>, EventFunction<Event::ChannelPostingPermissions>, EventFunction<Event::ChannelRename>, EventFunction<Event::ChannelShared>, EventFunction<Event::ChannelUnshared>,
+                                        EventFunction<Event::DndUpdated>, EventFunction<Event::DndUpdatedUser>,
+                                        EventFunction<Event::EmailDomainChanged>,
+                                        EventFunction<Event::EmojiChanged>,
+                                        EventFunction<Event::EntityDetailsRequested>,
+                                        EventFunction<Event::FileChange>, EventFunction<Event::FileCommentAdded>, EventFunction<Event::FileCommentDeleted>, EventFunction<Event::FileCommentEdited>, EventFunction<Event::FileCreated>, EventFunction<Event::FileDeleted>, EventFunction<Event::FilePublic>, EventFunction<Event::FileShared>, EventFunction<Event::FileUnshared>,
+                                        EventFunction<Event::FunctionExecuted>,
+                                        EventFunction<Event::GridMigrationFinished>, EventFunction<Event::GridMigrationStarted>,
+                                        EventFunction<Event::GroupClose>, EventFunction<Event::GroupDeleted>, EventFunction<Event::GroupHistoryChanged>, EventFunction<Event::GroupLeft>, EventFunction<Event::GroupOpen>, EventFunction<Event::GroupRename>,
+                                        EventFunction<Event::ImClose>, EventFunction<Event::ImCreated>, EventFunction<Event::ImHistoryChanged>, EventFunction<Event::ImOpen>,
+                                        EventFunction<Event::InviteRequested>,
+                                        EventFunction<Event::LinkShared>,
+                                        EventFunction<Event::MemberJoinedChannel>, EventFunction<Event::MemberLeftChannel>,
+                                        EventFunction<Event::Message>,
+                                        EventFunction<Event::MessageMetadataPosted>, EventFunction<Event::MessageMetadataUpdated>, EventFunction<Event::MessageMetadataDeleted>,
+                                        EventFunction<Event::PinAdded>, EventFunction<Event::PinRemoved>,
+                                        EventFunction<Event::ReactionAdded>, EventFunction<Event::ReactionRemoved>,
+                                        EventFunction<Event::SharedChannelInviteAccepted>, EventFunction<Event::SharedChannelInviteApproved>, EventFunction<Event::SharedChannelInviteDeclined>, EventFunction<Event::SharedChannelInviteReceived>, EventFunction<Event::SharedChannelInviteRequested>,
+                                        EventFunction<Event::StarAdded>, EventFunction<Event::StarRemoved>,
+                                        EventFunction<Event::SubteamCreated>, EventFunction<Event::SubteamMembersChanged>, EventFunction<Event::SubteamSelfAdded>, EventFunction<Event::SubteamSelfRemoved>, EventFunction<Event::SubteamUpdated>,
+                                        EventFunction<Event::TeamAccessGranted>, EventFunction<Event::TeamAccessRevoked>, EventFunction<Event::TeamDomainChange>, EventFunction<Event::TeamJoin>, EventFunction<Event::TeamRename>,
+                                        EventFunction<Event::TokensRevoked>,
+                                        EventFunction<Event::UserChange>, EventFunction<Event::UserConnection>, EventFunction<Event::UserHuddleChanged>
                                     >;
-using EventHandlerMap   = std::map<std::string, AnyEventHandler>;
+using EventFunctionMap   = std::map<std::string, AnyEventFunction>;
 
 struct SlashCommandRequest
 {
@@ -126,13 +126,13 @@ struct View
 
 using ViewHandlerMap        = std::map<std::string, View>;
 
-class SlackEventHandler
+class EventHandler
 {
-        SlackClient&    client;
+        Client&         client;
         std::string     slackSecret;
 
         // For handling Events (all of them)
-        EventHandlerMap const&          eventHandlerMap;
+        EventFunctionMap const&         eventHandlerMap;
 
         // For handling Slash Commands
         SlashCommandHandlerMap const&   slashCommandHandlerMap;
@@ -146,7 +146,7 @@ class SlackEventHandler
         ViewHandlerMap&                 viewHandlerMap;
 
     public:
-        SlackEventHandler(SlackClient& client, std::string_view slackSecret, EventHandlerMap const& eventHandlerMap, SlashCommandHandlerMap const& slashCommandHandlerMap, ActionHandlerMap const& actionHandlerMap, ViewHandlerMap& viewHandlerMap);
+        EventHandler(Client& client, std::string_view slackSecret, EventFunctionMap const& eventHandlerMap, SlashCommandHandlerMap const& slashCommandHandlerMap, ActionHandlerMap const& actionHandlerMap, ViewHandlerMap& viewHandlerMap);
 
         // Method to validate Slack message comes from slack.
         bool validateRequest(Request const& request);
@@ -169,7 +169,7 @@ class SlackEventHandler
         /* Local Visitor types */
         struct VisitorEvent
         {
-            SlackEventHandler&      plugin;
+            EventHandler&           plugin;
             Request const&          request;
             Response&               response;
 
@@ -178,7 +178,7 @@ class SlackEventHandler
         };
         struct VisitorCallbackEvent
         {
-            SlackEventHandler&          plugin;
+            EventHandler&               plugin;
             Event::EventCallback const& eventBase;
             Request const&              request;
             Response&                   response;
@@ -188,7 +188,7 @@ class SlackEventHandler
         };
         struct UserActionCallback
         {
-            SlackEventHandler&          plugin;
+            EventHandler&               plugin;
             Request const&              request;
             Response&                   response;
 
@@ -239,7 +239,7 @@ class SlackEventHandler
 };
 
 inline
-SlackEventHandler::SlackEventHandler(SlackClient& client, std::string_view slackSecret, EventHandlerMap const& eventHandlerMap, SlashCommandHandlerMap const& slashCommandHandlerMap, ActionHandlerMap const& actionHandlerMap, ViewHandlerMap& viewHandlerMap)
+EventHandler::EventHandler(Client& client, std::string_view slackSecret, EventFunctionMap const& eventHandlerMap, SlashCommandHandlerMap const& slashCommandHandlerMap, ActionHandlerMap const& actionHandlerMap, ViewHandlerMap& viewHandlerMap)
     : client{client}
     , slackSecret(slackSecret)
     , eventHandlerMap{eventHandlerMap}
@@ -249,11 +249,11 @@ SlackEventHandler::SlackEventHandler(SlackClient& client, std::string_view slack
 {}
 
 inline
-void SlackEventHandler::handleEvent(Request const& request, Response& response)
+void EventHandler::handleEvent(Request const& request, Response& response)
 {
     using ThorsAnvil::Nisse::HTTP::HeaderResponse;
     using namespace std::string_literals;
-    ThorsLogTrack("ThorsAnvil::Slack::SlackEventHandler", "handleEvent", "Message Recieved: ", request);
+    ThorsLogTrack("ThorsAnvil::Slack::EventHandler", "handleEvent", "Message Recieved: ", request);
 
     ThorsAnvil::Slack::Event::Event     event;
     bool found = false;
@@ -265,7 +265,7 @@ void SlackEventHandler::handleEvent(Request const& request, Response& response)
 }
 
 inline
-bool SlackEventHandler::validateRequest(Request const& request)
+bool EventHandler::validateRequest(Request const& request)
 {
     std::string const&  sig = request.variables()["x-slack-signature"];
     std::string const&  timestampStr = request.variables()["x-slack-request-timestamp"];
@@ -296,35 +296,35 @@ bool SlackEventHandler::validateRequest(Request const& request)
     std::string exp{sig.c_str() + versionEnd + 1, sig.size() - versionEnd - 1};
     std::string dig = ThorsAnvil::Crypto::hexdigest<ThorsAnvil::Crypto::Sha256>(digest);
     bool result = (std::size(dig) == std::size(exp)) && (CRYPTO_memcmp(dig.c_str(), exp.data(), std::size(dig)) == 0);
-    ThorsLogDebug("ThorsAnvil::Slack::SlackEventHandler", "validateRequest", "Request Validation: ", (result ? "OK": "FAIL"));
+    ThorsLogDebug("ThorsAnvil::Slack::EventHandler", "validateRequest", "Request Validation: ", (result ? "OK": "FAIL"));
     return result;
 }
 
 inline
-std::string SlackEventHandler::getEventType(Request const& request, Response& /*response*/, bool& found)
+std::string EventHandler::getEventType(Request const& request, Response& /*response*/, bool& found)
 {
     if (!found) {
         found = true;
         std::string_view    body = request.preloadStreamIntoBuffer();
         if (body.find(R"("type":"url_verification")") != std::string_view::npos) {
-            ThorsLogTrack("ThorsAnvil::Slack::SlackEventHandler", "getEventType", "Found: url_verification");
+            ThorsLogTrack("ThorsAnvil::Slack::EventHandler", "getEventType", "Found: url_verification");
             return "url_verification";
         }
         if (body.find(R"("type":"event_callback")") != std::string_view::npos) {
-            ThorsLogTrack("ThorsAnvil::Slack::SlackEventHandler", "getEventType", "Found: event_callback");
+            ThorsLogTrack("ThorsAnvil::Slack::EventHandler", "getEventType", "Found: event_callback");
             return "event_callback";
         }
-        ThorsLogError("ThorsAnvil::Slack::SlackEventHandler", "getEventType", "Could not identify event type: ERROR");
+        ThorsLogError("ThorsAnvil::Slack::EventHandler", "getEventType", "Could not identify event type: ERROR");
     }
-    ThorsLogTrack("ThorsAnvil::Slack::SlackEventHandler", "getEventType", "Found: Fallback object members");
+    ThorsLogTrack("ThorsAnvil::Slack::EventHandler", "getEventType", "Found: Fallback object members");
     return "";
 }
 
 
 inline
-void SlackEventHandler::handleURLVerificationEvent(Request const& /*request*/, Response& response, Event::EventURLVerification const& event)
+void EventHandler::handleURLVerificationEvent(Request const& /*request*/, Response& response, Event::EventURLVerification const& event)
 {
-    ThorsLogTrack("ThorsAnvil::Slack::SlackEventHandler", "handleURLVerificationEvent", "Sending URL Verification");
+    ThorsLogTrack("ThorsAnvil::Slack::EventHandler", "handleURLVerificationEvent", "Sending URL Verification");
     ThorsAnvil::Nisse::HTTP::HeaderResponse  headers;
     headers.add("Content-Type", "application/json; charset=utf-8");
 
@@ -338,9 +338,9 @@ void SlackEventHandler::handleURLVerificationEvent(Request const& /*request*/, R
 }
 
 inline
-void SlackEventHandler::handleUserActions(Request const& request, Response& response)
+void EventHandler::handleUserActions(Request const& request, Response& response)
 {
-    ThorsLogTrack("ThorsAnvil::Slack::TodoSlackEventHandler", "handleUserActions", "Recievent User Action");
+    ThorsLogTrack("ThorsAnvil::Slack::EventHandler", "handleUserActions", "Recievent User Action");
     std::stringstream stream(request.variables()["payload"]);
 
     EventObject       eventObject;
@@ -350,13 +350,13 @@ void SlackEventHandler::handleUserActions(Request const& request, Response& resp
 }
 
 inline
-void SlackEventHandler::handleSlashCommand(Request const& request, Response& response)
+void EventHandler::handleSlashCommand(Request const& request, Response& response)
 {
-    ThorsLogTrack("ThorsAnvil::Slack::SlackEventHandler", "handleSlashCommand", "Slash command: ");
+    ThorsLogTrack("ThorsAnvil::Slack::EventHandler", "handleSlashCommand", "Slash command: ");
     SlashCommand        command(request);
     auto find = slashCommandHandlerMap.find(command.command);
     if (find == slashCommandHandlerMap.end()) {
-        ThorsLogError("ThorsAnvil::Slack::SlackEventHandler", "handleSlashCommand", "Call to unimplemented command");
+        ThorsLogError("ThorsAnvil::Slack::EventHandler", "handleSlashCommand", "Call to unimplemented command");
         response.setStatus(501);
         return;
     }
@@ -364,26 +364,26 @@ void SlackEventHandler::handleSlashCommand(Request const& request, Response& res
 }
 
 template<typename T>
-void SlackEventHandler::VisitorCallbackEvent::operator()(T const& event)
+void EventHandler::VisitorCallbackEvent::operator()(T const& event)
 {
-    ThorsLogTrack("ThorsAnvil::Slack::SlackEventHandler::VisitorCallbackEvent", "operator()(event)", "Message Recieved:");
+    ThorsLogTrack("ThorsAnvil::Slack::EventHandler::VisitorCallbackEvent", "operator()(event)", "Message Recieved:");
     std::string const& key = T::typeName();
     auto find = plugin.eventHandlerMap.find(key);
     if (find == plugin.eventHandlerMap.end()) {
-        ThorsLogError("ThorsAnvil::Slack::SlackEventHandler::VisitorCallbackEvent::operator()", key, "Call to unimplemented method");
+        ThorsLogError("ThorsAnvil::Slack::EventHandler::VisitorCallbackEvent::operator()", key, "Call to unimplemented method");
         response.setStatus(501);
         return;
     }
-    ThorsLogDebug("ThorsAnvil::Slack::SlackEventHandler::VisitorCallbackEvent::operator()", key, "Calling client handler");
-    AnyEventHandler const&  anyHandler   = find->second;
-    EventHandler<T> const&  eventHandler = std::get<EventHandler<T>>(anyHandler);
+    ThorsLogDebug("ThorsAnvil::Slack::EventHandler::VisitorCallbackEvent::operator()", key, "Calling client handler");
+    AnyEventFunction const&  anyHandler   = find->second;
+    EventFunction<T> const&  eventHandler = std::get<EventFunction<T>>(anyHandler);
     eventHandler(EventRequest<T>{request, response, eventBase, event});
 }
 
 template<typename T>
-void SlackEventHandler::UserActionCallback::operator()(T const& viewAction)
+void EventHandler::UserActionCallback::operator()(T const& viewAction)
 {
-    ThorsLogTrack("ThorsAnvil::Slack::SlackEventHandler::UserActionCallback", "operator()(ViewAction)", "Message Recieved:");
+    ThorsLogTrack("ThorsAnvil::Slack::EventHandler::UserActionCallback", "operator()(ViewAction)", "Message Recieved:");
     std::string const&   viewId = viewAction.view.id;
     auto find = plugin.viewHandlerMap.find(viewId);
     if (find == plugin.viewHandlerMap.end()) {
@@ -397,7 +397,7 @@ void SlackEventHandler::UserActionCallback::operator()(T const& viewAction)
 }
 
 inline
-void SlackEventHandler::UserActionCallback::handleViewAction(API::Views::ViewClosed const& viewAction, ViewHandlerMap::const_iterator find)
+void EventHandler::UserActionCallback::handleViewAction(API::Views::ViewClosed const& viewAction, ViewHandlerMap::const_iterator find)
 {
     if (viewAction.is_cleared) {
         std::string parent = find->second.parentView;
@@ -414,9 +414,9 @@ void SlackEventHandler::UserActionCallback::handleViewAction(API::Views::ViewClo
 
 // Handles the interaction of individual components.
 inline
-void SlackEventHandler::UserActionCallback::operator()(API::BlockActions const& userAction)
+void EventHandler::UserActionCallback::operator()(API::BlockActions const& userAction)
 {
-    ThorsLogTrack("ThorsAnvil::Slack::SlackEventHandler::UserActionCallback", "operator()(BlockAction)", "Message Recieved:");
+    ThorsLogTrack("ThorsAnvil::Slack::EventHandler::UserActionCallback", "operator()(BlockAction)", "Message Recieved:");
     auto view = plugin.viewHandlerMap.end();
     if (userAction.view.has_value()) {
         std::string const&          triggerId   = userAction.view.value().id;
@@ -470,16 +470,16 @@ void SlackEventHandler::UserActionCallback::operator()(API::BlockActions const& 
         handler({request, response, userAction, ptr2String(action.value.value())});
     }
     else {
-        ThorsLogError("UserTodoSlackEventHandler", "handleUserActions", "Unknown Action: ", request.variables()["payload"]);
+        ThorsLogError("ThorsAnvil::Slack::EventHandler::UserActionCallback", "operator()", "Unknown Action: ", request.variables()["payload"]);
     }
 }
 
 inline
-std::string SlackEventHandler::UserActionCallback::getCheckBoxValue(API::BlockActions const& userAction, API::SlackAction const& action)
+std::string EventHandler::UserActionCallback::getCheckBoxValue(API::BlockActions const& userAction, API::SlackAction const& action)
 {
     std::unique_ptr<BlockKit::VecElOption> const& ptr2Value = action.selected_options.value();
     if (!ptr2Value) {
-        ThorsLogError("TodoSlackEventHandler", "handleActionsCheckBox", "XX");
+        ThorsLogError("ThorsAnvil::Slack::EventHandler::UserActionCallback", "getCheckBoxValue", "XX");
         return "";
     }
     BlockKit::VecElOption const& values = *ptr2Value;
@@ -554,7 +554,7 @@ std::string SlackEventHandler::UserActionCallback::getCheckBoxValue(API::BlockAc
 
     // There should only be one change.
     if (turnedOn.size() + turnedOff.size() != 1) {
-        ThorsLogError("TodoSlackEventHandler", "handleActionsCheckBox", "Change in state is not consistent: ", turnedOn.size(), " ", turnedOff.size());
+        ThorsLogError("ThorsAnvil::Slack::EventHandler::UserActionCallback", "getCheckBoxValue", "Change in state is not consistent: ", turnedOn.size(), " ", turnedOff.size());
     }
     else {
         if (turnedOn.size() == 1) {
@@ -568,7 +568,7 @@ std::string SlackEventHandler::UserActionCallback::getCheckBoxValue(API::BlockAc
 }
 
 inline
-BlockKit::VecElOption&  SlackEventHandler::UserActionCallback::getInitialOptions(BlockKit::Block& block, std::string const& action_id)
+BlockKit::VecElOption&  EventHandler::UserActionCallback::getInitialOptions(BlockKit::Block& block, std::string const& action_id)
 {
     static BlockKit::VecElOption nullOption;
     nullOption.clear();

@@ -2,8 +2,8 @@
 
 #include "APIChatMessage.h"
 #include "Environment.h"
-#include "SlackClient.h"
-#include "SlackBlockKit.h"
+#include "Client.h"
+#include "BlockKit.h"
 #include "ThorSerialize/JsonThor.h"
 
 #include <variant>
@@ -12,7 +12,7 @@
 using namespace std::literals::string_literals;
 namespace BK = ThorsAnvil::Slack::BlockKit;
 
-using ThorsAnvil::Slack::SlackClient;
+using ThorsAnvil::Slack::Client;
 using ThorsAnvil::Slack::API::Chat::POSTMessage;
 using ThorsAnvil::Slack::API::Chat::PostEphemeral;
 using ThorsAnvil::Slack::API::Chat::Delete;
@@ -40,7 +40,7 @@ class SocketSetUp
 
 SocketSetUp             socketSetUp;
 Environment             environment("test/data/environment.json");
-SlackClient             client(environment.botToken, environment.userToken);
+Client                  client(environment.botToken, environment.userToken);
 
 #if !(defined(DISABLE_SLACKTEST) && (DISABLE_SLACKTEST == 1))
 

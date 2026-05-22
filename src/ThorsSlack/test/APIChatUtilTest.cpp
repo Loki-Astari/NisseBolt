@@ -6,8 +6,8 @@
 #include "Environment.h"
 #include "APIChatUtil.h"
 
-#include "SlackClient.h"
-#include "SlackBlockKit.h"
+#include "Client.h"
+#include "BlockKit.h"
 
 #include <thread>
 #include <variant>
@@ -16,13 +16,13 @@
 using namespace std::literals::string_literals;
 namespace BK = ThorsAnvil::Slack::BlockKit;
 
-using ThorsAnvil::Slack::SlackClient;
+using ThorsAnvil::Slack::Client;
 using ThorsAnvil::Slack::API::Chat::POSTMessage;
 using ThorsAnvil::Slack::API::Chat::GetPermalink;
 using ThorsAnvil::Slack::API::Chat::MeMessage;
 using ThorsAnvil::Slack::API::Chat::UnfurlURL;
 
-extern SlackClient             client;
+extern Client                  client;
 extern Environment             environment;
 
 

@@ -3,7 +3,7 @@
 
 #include "ThorsSlackConfig.h"
 #include "API.h"
-#include "SlackBlockKit.h"
+#include "BlockKit.h"
 #include "Util.h"
 #include <string>
 #include <memory>

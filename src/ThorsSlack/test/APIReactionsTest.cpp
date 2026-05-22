@@ -2,7 +2,7 @@
 
 #if !(defined(DISABLE_SLACKTEST) && (DISABLE_SLACKTEST == 1))
 
-#include "SlackClient.h"
+#include "Client.h"
 #include "Environment.h"
 #include "APIChatMessage.h"
 #include "APIReactions.h"
@@ -10,7 +10,7 @@
 
 using namespace std::literals::string_literals;
 
-using ThorsAnvil::Slack::SlackClient;
+using ThorsAnvil::Slack::Client;
 using ThorsAnvil::Slack::API::Chat::POSTMessage;
 using ThorsAnvil::Slack::API::Chat::Delete;
 using ThorsAnvil::Slack::API::Reactions::Get;
@@ -18,7 +18,7 @@ using ThorsAnvil::Slack::API::Reactions::Add;
 using ThorsAnvil::Slack::API::Reactions::Remove;
 using ThorsAnvil::Slack::API::Reactions::List;
 
-extern SlackClient             client;
+extern Client                  client;
 extern Environment             environment;
 
 class APIReactionsTest : public ::testing::Test {

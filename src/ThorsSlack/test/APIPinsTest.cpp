@@ -2,7 +2,7 @@
 
 #if !(defined(DISABLE_SLACKTEST) && (DISABLE_SLACKTEST == 1))
 
-#include "SlackClient.h"
+#include "Client.h"
 #include "Environment.h"
 #include "APIChatMessage.h"
 #include "APIPins.h"
@@ -10,14 +10,14 @@
 
 using namespace std::literals::string_literals;
 
-using ThorsAnvil::Slack::SlackClient;
+using ThorsAnvil::Slack::Client;
 using ThorsAnvil::Slack::API::Chat::POSTMessage;
 using ThorsAnvil::Slack::API::Chat::Delete;
 using ThorsAnvil::Slack::API::Pins::Add;
 using ThorsAnvil::Slack::API::Pins::List;
 using ThorsAnvil::Slack::API::Pins::Remove;
 
-extern SlackClient             client;
+extern Client                  client;
 extern Environment             environment;
 
 class APIPinsTest : public ::testing::Test {

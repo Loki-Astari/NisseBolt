@@ -7,10 +7,10 @@
 namespace ThorsAnvil::Slack
 {
 
-class SlackStream: public ThorsAnvil::Nisse::HTTP::ClientStream
+class Stream: public ThorsAnvil::Nisse::HTTP::ClientStream
 {
     public:
-        SlackStream()
+        Stream()
             : ThorsAnvil::Nisse::HTTP::ClientStream("slack.com")
         {}
 };

@@ -5,7 +5,7 @@
 // Documentation: https://docs.slack.dev/reference/events/message.channels/
 
 #include "ThorsSlackConfig.h"
-#include "SlackBlockKit.h"
+#include "BlockKit.h"
 #include <string>
 
 namespace ThorsAnvil::Slack::Event
