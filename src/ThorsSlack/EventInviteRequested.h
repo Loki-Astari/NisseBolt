@@ -61,7 +61,7 @@ struct InviteRequested
 {
     // std::string                 type;
     InviteRequest               invite_request;
-    static std::string const& typeName() {static std::string const name{"Event/InviteRequested"}; return name;}
+    static std::string const& typeName() {static std::string const name{"InviteRequested"}; return name;}
     ThorsAnvil_VariantSerializerWithName(ThorsAnvil::Slack::Event::InviteRequested, invite_requested);
     ThorsAnvil_TypeFieldName(type);
 };

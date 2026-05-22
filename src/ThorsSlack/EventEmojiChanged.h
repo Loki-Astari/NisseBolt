@@ -56,7 +56,7 @@ struct EmojiChanged
     OptString                   old_name;
     OptString                   new_name;
     std::string                 event_ts;
-    static std::string const& typeName() {static std::string const name{"Event/EmojiChanged"}; return name;}
+    static std::string const& typeName() {static std::string const name{"EmojiChanged"}; return name;}
     ThorsAnvil_VariantSerializerWithName(ThorsAnvil::Slack::Event::EmojiChanged, emoji_changed);
     ThorsAnvil_TypeFieldName(type);
 };

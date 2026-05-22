@@ -88,7 +88,7 @@ struct SubteamCreated
 {
     // std::string                 type;
     SubteamInfo                 subteam;
-    static std::string const& typeName() {static std::string const name{"Event/SubteamCreated"}; return name;}
+    static std::string const& typeName() {static std::string const name{"SubteamCreated"}; return name;}
     ThorsAnvil_VariantSerializerWithName(ThorsAnvil::Slack::Event::SubteamCreated, subteam_created);
     ThorsAnvil_TypeFieldName(type);
 };
@@ -104,7 +104,7 @@ struct SubteamMembersChanged
     std::string                 added_users_count;
     VecString                   removed_users;
     std::string                 removed_users_count;
-    static std::string const& typeName() {static std::string const name{"Event/SubteamMembersChanged"}; return name;}
+    static std::string const& typeName() {static std::string const name{"SubteamMembersChanged"}; return name;}
     ThorsAnvil_VariantSerializerWithName(ThorsAnvil::Slack::Event::SubteamMembersChanged, subteam_members_changed);
     ThorsAnvil_TypeFieldName(type);
 };
@@ -113,7 +113,7 @@ struct SubteamSelfAdded
 {
     // std::string                 type;
     std::string                 subteam_id;
-    static std::string const& typeName() {static std::string const name{"Event/SubteamSelfAdded"}; return name;}
+    static std::string const& typeName() {static std::string const name{"SubteamSelfAdded"}; return name;}
     ThorsAnvil_VariantSerializerWithName(ThorsAnvil::Slack::Event::SubteamSelfAdded, subteam_self_added);
     ThorsAnvil_TypeFieldName(type);
 };
@@ -122,7 +122,7 @@ struct SubteamSelfRemoved
 {
     // std::string                 type;
     std::string                 subteam_id;
-    static std::string const& typeName() {static std::string const name{"Event/SubteamSelfRemoved"}; return name;}
+    static std::string const& typeName() {static std::string const name{"SubteamSelfRemoved"}; return name;}
     ThorsAnvil_VariantSerializerWithName(ThorsAnvil::Slack::Event::SubteamSelfRemoved, subteam_self_removed);
     ThorsAnvil_TypeFieldName(type);
 };
@@ -131,7 +131,7 @@ struct SubteamUpdated
 {
     // std::string                 type;
     SubteamInfo                 subteam;
-    static std::string const& typeName() {static std::string const name{"Event/SubteamUpdated"}; return name;}
+    static std::string const& typeName() {static std::string const name{"SubteamUpdated"}; return name;}
     ThorsAnvil_VariantSerializerWithName(ThorsAnvil::Slack::Event::SubteamUpdated, subteam_updated);
     ThorsAnvil_TypeFieldName(type);
 };

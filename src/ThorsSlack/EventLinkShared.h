@@ -54,7 +54,7 @@ struct LinkShared
     OptString                   user_locale;
     OptString                   thread_ts;
     OptBool                     is_unfurl_refresh;
-    static std::string const& typeName() {static std::string const name{"Event/LinkShared"}; return name;}
+    static std::string const& typeName() {static std::string const name{"LinkShared"}; return name;}
     ThorsAnvil_VariantSerializerWithName(ThorsAnvil::Slack::Event::LinkShared, link_shared);
     ThorsAnvil_TypeFieldName(type);
 };

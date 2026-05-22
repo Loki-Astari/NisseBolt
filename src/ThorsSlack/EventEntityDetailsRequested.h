@@ -65,7 +65,7 @@ struct EntityDetailsRequested
     std::string                 channel;
     std::string                 message_ts;
     OptString                   thread_ts;
-    static std::string const& typeName() {static std::string const name{"Event/EntityDetailsRequested"}; return name;}
+    static std::string const& typeName() {static std::string const name{"EntityDetailsRequested"}; return name;}
     ThorsAnvil_VariantSerializerWithName(ThorsAnvil::Slack::Event::EntityDetailsRequested, entity_details_requested);
     ThorsAnvil_TypeFieldName(type);
 };

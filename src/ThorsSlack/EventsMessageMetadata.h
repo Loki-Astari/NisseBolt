@@ -76,7 +76,7 @@ struct MessageMetadataPosted
     MessageMetadata             metadata;
     std::string                 message_ts;
     std::string                 event_ts;
-    static std::string const& typeName() {static std::string const name{"Event/MessageMetadataPosted"}; return name;}
+    static std::string const& typeName() {static std::string const name{"MessageMetadataPosted"}; return name;}
     ThorsAnvil_VariantSerializerWithName(ThorsAnvil::Slack::Event::MessageMetadataPosted, message_metadata_posted);
     ThorsAnvil_TypeFieldName(type);
 };
@@ -93,7 +93,7 @@ struct MessageMetadataUpdated
     std::string                 team_id;
     std::string                 message_ts;
     MessageMetadata             metadata;
-    static std::string const& typeName() {static std::string const name{"Event/MessageMetadataUpdated"}; return name;}
+    static std::string const& typeName() {static std::string const name{"MessageMetadataUpdated"}; return name;}
     ThorsAnvil_VariantSerializerWithName(ThorsAnvil::Slack::Event::MessageMetadataUpdated, message_metadata_updated);
     ThorsAnvil_TypeFieldName(type);
 };
@@ -110,7 +110,7 @@ struct MessageMetadataDeleted
     std::string                 team_id;
     std::string                 message_ts;
     std::string                 deleted_ts;
-    static std::string const& typeName() {static std::string const name{"Event/MessageMetadataDeleted"}; return name;}
+    static std::string const& typeName() {static std::string const name{"MessageMetadataDeleted"}; return name;}
     ThorsAnvil_VariantSerializerWithName(ThorsAnvil::Slack::Event::MessageMetadataDeleted, message_metadata_deleted);
     ThorsAnvil_TypeFieldName(type);
 };

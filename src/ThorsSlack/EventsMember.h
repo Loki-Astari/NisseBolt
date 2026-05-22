@@ -44,7 +44,7 @@ struct MemberJoinedChannel
     std::string                 team;
     OptString                   inviter;
     OptString                   enterprise;
-    static std::string const& typeName() {static std::string const name{"Event/MemberJoinedChannel"}; return name;}
+    static std::string const& typeName() {static std::string const name{"MemberJoinedChannel"}; return name;}
     ThorsAnvil_VariantSerializerWithName(ThorsAnvil::Slack::Event::MemberJoinedChannel, member_joined_channel);
     ThorsAnvil_TypeFieldName(type);
 };
@@ -56,7 +56,7 @@ struct MemberLeftChannel
     std::string                 channel;
     std::string                 channel_type;
     std::string                 team;
-    static std::string const& typeName() {static std::string const name{"Event/MemberLeftChannel"}; return name;}
+    static std::string const& typeName() {static std::string const name{"MemberLeftChannel"}; return name;}
     ThorsAnvil_VariantSerializerWithName(ThorsAnvil::Slack::Event::MemberLeftChannel, member_left_channel);
     ThorsAnvil_TypeFieldName(type);
 };

@@ -58,7 +58,7 @@ struct ReactionAdded
     ReactionItem                item;                   // doc
     std::string                 item_user;
     std::string                 event_ts;               // doc
-    static std::string const& typeName() {static std::string const name{"Event/ReactionAdded"}; return name;}
+    static std::string const& typeName() {static std::string const name{"ReactionAdded"}; return name;}
     ThorsAnvil_VariantSerializerWithName(ThorsAnvil::Slack::Event::ReactionAdded, reaction_added);
     ThorsAnvil_TypeFieldName(type);
 };
@@ -70,7 +70,7 @@ struct ReactionRemoved
     ReactionItem                item;                   // doc
     std::string                 item_user;
     std::string                 event_ts;               // doc
-    static std::string const& typeName() {static std::string const name{"Event/ReactionRemoved"}; return name;}
+    static std::string const& typeName() {static std::string const name{"ReactionRemoved"}; return name;}
     ThorsAnvil_VariantSerializerWithName(ThorsAnvil::Slack::Event::ReactionRemoved, reaction_removed);
     ThorsAnvil_TypeFieldName(type);
 };

@@ -38,7 +38,7 @@ struct ImClose
     // std::string                 type;
     std::string                 user;
     std::string                 channel;
-    static std::string const& typeName() {static std::string const name{"Event/ImClose"}; return name;}
+    static std::string const& typeName() {static std::string const name{"ImClose"}; return name;}
     ThorsAnvil_VariantSerializerWithName(ThorsAnvil::Slack::Event::ImClose, im_close);
     ThorsAnvil_TypeFieldName(type);
 };
@@ -48,7 +48,7 @@ struct ImCreated
     // std::string                 type;
     std::string                 user;
     ImChannelInfo               channel;
-    static std::string const& typeName() {static std::string const name{"Event/ImCreated"}; return name;}
+    static std::string const& typeName() {static std::string const name{"ImCreated"}; return name;}
     ThorsAnvil_VariantSerializerWithName(ThorsAnvil::Slack::Event::ImCreated, im_created);
     ThorsAnvil_TypeFieldName(type);
 };
@@ -59,7 +59,7 @@ struct ImHistoryChanged
     std::string                 latest;
     std::string                 ts;
     std::string                 event_ts;
-    static std::string const& typeName() {static std::string const name{"Event/ImHistoryChanged"}; return name;}
+    static std::string const& typeName() {static std::string const name{"ImHistoryChanged"}; return name;}
     ThorsAnvil_VariantSerializerWithName(ThorsAnvil::Slack::Event::ImHistoryChanged, im_history_changed);
     ThorsAnvil_TypeFieldName(type);
 };
@@ -69,7 +69,7 @@ struct ImOpen
     // std::string                 type;
     std::string                 user;
     std::string                 channel;
-    static std::string const& typeName() {static std::string const name{"Event/ImOpen"}; return name;}
+    static std::string const& typeName() {static std::string const name{"ImOpen"}; return name;}
     ThorsAnvil_VariantSerializerWithName(ThorsAnvil::Slack::Event::ImOpen, im_open);
     ThorsAnvil_TypeFieldName(type);
 };

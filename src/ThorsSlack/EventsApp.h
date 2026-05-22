@@ -183,7 +183,7 @@ struct AppDeleted
     std::string                 team_id;
     std::string                 team_domain;
     std::string                 event_ts;
-    static std::string const& typeName() {static std::string const name{"Event/AppDeleted"}; return name;}
+    static std::string const& typeName() {static std::string const name{"AppDeleted"}; return name;}
     ThorsAnvil_VariantSerializerWithName(ThorsAnvil::Slack::Event::AppDeleted, app_deleted);
     ThorsAnvil_TypeFieldName(type);
 };
@@ -196,7 +196,7 @@ struct AppHomeOpened
     std::string                 event_ts;
     std::string                 tab;
     AppHomeView                 view;
-    static std::string const& typeName() {static std::string const name{"Event/AppHomeOpened"}; return name;}
+    static std::string const& typeName() {static std::string const name{"AppHomeOpened"}; return name;}
     ThorsAnvil_VariantSerializerWithName(ThorsAnvil::Slack::Event::AppHomeOpened, app_home_opened);
     ThorsAnvil_TypeFieldName(type);
 };
@@ -211,7 +211,7 @@ struct AppInstalled
     std::string                 team_id;
     std::string                 team_domain;
     std::string                 event_ts;
-    static std::string const& typeName() {static std::string const name{"Event/AppInstalled"}; return name;}
+    static std::string const& typeName() {static std::string const name{"AppInstalled"}; return name;}
     ThorsAnvil_VariantSerializerWithName(ThorsAnvil::Slack::Event::AppInstalled, app_installed);
     ThorsAnvil_TypeFieldName(type);
 };
@@ -223,7 +223,7 @@ struct AppRateLimited
     std::string                 team_id;
     std::time_t                 minute_rate_limited;
     std::string                 api_app_id;
-    static std::string const& typeName() {static std::string const name{"Event/AppRateLimited"}; return name;}
+    static std::string const& typeName() {static std::string const name{"AppRateLimited"}; return name;}
     ThorsAnvil_VariantSerializerWithName(ThorsAnvil::Slack::Event::AppRateLimited, app_rate_limited);
     ThorsAnvil_TypeFieldName(type);
 };
@@ -232,7 +232,7 @@ struct AppRequested
 {
     // std::string                 type;
     AppRequest                  app_request;
-    static std::string const& typeName() {static std::string const name{"Event/AppRequested"}; return name;}
+    static std::string const& typeName() {static std::string const name{"AppRequested"}; return name;}
     ThorsAnvil_VariantSerializerWithName(ThorsAnvil::Slack::Event::AppRequested, app_requested);
     ThorsAnvil_TypeFieldName(type);
 };
@@ -247,7 +247,7 @@ struct AppUninstalledTeam
     std::string                 team_id;
     std::string                 team_domain;
     std::string                 event_ts;
-    static std::string const& typeName() {static std::string const name{"Event/AppUninstalledTeam"}; return name;}
+    static std::string const& typeName() {static std::string const name{"AppUninstalledTeam"}; return name;}
     ThorsAnvil_VariantSerializerWithName(ThorsAnvil::Slack::Event::AppUninstalledTeam, app_uninstalled_team);
     ThorsAnvil_TypeFieldName(type);
 };
@@ -255,7 +255,7 @@ struct AppUninstalledTeam
 struct AppUninstalled
 {
     // std::string                 type;
-    static std::string const& typeName() {static std::string const name{"Event/AppUninstalled"}; return name;}
+    static std::string const& typeName() {static std::string const name{"AppUninstalled"}; return name;}
     ThorsAnvil_VariantSerializerWithName(ThorsAnvil::Slack::Event::AppUninstalled, app_uninstalled);
     ThorsAnvil_TypeFieldName(type);
 };
