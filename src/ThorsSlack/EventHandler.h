@@ -269,7 +269,7 @@ bool EventHandler::validateRequest(Request const& request)
 {
     std::string const&  sig = request.variables()["x-slack-signature"];
     std::string const&  timestampStr = request.variables()["x-slack-request-timestamp"];
-    std::int32_t        timestamp;
+    std::int32_t        timestamp = 0;
     auto                first = &timestampStr[0];
     auto                last = first + timestampStr.size();
     auto                convertResult = std::from_chars(first, last, timestamp);
