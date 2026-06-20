@@ -290,7 +290,7 @@ bool EventHandler::validateRequest(Request const& request)
         hmac.appendData(timestampStr);
         hmac.appendData(":"s);
 
-        std::string_view    body = request.preloadStreamIntoBuffer();
+        std::string_view    body = request.preloadStreamIntoBuffer(true);
         hmac.appendData(body);
     }
     std::string exp{sig.c_str() + versionEnd + 1, sig.size() - versionEnd - 1};
