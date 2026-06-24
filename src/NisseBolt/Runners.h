@@ -59,6 +59,8 @@ using ActionRunner          = std::function<void(Ack const&, Response const&, Th
 using ViewSubmitRunner      = std::function<void(Ack const&, Response const&, ThorsAnvil::Slack::API::Views::ViewSubmission const&)>;
 using ViewClosedRunner      = std::function<void(Ack const&, Response const&, ThorsAnvil::Slack::API::Views::ViewClosed const&)>;
 
+using ShortcutRunner        = std::function<void(Ack const&, Response const&, ThorsAnvil::Slack::API::ShortCutMessage const&)>;
+
 }
 
 #endif

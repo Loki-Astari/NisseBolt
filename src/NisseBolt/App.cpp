@@ -1,6 +1,7 @@
 #include "App.h"
 #include <type_traits>
 #include "Ack.h"
+#include "Response.h"
 #include "Say.h"
 #include "ThorsSlack/EventHandler.h"
 #include "ThorsSlack/Client.h"
@@ -39,7 +40,7 @@ THORSSLACK_HEADER_ONLY_INCLUDE
 App::App(AppConfig const& config, std::string const& slot)
     : slot{slot}
     , client(config.botToken, config.userToken)
-    , slackHandler(client, config.signingSecret, eventHandlerMap, slashCommandHandlerMap, actionHandlerMap, viewHandlerMap)
+    , slackHandler(client, config.signingSecret, eventHandlerMap, slashCommandHandlerMap, actionHandlerMap, viewHandlerMap, shortcutHandlerMap)
 {
     addEventHandlers();
     addSlashCommandHandlers();
@@ -205,4 +206,17 @@ THORSSLACK_HEADER_ONLY_INCLUDE
 void App::viewUpdate(std::string const& viewId, ThorsAnvil::Slack::API::Views::View display)
 {
     getClient().sendMessage(ThorsAnvil::Slack::API::Views::Update{std::move(display), viewId, {}, {}});
+}
+
+THORSSLACK_HEADER_ONLY_INCLUDE
+void App::shortcut(std::string const& shortcutName, ShortcutRunner runner)
+{
+    shortcutHandlerMap.insert_or_assign(shortcutName,
+                                        [run = std::move(runner)](ThorsAnvil::Slack::ShortcutRequest const& request)
+                                        {
+                                            Ack         ack{request.response};
+                                            Response    response;
+                                            run(ack, response, request.shortcut);
+                                        }
+    );
 }

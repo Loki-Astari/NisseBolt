@@ -34,6 +34,7 @@ class App: public ThorsAnvil::ThorsMug::MugPluginSimple
     ThorsAnvil::Slack::SlashCommandHandlerMap       slashCommandHandlerMap;
     ThorsAnvil::Slack::ActionHandlerMap             actionHandlerMap;
     ThorsAnvil::Slack::ViewHandlerMap               viewHandlerMap;
+    ThorsAnvil::Slack::ShortcutHandlerMap           shortcutHandlerMap;
 
     std::vector<std::pair<Filter, MessageRunner>>   messageRunners;
     std::vector<AnyEventRunner>                     eventRunners;
@@ -72,6 +73,9 @@ class App: public ThorsAnvil::ThorsMug::MugPluginSimple
         void viewOpen(std::string const& triggerId, View const& view);
         void viewPush(std::string const& triggerId, View const& view);
         void viewUpdate(std::string const& viewId, ThorsAnvil::Slack::API::Views::View view);
+
+        // Handle Shortcut
+        void shortcut(std::string const& shortCutName, ShortcutRunner runner);
 
         // Temp
         ThorsAnvil::Slack::Client const& getClient() const {return client;}
