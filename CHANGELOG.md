@@ -6,6 +6,13 @@ This component is part of [ThorsAnvil](https://github.com/Loki-Astari/ThorsAnvil
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
+## [11.0.0] - 2026-06-24
+
+### Added
+- Added shortcut handling
+- Force whole request body into memory for reliability
+- Improved `getEvent()` call
+
 ## [10.0.5] - 2026-05-16
 ### Added
 - Slash command acknowledge (Ack) with extended return values
