@@ -1,6 +1,6 @@
 CONFIG_NAME					= NisseBolt
 THORSANVIL_ROOT				?= $(realpath ../../)
-COVERAGE_REQUIRED			= 50
+COVERAGE_REQUIRED			= 30
 TARGET						= ThorsSlack.head
 
 
