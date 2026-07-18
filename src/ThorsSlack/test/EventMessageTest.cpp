@@ -4,7 +4,7 @@
 #include "Client.h"
 #include "APIConversationsHistory.h"
 
-#include "NisseHTTP/ClientResponse.h"
+#include "NisseHTTP/ClientHTTP.h"
 #include "NisseHTTP/StreamInput.h"
 #include "ThorSerialize/Traits.h"
 #include "ThorSerialize/SerUtil.h"
@@ -27,12 +27,15 @@ TEST(EventMessageTest, HistoryResponse)
                                     R"(],)"
                                     R"("has_more":false,"is_limited":true,"pin_count":0,"channel_actions_ts":null,"channel_actions_count":0})"
                             );
-    ThorsAnvil::Nisse::HTTP::ClientResponse   response(reply);
-    ThorsAnvil::Nisse::HTTP::StreamInput      input(reply, response.getContentSize());
+    ThorsAnvil::Nisse::HTTP::ClientHTTPBase     client{reply, "mongo"};
 
     using OutputType = std::variant<ThorsAnvil::Slack::API::Error, ThorsAnvil::Slack::API::Conversation::HistoryReply>;
     OutputType      result;
-    input >> ThorsAnvil::Serialize::jsonImporter(result, ThorsAnvil::Serialize::ParserConfig{}.setIdentifyDynamicClass([&](ThorsAnvil::Serialize::DataInputStream&){return ThorsAnvil::Slack::Client::getEventType<ThorsAnvil::Slack::API::Conversation::HistoryReply>(input);}));
+    client.processResp([&result](ThorsAnvil::Nisse::HTTP::ClientHTTPResponse const& response)
+    {
+        ThorsAnvil::Nisse::HTTP::StreamInput& input = response.body();
+        input >> ThorsAnvil::Serialize::jsonImporter(result, ThorsAnvil::Serialize::ParserConfig{}.setIdentifyDynamicClass([&](ThorsAnvil::Serialize::DataInputStream&){return ThorsAnvil::Slack::Client::getEventType<ThorsAnvil::Slack::API::Conversation::HistoryReply>(input);}));
+    });
 
 
     ASSERT_TRUE(std::holds_alternative<ThorsAnvil::Slack::API::Conversation::HistoryReply>(result));

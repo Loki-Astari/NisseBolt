@@ -5,8 +5,7 @@
 #include "API.h"
 #include "APIAuth.h"
 #include "Stream.h"
-#include "NisseHTTP/ClientRequest.h"
-#include "NisseHTTP/ClientResponse.h"
+#include "NisseHTTP/ClientHTTP.h"
 #include "NisseHTTP/HeaderResponse.h"
 #include "NisseHTTP/StreamInput.h"
 #include "NisseHTTP/Util.h"
@@ -29,6 +28,7 @@ namespace ThorsAnvil::Slack
 using namespace std::literals::string_literals;
 namespace Ser   = ThorsAnvil::Serialize;
 namespace Nisse = ThorsAnvil::Nisse::HTTP;
+namespace TSock = ThorsAnvil::ThorsSocket;
 
 template<typename T>
 using SuccFunc = std::function<void(T&&)>;
@@ -51,36 +51,26 @@ struct VisitResult
 class Client
 {
     private:
-        Nisse::HeaderResponse   botHeaders;
-        Nisse::HeaderResponse   userHeaders;
-        std::string             botId;
+        Nisse::HeaderRequest   botHeaders;
+        Nisse::HeaderRequest   userHeaders;
+        std::string            botId;
 
     private:
         template<typename T>
         void sendMessageData(T const& message, Stream& stream) const
         {
+            Nisse::HeaderRequest const& headers = (T::scope == API::Scope::Bot) ? botHeaders : userHeaders;
             if constexpr (T::method == API::Method::GET) {
                 std::string api = std::string{} + T::api + "?" + ThorsAnvil::Slack::API::buildQueryA(message);
-                Nisse::ClientRequest    post(stream, api, T::method);
-                if constexpr (T::scope == API::Scope::Bot) {
-                    post.addHeaders(botHeaders);
-                }
-                else {
-                    post.addHeaders(userHeaders);
-                }
-                post.body(0);
+                Nisse::HeaderRequest const& headers = (T::scope == API::Scope::Bot) ? botHeaders : userHeaders;
+                stream.getClient().get({.path = api, .headers = headers});
             }
             else {
                 // Anything that is not a GET
-                Nisse::ClientRequest    post(stream, T::api, T::method);
-                if constexpr (T::scope == API::Scope::Bot) {
-                    post.addHeaders(botHeaders);
-                }
-                else {
-                    post.addHeaders(userHeaders);
-                }
-                std::size_t size = Ser::jsonStreanSize(message);
-                post.body(size) << Ser::jsonExporter(message, Ser::PrinterConfig{Ser::OutputType::Stream});
+                stream.getClient().send(T::method, {.path = T::api, .headers = headers}, ThorsAnvil::Serialize::jsonStreanSize(message), [&message](std::ostream& output)
+                {
+                    output << ThorsAnvil::Serialize::jsonExporter(message, Ser::PrinterConfig{Ser::OutputType::Stream});
+                });
             }
         }
     public:
@@ -146,12 +136,13 @@ class Client
             Stream                  stream;
             sendMessageData(message, stream);
 
-            Nisse::ClientResponse   response(stream);
-            Nisse::StreamInput      input(stream, response.getContentSize());
             OutputType              reply;
-            input >> Ser::jsonImporter(reply, Ser::ParserConfig{}.setIdentifyDynamicClass([&](Ser::DataInputStream&){return getEventType<ResultType>(input);}));
+            stream.getClient().processResp([&reply](ThorsAnvil::Nisse::HTTP::ClientHTTPResponse const& resp)
+            {
+                ThorsAnvil::Nisse::HTTP::StreamInput& input = resp.body();
+                resp.body() >> Ser::jsonImporter(reply, Ser::ParserConfig{}.setIdentifyDynamicClass([&input](Ser::DataInputStream&){return Client::getEventType<ResultType>(input);}));
+            });
             ThorsLogTrackWithData(reply, "ThorsAnvil::Slack::Client", "sendMessage", "Response:");
-
             std::visit(VisitResult<ResultType>{std::move(succ), std::move(fail)}, reply);
         }
         /*
@@ -164,14 +155,16 @@ class Client
             Stream                  stream;
             sendMessageData(message, stream);
 
-            Nisse::ClientResponse   response(stream);
-            Nisse::StreamInput      input(stream, response.getContentSize());
-            std::string line;
-            while (std::getline(input, line)) {
-                // Don't remove this function is used for debugging.
-                std::cerr << "L: " << line << "\n";
-            }
-            std::cerr << "DONE\n\n";
+            stream.getClient().processResp([](ThorsAnvil::Nisse::HTTP::ClientHTTPResponse const& resp)
+            {
+                std::istream& input = resp.body();
+                std::string line;
+                while (std::getline(input, line)) {
+                    // Don't remove this function is used for debugging.
+                    std::cerr << "L: " << line << "\n";
+                }
+                std::cerr << "DONE\n\n";
+            });
         }
         template<typename T>
         bool  sendMessage(T const& message, typename T::Reply& result, bool dumpError = false) const

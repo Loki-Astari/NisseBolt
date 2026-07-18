@@ -2,17 +2,23 @@
 #define THORSANVIL_SLACK_SLACKSTREAM_H
 
 #include "ThorsSlackConfig.h"
-#include "NisseHTTP/ClientStream.h"
+#include "NisseHTTP/ClientHTTP.h"
+#include "ThorsSocket/SocketUtil.h"
 
 namespace ThorsAnvil::Slack
 {
 
-class Stream: public ThorsAnvil::Nisse::HTTP::ClientStream
+class Stream
 {
+    ThorsAnvil::ThorsSocket::SSLctx            ctx;
+    ThorsAnvil::Nisse::HTTP::ClientHTTP        client;
     public:
         Stream()
-            : ThorsAnvil::Nisse::HTTP::ClientStream("slack.com")
+            : ctx{ThorsAnvil::ThorsSocket::SSLMethodType::Client}
+            , client(ThorsAnvil::ThorsSocket::SSocketInfo{"slack.com", 443, ctx, ThorsAnvil::ThorsSocket::DeferAccept::No}, ThorsAnvil::Nisse::HTTP::Version::HTTP1_1)
         {}
+
+        ThorsAnvil::Nisse::HTTP::ClientHTTP& getClient() {return client;}
 };
 
 }
