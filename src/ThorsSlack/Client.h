@@ -4,7 +4,6 @@
 #include "ThorsSlackConfig.h"
 #include "API.h"
 #include "APIAuth.h"
-#include "Stream.h"
 #include "NisseHTTP/ClientHTTP.h"
 #include "NisseHTTP/HeaderResponse.h"
 #include "NisseHTTP/StreamInput.h"
@@ -54,20 +53,22 @@ class Client
         Nisse::HeaderRequest   botHeaders;
         Nisse::HeaderRequest   userHeaders;
         std::string            botId;
+        TSock::SSLctx          ctx;
+        Nisse::ClientHTTP      client;
 
     private:
         template<typename T>
-        void sendMessageData(T const& message, Stream& stream) const
+        void sendMessageData(T const& message) const
         {
             Nisse::HeaderRequest const& headers = (T::scope == API::Scope::Bot) ? botHeaders : userHeaders;
             if constexpr (T::method == API::Method::GET) {
                 std::string api = std::string{} + T::api + "?" + ThorsAnvil::Slack::API::buildQueryA(message);
                 Nisse::HeaderRequest const& headers = (T::scope == API::Scope::Bot) ? botHeaders : userHeaders;
-                stream.getClient().send(T::method, {.path = api, .headers = headers}, 0, [](std::ostream&){});
+                client.send(T::method, {.path = api, .headers = headers}, 0, [](std::ostream&){});
             }
             else {
                 // Anything that is not a GET
-                stream.getClient().send(T::method, {.path = T::api, .headers = headers}, ThorsAnvil::Serialize::jsonStreanSize(message), [&message](std::ostream& output)
+                client.send(T::method, {.path = T::api, .headers = headers}, ThorsAnvil::Serialize::jsonStreanSize(message), [&message](std::ostream& output)
                 {
                     output << ThorsAnvil::Serialize::jsonExporter(message, Ser::PrinterConfig{Ser::OutputType::Stream});
                 });
@@ -109,6 +110,8 @@ class Client
         }
 
         Client(std::string const& botToken, std::string const& userToken)
+            : ctx{ThorsAnvil::ThorsSocket::SSLMethodType::Client}
+            , client(ThorsAnvil::ThorsSocket::SSocketInfo{"slack.com", 443, ctx, ThorsAnvil::ThorsSocket::DeferAccept::No}, ThorsAnvil::Nisse::HTTP::Version::HTTP1_1)
         {
             botHeaders.add("Connection", "close");
             botHeaders.add("Content-Type", "application/json; charset=utf-8");
@@ -133,11 +136,10 @@ class Client
             using OutputType = std::variant<API::Error, ResultType>;
             ThorsLogTrackWithData(message, "ThorsAnvil::Slack::Client", "sendMessage", "Sending Request");
 
-            Stream                  stream;
-            sendMessageData(message, stream);
+            sendMessageData(message);
 
             OutputType              reply;
-            stream.getClient().processResp([&reply](ThorsAnvil::Nisse::HTTP::ClientHTTPResponse const& resp)
+            client.processResp([&reply](ThorsAnvil::Nisse::HTTP::ClientHTTPResponse const& resp)
             {
                 ThorsAnvil::Nisse::HTTP::StreamInput& input = resp.body();
                 resp.body() >> Ser::jsonImporter(reply, Ser::ParserConfig{}.setIdentifyDynamicClass([&input](Ser::DataInputStream&){return Client::getEventType<ResultType>(input);}));
@@ -152,10 +154,9 @@ class Client
         template<typename T>
         void  validateMessage(T const& message) const
         {
-            Stream                  stream;
-            sendMessageData(message, stream);
+            sendMessageData(message);
 
-            stream.getClient().processResp([](ThorsAnvil::Nisse::HTTP::ClientHTTPResponse const& resp)
+            client.processResp([](ThorsAnvil::Nisse::HTTP::ClientHTTPResponse const& resp)
             {
                 std::istream& input = resp.body();
                 std::string line;
