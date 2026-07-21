@@ -63,7 +63,7 @@ class Client
             if constexpr (T::method == API::Method::GET) {
                 std::string api = std::string{} + T::api + "?" + ThorsAnvil::Slack::API::buildQueryA(message);
                 Nisse::HeaderRequest const& headers = (T::scope == API::Scope::Bot) ? botHeaders : userHeaders;
-                stream.getClient().get({.path = api, .headers = headers});
+                stream.getClient().send(T::method, {.path = api, .headers = headers}, 0, [](std::ostream&){});
             }
             else {
                 // Anything that is not a GET

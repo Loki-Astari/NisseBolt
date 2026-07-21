@@ -11,6 +11,7 @@
 #include "ThorSerialize/JsonThor.h"
 
 
+using namespace std::string_view_literals;
 
 TEST(EventMessageTest, HistoryResponse)
 {
@@ -27,7 +28,7 @@ TEST(EventMessageTest, HistoryResponse)
                                     R"(],)"
                                     R"("has_more":false,"is_limited":true,"pin_count":0,"channel_actions_ts":null,"channel_actions_count":0})"
                             );
-    ThorsAnvil::Nisse::HTTP::ClientHTTPBase     client{reply, "mongo"};
+    ThorsAnvil::Nisse::HTTP::ClientHTTPBase     client{reply, ThorsAnvil::Nisse::HTTP::Version::HTTP1_1, [](){}, [](){return "mongo"sv;}};
 
     using OutputType = std::variant<ThorsAnvil::Slack::API::Error, ThorsAnvil::Slack::API::Conversation::HistoryReply>;
     OutputType      result;
