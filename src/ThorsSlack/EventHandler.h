@@ -268,7 +268,6 @@ EventHandler::EventHandler(Client& client, std::string_view slackSecret, EventFu
 inline
 void EventHandler::handleEvent(Request const& request, Response& response)
 {
-    using ThorsAnvil::Nisse::HTTP::HeaderResponse;
     using namespace std::string_literals;
     ThorsLogTrack("ThorsAnvil::Slack::EventHandler", "handleEvent", "Message Recieved: ", request);
 
@@ -342,15 +341,14 @@ inline
 void EventHandler::handleURLVerificationEvent(Request const& /*request*/, Response& response, Event::EventURLVerification const& event)
 {
     ThorsLogTrack("ThorsAnvil::Slack::EventHandler", "handleURLVerificationEvent", "Sending URL Verification");
-    ThorsAnvil::Nisse::HTTP::HeaderResponse  headers;
-    headers.add("Content-Type", "application/json; charset=utf-8");
 
     ThorsAnvil::Slack::Event::ResponseURLVerification   reply{event.challenge};
 
     std::size_t         challangeBackSize = ThorsAnvil::Serialize::jsonStreanSize(reply);
 
-    response.addHeaders(headers);
-    response.body(challangeBackSize) << ThorsAnvil::Serialize::jsonExporter(reply, ThorsAnvil::Serialize::PrinterConfig{ThorsAnvil::Serialize::OutputType::Stream});
+    response.addHeader("Content-Type", "application/json; charset=utf-8")
+            .body(challangeBackSize)
+            << ThorsAnvil::Serialize::jsonExporter(reply, ThorsAnvil::Serialize::PrinterConfig{ThorsAnvil::Serialize::OutputType::Stream});
     return;
 }
 

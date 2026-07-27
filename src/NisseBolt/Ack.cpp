@@ -5,7 +5,6 @@
 using namespace ThorsAnvil::Nisse::Bolt;
 
 
-Ack::JsonHeader                         const Ack::jsonHeaders;
 ThorsAnvil::Serialize::PrinterConfig    const Ack::printerConfig{ThorsAnvil::Serialize::OutputType::Stream};
 
 THORSSLACK_HEADER_ONLY_INCLUDE
@@ -41,20 +40,20 @@ ThorsAnvil_MakeTrait(SlashAckReplyBlock, blocks);
 THORSSLACK_HEADER_ONLY_INCLUDE
 void Ack::operator()(int responseCode, std::string const& message) const
 {
-    response.setStatus(responseCode);
-    response.addHeaders(jsonHeaders);
-    response.body(ThorsAnvil::Nisse::HTTP::Encoding::Chunked)
-        << ThorsAnvil::Serialize::jsonExporter(SlashAckReplyText{message}, printerConfig);
+    response.setStatus(responseCode)
+            .addHeader("Content-Type", "application/json")
+            .body(ThorsAnvil::Nisse::HTTP::Encoding::Chunked)
+            << ThorsAnvil::Serialize::jsonExporter(SlashAckReplyText{message}, printerConfig);
 }
 
 THORSSLACK_HEADER_ONLY_INCLUDE
 void Ack::operator()(int responseCode, ThorsAnvil::Slack::BlockKit::Blocks const& message) const
 {
-    response.setStatus(responseCode);
-    response.addHeaders(jsonHeaders);
     std::size_t size = ThorsAnvil::Serialize::jsonStreanSize(SlashAckReplyBlock{message});
-    response.body(size)
-        << ThorsAnvil::Serialize::jsonExporter(SlashAckReplyBlock{message}, printerConfig);
+    response.setStatus(responseCode)
+            .addHeader("Content-Type", "application/json")
+            .body(size)
+            << ThorsAnvil::Serialize::jsonExporter(SlashAckReplyBlock{message}, printerConfig);
 }
 
 THORSSLACK_HEADER_ONLY_INCLUDE

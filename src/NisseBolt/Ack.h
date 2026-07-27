@@ -11,16 +11,7 @@ namespace ThorsAnvil::Nisse::Bolt
 
 class Ack
 {
-        class JsonHeader: public ThorsAnvil::Nisse::HTTP::HeaderResponse
-        {
-            public:
-                JsonHeader()
-                {
-                    add("Content-Type", "application/json");
-                }
-        };
         static ThorsAnvil::Serialize::PrinterConfig     const printerConfig;
-        static JsonHeader                               const jsonHeaders;
 
         ThorsAnvil::Nisse::HTTP::Response&      response;
     public:
@@ -36,7 +27,7 @@ class Ack
         template<typename T>
         void operator()(T const& message) const
         {
-            response.addHeaders(jsonHeaders);
+            response.addHeader("Content-Type", "application/json");
             std::size_t size = ThorsAnvil::Serialize::jsonStreanSize(message);
             response.body(size)
                 << ThorsAnvil::Serialize::jsonExporter(message, printerConfig);

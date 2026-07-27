@@ -5,7 +5,6 @@
 #include "API.h"
 #include "APIAuth.h"
 #include "NisseHTTP/ClientHTTP.h"
-#include "NisseHTTP/HeaderResponse.h"
 #include "NisseHTTP/StreamInput.h"
 #include "NisseHTTP/Util.h"
 #include "ThorSerialize/ParserConfig.h"
