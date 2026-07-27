@@ -49,7 +49,7 @@ void Ack::operator()(int responseCode, std::string const& message) const
 THORSSLACK_HEADER_ONLY_INCLUDE
 void Ack::operator()(int responseCode, ThorsAnvil::Slack::BlockKit::Blocks const& message) const
 {
-    std::size_t size = ThorsAnvil::Serialize::jsonStreanSize(SlashAckReplyBlock{message});
+    std::size_t size = ThorsAnvil::Serialize::jsonStreamSize(SlashAckReplyBlock{message});
     response.setStatus(responseCode)
             .addHeader("Content-Type", "application/json")
             .body(size)

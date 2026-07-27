@@ -28,7 +28,7 @@ class Ack
         void operator()(T const& message) const
         {
             response.addHeader("Content-Type", "application/json");
-            std::size_t size = ThorsAnvil::Serialize::jsonStreanSize(message);
+            std::size_t size = ThorsAnvil::Serialize::jsonStreamSize(message);
             response.body(size)
                 << ThorsAnvil::Serialize::jsonExporter(message, printerConfig);
         }

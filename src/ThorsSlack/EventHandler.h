@@ -344,7 +344,7 @@ void EventHandler::handleURLVerificationEvent(Request const& /*request*/, Respon
 
     ThorsAnvil::Slack::Event::ResponseURLVerification   reply{event.challenge};
 
-    std::size_t         challangeBackSize = ThorsAnvil::Serialize::jsonStreanSize(reply);
+    std::size_t         challangeBackSize = ThorsAnvil::Serialize::jsonStreamSize(reply);
 
     response.addHeader("Content-Type", "application/json; charset=utf-8")
             .body(challangeBackSize)

@@ -67,7 +67,7 @@ class Client
             }
             else {
                 // Anything that is not a GET
-                client.send(T::method, {.path = T::api, .headers = headers}, ThorsAnvil::Serialize::jsonStreanSize(message), [&message](std::ostream& output)
+                client.send(T::method, {.path = T::api, .headers = headers}, ThorsAnvil::Serialize::jsonStreamSize(message), [&message](std::ostream& output)
                 {
                     output << ThorsAnvil::Serialize::jsonExporter(message, Ser::PrinterConfig{Ser::OutputType::Stream});
                 });
