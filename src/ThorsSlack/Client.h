@@ -82,7 +82,7 @@ class Client
             while (true)
             {
                 if (body.find(R"("ok":false)", offset) != std::string_view::npos) {
-                    ThorsLogInfo("ThorsAnvil::Slack::Client", "getEventType", "Found: Error");
+                    ThorsLogError("ThorsAnvil::Slack::Client", "getEventType", "Found: Error");
                     return "ThorsAnvil::Slack::API::Error";
                 }
                 if (body.find(R"("ok":true)", offset) != std::string_view::npos) {

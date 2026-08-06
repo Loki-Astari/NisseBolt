@@ -312,7 +312,7 @@ bool EventHandler::validateRequest(Request const& request)
     std::string exp{sig.c_str() + versionEnd + 1, sig.size() - versionEnd - 1};
     std::string dig = ThorsAnvil::Crypto::hexdigest<ThorsAnvil::Crypto::Sha256>(digest);
     bool result = (std::size(dig) == std::size(exp)) && (CRYPTO_memcmp(dig.c_str(), exp.data(), std::size(dig)) == 0);
-    ThorsLogDebug("ThorsAnvil::Slack::EventHandler", "validateRequest", "Request Validation: ", (result ? "OK": "FAIL"));
+    ThorsLogNotice("ThorsAnvil::Slack::EventHandler", "validateRequest", "Request Validation: ", (result ? "OK": "FAIL"));
     return result;
 }
 
@@ -330,7 +330,7 @@ std::string EventHandler::getEventType(Request const& request, Response& /*respo
             ThorsLogTrack("ThorsAnvil::Slack::EventHandler", "getEventType", "Found: event_callback");
             return "event_callback";
         }
-        ThorsLogError("ThorsAnvil::Slack::EventHandler", "getEventType", "Could not identify event type: ERROR");
+        ThorsLogAlert("ThorsAnvil::Slack::EventHandler", "getEventType", "Could not identify event type: ERROR");
     }
     ThorsLogTrack("ThorsAnvil::Slack::EventHandler", "getEventType", "Found: Fallback object members");
     return "";
@@ -371,7 +371,7 @@ void EventHandler::handleSlashCommand(Request const& request, Response& response
     SlashCommand        command(request);
     auto find = slashCommandHandlerMap.find(command.command);
     if (find == slashCommandHandlerMap.end()) {
-        ThorsLogError("ThorsAnvil::Slack::EventHandler", "handleSlashCommand", "Call to unimplemented command");
+        ThorsLogAlert("ThorsAnvil::Slack::EventHandler", "handleSlashCommand", "Call to unimplemented command");
         response.setStatus(501);
         return;
     }
@@ -385,11 +385,11 @@ void EventHandler::VisitorCallbackEvent::operator()(T const& event)
     std::string const& key = T::typeName();
     auto find = plugin.eventHandlerMap.find(key);
     if (find == plugin.eventHandlerMap.end()) {
-        ThorsLogError("ThorsAnvil::Slack::EventHandler::VisitorCallbackEvent::operator()", key, "Call to unimplemented method");
+        ThorsLogAlert("ThorsAnvil::Slack::EventHandler::VisitorCallbackEvent::operator()", key, "Call to unimplemented method");
         response.setStatus(501);
         return;
     }
-    ThorsLogDebug("ThorsAnvil::Slack::EventHandler::VisitorCallbackEvent::operator()", key, "Calling client handler");
+    ThorsLogNotice("ThorsAnvil::Slack::EventHandler::VisitorCallbackEvent::operator()", key, "Calling client handler");
     AnyEventFunction const&  anyHandler   = find->second;
     EventFunction<T> const&  eventHandler = std::get<EventFunction<T>>(anyHandler);
     eventHandler(EventRequest<T>{request, response, eventBase, event});
@@ -485,7 +485,7 @@ void EventHandler::UserActionCallback::operator()(API::BlockActions const& userA
         handler({request, response, userAction, ptr2String(action.value.value())});
     }
     else {
-        ThorsLogError("ThorsAnvil::Slack::EventHandler::UserActionCallback", "operator(BlockAction)", "Unknown Action: ", request.variables()["payload"]);
+        ThorsLogAlert("ThorsAnvil::Slack::EventHandler::UserActionCallback", "operator(BlockAction)", "Unknown Action: ", request.variables()["payload"]);
     }
 }
 // Handles the interaction of individual components.
@@ -498,7 +498,7 @@ void EventHandler::UserActionCallback::handleShortCut(API::ShortCutMessage const
     ThorsLogTrack("ThorsAnvil::Slack::EventHandler::UserActionCallback", "operator()(ShortCut)", "Message Recieved:");
     auto find = plugin.shortcutHandlerMap.find(userAction.callback_id);
     if (find == std::end(plugin.shortcutHandlerMap)) {
-        ThorsLogError("ThorsAnvil::Slack::EventHandler::UserActionCallback", "operator(ShortCut)", "Unknown Action: ", request.variables()["payload"]);
+        ThorsLogAlert("ThorsAnvil::Slack::EventHandler::UserActionCallback", "operator(ShortCut)", "Unknown Action: ", request.variables()["payload"]);
         return;
     }
     find->second({request, response, userAction});
@@ -509,7 +509,7 @@ std::string EventHandler::UserActionCallback::getCheckBoxValue(API::BlockActions
 {
     std::unique_ptr<BlockKit::VecElOption> const& ptr2Value = action.selected_options.value();
     if (!ptr2Value) {
-        ThorsLogError("ThorsAnvil::Slack::EventHandler::UserActionCallback", "getCheckBoxValue", "XX");
+        ThorsLogAlert("ThorsAnvil::Slack::EventHandler::UserActionCallback", "getCheckBoxValue", "XX");
         return "";
     }
     BlockKit::VecElOption const& values = *ptr2Value;
@@ -584,7 +584,7 @@ std::string EventHandler::UserActionCallback::getCheckBoxValue(API::BlockActions
 
     // There should only be one change.
     if (turnedOn.size() + turnedOff.size() != 1) {
-        ThorsLogError("ThorsAnvil::Slack::EventHandler::UserActionCallback", "getCheckBoxValue", "Change in state is not consistent: ", turnedOn.size(), " ", turnedOff.size());
+        ThorsLogAlert("ThorsAnvil::Slack::EventHandler::UserActionCallback", "getCheckBoxValue", "Change in state is not consistent: ", turnedOn.size(), " ", turnedOff.size());
     }
     else {
         if (turnedOn.size() == 1) {

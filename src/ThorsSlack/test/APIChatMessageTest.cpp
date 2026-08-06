@@ -134,7 +134,7 @@ TEST(APIChatMessageTest, PostEphemeral)
     PostEphemeral::Reply      reply;
     client.sendMessage(PostEphemeral{.channel = environment.slackChannel, .user="U095XJHJ1J5", .text = "I hope the tour went well, Mr. Wonka."}, reply, true);
     if (!reply.ok) {
-        ThorsLogDebug("APIChatMessageTest", "PostEphemeral", ThorsAnvil::Serialize::jsonExporter(reply));
+        ThorsLogNotice("APIChatMessageTest", "PostEphemeral", ThorsAnvil::Serialize::jsonExporter(reply));
     }
     ASSERT_TRUE(reply.ok);
 }
